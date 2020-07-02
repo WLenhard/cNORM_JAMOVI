@@ -134,7 +134,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             if(regression){
                 data <- cNORM::computePowers(data, k=5)
                 model <- cNORM::bestModel(data, terms = terms)
-                tab <- cNORM::rawTable(0, model)
+                tab <- cNORM::rawTable(0, model, step = .5 )
                 if(plotting){
                     plot(norm ~ raw, data = tab1, ylab = "Norm Score", xlab = "Raw Score")
                     lines(norm ~ raw, data = tab, col = "blue")

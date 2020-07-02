@@ -151,7 +151,7 @@ continuousResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                 columns=list(
                     list(
                         `name`="Raw", 
-                        `type`="number"),
+                        `type`="integer"),
                     list(
                         `name`="Norm", 
                         `type`="number"),

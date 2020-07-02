@@ -16,7 +16,7 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             because the method makes use of the complete dataset. The resulting model closes gaps within and between the norm tables and smoothes sampling
             errors.</p>
             <p>Select a model with a low number of terms while preserving a high R<sup>2</sup> of the model. Avoid intersecting 
-            percentile curves. Please proceed as following:</p>
+            percentile curves in the location range of your interest. Please proceed as following:</p>
             <ol>
               <li>Select your <b>raw score</b> variable</li>
               <li>Place the <b>grouping variable</b> (e. g. grade) in the 'Grouping Variable' slot. Each group in the dataset should contain at minimum 50 cases, preferably 100.</li>

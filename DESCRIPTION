@@ -1,8 +1,8 @@
 Package: Norming
 Type: Package
 Title: Continuous Norming with cNORM for JAMOVI
-Version: 0.0.0
-Date: 2020-06-24
+Version: 0.9.0
+Date: 2020-07-02
 Author: c(person("Wolfgang", "Lenhard", role = c("cre","aut"), email="wolfgang.lenhard@uni-wuerzburg.de", comment=c("<https://orcid.org/0000-0002-8184-6889>"))
 Maintainer: Wolfgang Lenhard <wolfgang.lenhard@uni-wuerzburg.de>
 Description: The module provides methods  for norming in the context of psychometrics, biometrics, medical screenings...
@@ -13,4 +13,4 @@ Description: The module provides methods  for norming in the context of psychome
 License: AGPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: jmvcore (>= 0.8.5), R6, lattice (>= 0.20), leaps (>= 3.0), latticeExtra (>= 0.6), cNORM (>= 1.2.2), psych
+Imports: jmvcore (>= 0.8.5), R6, lattice (>= 0.20), leaps (>= 3.0), latticeExtra (>= 0.6), cNORM (>= 1.2.3), psych

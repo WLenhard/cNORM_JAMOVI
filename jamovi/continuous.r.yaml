@@ -28,7 +28,7 @@ items:
       visible: False
       columns:
         - name: Raw
-          type: number
+          type: integer
         - name: Norm
           type: number
         - name: Percentile
@@ -38,4 +38,4 @@ items:
     - name: model
       title: Model summary
       type: Html
-      visible: True     
+      visible: True
