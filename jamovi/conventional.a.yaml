@@ -62,4 +62,9 @@ options:
       options:
         - Norm Score
         - Percentile
-      default: Norm Score  
+      default: Norm Score
+      
+    - name: model
+      title: Display model summary
+      type: Bool
+      default: true             

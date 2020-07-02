@@ -12,7 +12,8 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             k = "Quartic",
             terms = "4",
             descend = FALSE,
-            normAge = NULL, ...) {
+            normAge = NULL,
+            model = TRUE, ...) {
 
             super$initialize(
                 package='Norming',
@@ -81,6 +82,10 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             private$..normAge <- jmvcore::OptionString$new(
                 "normAge",
                 normAge)
+            private$..model <- jmvcore::OptionBool$new(
+                "model",
+                model,
+                default=TRUE)
 
             self$.addOption(private$..raw)
             self$.addOption(private$..group)
@@ -89,6 +94,7 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             self$.addOption(private$..terms)
             self$.addOption(private$..descend)
             self$.addOption(private$..normAge)
+            self$.addOption(private$..model)
         }),
     active = list(
         raw = function() private$..raw$value,
@@ -97,7 +103,8 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         k = function() private$..k$value,
         terms = function() private$..terms$value,
         descend = function() private$..descend$value,
-        normAge = function() private$..normAge$value),
+        normAge = function() private$..normAge$value,
+        model = function() private$..model$value),
     private = list(
         ..raw = NA,
         ..group = NA,
@@ -105,7 +112,8 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         ..k = NA,
         ..terms = NA,
         ..descend = NA,
-        ..normAge = NA)
+        ..normAge = NA,
+        ..model = NA)
 )
 
 continuousResults <- if (requireNamespace('jmvcore')) R6::R6Class(
@@ -113,7 +121,8 @@ continuousResults <- if (requireNamespace('jmvcore')) R6::R6Class(
     active = list(
         instructions = function() private$.items[["instructions"]],
         plot = function() private$.items[["plot"]],
-        norms = function() private$.items[["norms"]]),
+        norms = function() private$.items[["norms"]],
+        model = function() private$.items[["model"]]),
     private = list(),
     public=list(
         initialize=function(options) {
@@ -149,7 +158,12 @@ continuousResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                     list(
                         `name`="Percentile", 
                         `type`="number", 
-                        `format`="zto,pvalue"))))}))
+                        `format`="zto,pvalue"))))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="model",
+                title="Model summary",
+                visible=TRUE))}))
 
 continuousBase <- if (requireNamespace('jmvcore')) R6::R6Class(
     "continuousBase",
@@ -183,11 +197,13 @@ continuousBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' @param terms .
 #' @param descend .
 #' @param normAge a number specifying the age for the norm score table
+#' @param model .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$instructions} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$plot} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$norms} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$model} \tab \tab \tab \tab \tab a html \cr
 #' }
 #'
 #' Tables can be converted to data frames with \code{asDF} or \code{\link{as.data.frame}}. For example:
@@ -205,7 +221,8 @@ continuous <- function(
     k = "Quartic",
     terms = "4",
     descend = FALSE,
-    normAge) {
+    normAge,
+    model = TRUE) {
 
     if ( ! requireNamespace('jmvcore'))
         stop('continuous requires jmvcore to be installed (restart may be required)')
@@ -226,7 +243,8 @@ continuous <- function(
         k = k,
         terms = terms,
         descend = descend,
-        normAge = normAge)
+        normAge = normAge,
+        model = model)
 
     analysis <- continuousClass$new(
         options = options,

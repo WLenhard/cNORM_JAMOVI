@@ -11,7 +11,8 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             k = "Regression",
             terms = "4",
             descend = FALSE,
-            plotting = "Norm Score", ...) {
+            plotting = "Norm Score",
+            model = TRUE, ...) {
 
             super$initialize(
                 package='Norming',
@@ -60,6 +61,10 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
                     "Norm Score",
                     "Percentile"),
                 default="Norm Score")
+            private$..model <- jmvcore::OptionBool$new(
+                "model",
+                model,
+                default=TRUE)
 
             self$.addOption(private$..raw)
             self$.addOption(private$..scale)
@@ -67,6 +72,7 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             self$.addOption(private$..terms)
             self$.addOption(private$..descend)
             self$.addOption(private$..plotting)
+            self$.addOption(private$..model)
         }),
     active = list(
         raw = function() private$..raw$value,
@@ -74,14 +80,16 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         k = function() private$..k$value,
         terms = function() private$..terms$value,
         descend = function() private$..descend$value,
-        plotting = function() private$..plotting$value),
+        plotting = function() private$..plotting$value,
+        model = function() private$..model$value),
     private = list(
         ..raw = NA,
         ..scale = NA,
         ..k = NA,
         ..terms = NA,
         ..descend = NA,
-        ..plotting = NA)
+        ..plotting = NA,
+        ..model = NA)
 )
 
 conventionalResults <- if (requireNamespace('jmvcore')) R6::R6Class(
@@ -89,7 +97,8 @@ conventionalResults <- if (requireNamespace('jmvcore')) R6::R6Class(
     active = list(
         instructions = function() private$.items[["instructions"]],
         plot = function() private$.items[["plot"]],
-        norms = function() private$.items[["norms"]]),
+        norms = function() private$.items[["norms"]],
+        model = function() private$.items[["model"]]),
     private = list(),
     public=list(
         initialize=function(options) {
@@ -124,7 +133,12 @@ conventionalResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                     list(
                         `name`="Percentile", 
                         `type`="number", 
-                        `format`="zto,pvalue"))))}))
+                        `format`="zto,pvalue"))))
+            self$add(jmvcore::Html$new(
+                options=options,
+                name="model",
+                title="Model summary",
+                visible=TRUE))}))
 
 conventionalBase <- if (requireNamespace('jmvcore')) R6::R6Class(
     "conventionalBase",
@@ -157,11 +171,13 @@ conventionalBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' @param terms .
 #' @param descend .
 #' @param plotting .
+#' @param model .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$instructions} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$plot} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$norms} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$model} \tab \tab \tab \tab \tab a html \cr
 #' }
 #'
 #' Tables can be converted to data frames with \code{asDF} or \code{\link{as.data.frame}}. For example:
@@ -178,7 +194,8 @@ conventional <- function(
     k = "Regression",
     terms = "4",
     descend = FALSE,
-    plotting = "Norm Score") {
+    plotting = "Norm Score",
+    model = TRUE) {
 
     if ( ! requireNamespace('jmvcore'))
         stop('conventional requires jmvcore to be installed (restart may be required)')
@@ -196,7 +213,8 @@ conventional <- function(
         k = k,
         terms = terms,
         descend = descend,
-        plotting = plotting)
+        plotting = plotting,
+        model = model)
 
     analysis <- conventionalClass$new(
         options = options,

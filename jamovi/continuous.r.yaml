@@ -35,4 +35,7 @@ items:
           type: number
           format: zto,pvalue
           
-
+    - name: model
+      title: Model summary
+      type: Html
+      visible: True     

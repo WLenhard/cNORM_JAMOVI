@@ -34,6 +34,9 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             
               self$results$plot$setVisible(visible = FALSE)
               return()
+            }else{
+              self$results$instructions$setContent("<html/>")
+              self$results$instructions$setVisible(visible = FALSE)
         }                
                 
                 
@@ -115,13 +118,15 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
               return()
             }
             
-            self$results$instructions$setContent(paste0("<html><head></head><body><div class='instructions'>", 
+            if(self$options$model){
+            self$results$model$setContent(paste0("<html><head></head><body><div class='instructions'>", 
                                                         "<b>Model summary:</b><br>", model$report[1], "<br>",
                                                         model$report[2], "<br>",
                                                         model$report[3], "<br>",
                                                         model$report[4], "<br>",
                                                         model$report[5], "<br>",
                                                         "</div></body></html>"))
+            }
             normAge <- self$options$normAge
             if(!is.null(normAge)){
                 self$results$norms$setVisible(visible = TRUE)

@@ -2,4 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
+*.jmo
+build
 jamovi.R

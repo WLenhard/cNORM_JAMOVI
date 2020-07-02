@@ -30,6 +30,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             self$results$norms$setVisible(visible = FALSE)
             return()
         } else {
+            self$results$instructions$setContent("<html/>")
             self$results$instructions$setVisible(visible = FALSE)
             self$results$norms$setVisible(visible = TRUE)
         }
@@ -78,13 +79,15 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                                                                 "</div></body></html>"))
                     return()
                 }else{
-                self$results$instructions$setContent(paste0("<html><head></head><body><div class='instructions'>", 
+                    if(self$options$model){
+                self$results$model$setContent(paste0("<html><head></head><body><div class='instructions'>", 
                                                             "<b>Model summary:</b><br>", model$report[1], "<br>",
                                                             model$report[2], "<br>",
                                                             model$report[3], "<br>",
                                                             model$report[4], "<br>",
                                                             model$report[5], "<br>",
                                                               "</div></body></html>"))
+                    }
                 }
             }else{
                 tab <- tab1

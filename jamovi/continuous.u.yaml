@@ -67,3 +67,5 @@ children:
           - type: TextBox
             name: normAge
             format: string
+          - type: CheckBox
+            name: model            

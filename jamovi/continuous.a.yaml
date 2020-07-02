@@ -88,4 +88,8 @@ options:
       type: String
       description:
           R: a number specifying the age for the norm score table
-       
+
+    - name: model
+      title: Display model summary
+      type: Bool
+      default: true       

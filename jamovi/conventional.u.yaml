@@ -62,3 +62,5 @@ children:
         children:                    
           - type: ComboBox
             name: plotting
+          - type: CheckBox
+            name: model            
