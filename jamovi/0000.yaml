@@ -1,0 +1,34 @@
+---
+title: Continuous Norming
+name: Norming
+version: 0.0.0
+jms: '1.0'
+authors:
+  - Wolfgang Lenhard
+maintainer: Wolfgang Lenhard <wolfgang.lenhard@uni-wuerzburg.de>
+date: '2020-08-01'
+type: R
+description: >-
+  The module provides methods  for norming in the context of psychometrics,
+  biometrics, medical screenings... It features both conventional as well as
+  continuous norming methods for the estimation of percentiles and norm scores
+  via inverse normal transformation (conventional) and regression via Taylor
+  polynomials (Continuous norming). The continuous method  reduces the necessary
+  sample size, close gaps between and within the groups and increase norm score
+  reliability. It does not require  specific distribution assumptions for the
+  data. Further information: https://www.psychometrica.de/cNorm_en.html
+analyses:
+  - title: Single Group
+    name: conventional
+    ns: Norming
+    menuGroup: Norming
+    menuTitle: Single Group
+  - title: Continuous Norming
+    name: continuous
+    ns: Norming
+    menuGroup: Norming
+    menuTitle: Continuous Norming
+usesNative: true
+minApp: 1.0.8
+
+...

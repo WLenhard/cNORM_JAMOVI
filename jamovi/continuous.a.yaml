@@ -1,0 +1,91 @@
+---
+name:  continuous
+title: Continuous Norming
+menuGroup: Norming
+version: '1.0.0'
+jas: '1.2'
+
+options:
+    - name: data
+      type: Data
+      description:
+          R: the data as a data frame
+
+    - name: raw
+      title: Raw Score Variable
+      type: Variable
+      suggested:
+        - continuous
+      permitted:
+        - numeric
+      description:
+          R: a string specifying the raw score variable in `data`
+
+    - name: group
+      title: Grouping variable (discrete)
+      type: Variable
+      suggested:
+        - continuous
+      permitted:
+        - numeric
+      description:
+          R: a string specifying the grouping variable in `data`
+
+    - name: scale
+      title: Type of Norm Scale
+      type: List
+      options:
+        - T
+        - IQ
+        - z
+        - Wechsler
+        - PISA
+      default: T
+      description:
+          R: >
+            `'T'`, `'IQ'`, 'z', 'Wechsler subtest scale (m = 10, sd = 3)', or 'PISA (m = 500, sd = 100)'`
+
+    - name: k
+      title: Degree of polynomial
+      type: List
+      options:
+        - Quadratic
+        - Cubic
+        - Quartic
+      default: Quartic
+
+    - name: terms
+      title: Number of terms in regression function
+      type: List
+      options:
+        - 'Automatic'
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+        - '6'
+        - '7'
+        - '8'
+        - '9'
+        - '10'
+        - '11'
+        - '12'
+        - '13'
+        - '14'
+        - '15'
+        - '16'
+      default: '4'
+      
+           
+    - name: descend
+      title: Descending ranking order
+      type: Bool
+      default: false
+
+    - name: normAge
+      title: Value of grouping variable for norm table generation
+      type: String
+      description:
+          R: a number specifying the age for the norm score table
+       

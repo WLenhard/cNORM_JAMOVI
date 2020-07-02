@@ -1,0 +1,38 @@
+---
+name:  continuous
+title: Continuous Norming
+jrs:   '1.1'
+
+items:
+#    - name:  text
+#      title: Norm table for single group
+#      type:  Preformatted
+
+    - name: instructions
+      title: Instructions
+      type: Html
+      visible: True
+      
+    - name: plot
+      #title: Percentile Plot
+      type: Image
+      width:  600
+      height: 400
+      visible: True
+      renderFun: .plot
+    
+    - name:  norms
+      title: Norm score table
+      type: Table
+      rows:  1
+      visible: False
+      columns:
+        - name: Raw
+          type: number
+        - name: Norm
+          type: number
+        - name: Percentile
+          type: number
+          format: zto,pvalue
+          
+

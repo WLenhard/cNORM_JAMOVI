@@ -1,0 +1,8 @@
+refs:
+    cNORM:
+        type: 'software'
+        author: Lenhard, W.; Lenhard, A.; Gary, S.
+        year: 2018
+        title: 'cNORM: Continuous Norming'
+        publisher: '[R package]. Retrieved from https://CRAN.R-project.org/package=cNORM'
+        url: https://CRAN.R-project.org/package=cNORM
