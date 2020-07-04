@@ -12,11 +12,11 @@ description: >-
   The module provides methods  for norming in the context of psychometrics,
   biometrics, medical screenings... It features both conventional as well as
   continuous norming methods for the estimation of percentiles and norm scores
-  via inverse normal transformation and regression via Taylor
-  polynomials. The continuous method  reduces the necessary
-  sample size, close gaps between and within the groups and increase norm score
-  reliability. It does not require  specific distribution assumptions for the
-  data. Further information: https://www.psychometrica.de/cNorm_en.html
+  via inverse normal transformation and regression via Taylor polynomials. The
+  continuous method  reduces the necessary sample size, close gaps between and
+  within the groups and increase norm score reliability. It does not require 
+  specific distribution assumptions for the data. Further information:
+  https://www.psychometrica.de/cNorm_en.html
 analyses:
   - title: Single Group
     name: conventional
