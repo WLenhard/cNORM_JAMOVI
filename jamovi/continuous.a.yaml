@@ -54,28 +54,17 @@ options:
         - Quartic
       default: Quartic
 
+    - name: manually
+      title: Set term number manually
+      type: Bool
+      default: false
+      
     - name: terms
-      title: Number of terms in regression function
-      type: List
-      options:
-        - 'Automatic'
-        - '1'
-        - '2'
-        - '3'
-        - '4'
-        - '5'
-        - '6'
-        - '7'
-        - '8'
-        - '9'
-        - '10'
-        - '11'
-        - '12'
-        - '13'
-        - '14'
-        - '15'
-        - '16'
-      default: '4'
+      title: Terms
+      type: Number
+      description:
+          R: a number of terms in the regression function
+      default: 4
       
            
     - name: descend

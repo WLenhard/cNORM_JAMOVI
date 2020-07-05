@@ -25,21 +25,21 @@ children:
         margin: small
         children:    
           - type: Label
-            label: Data preparation
+            label: Data Preparation
             fitToGrid: true
             cell:
               column: 0
               row: 0
             children:    
               - type: LayoutBox
-                margin: small
+                margin: large
                 children:
                   - type: CheckBox
                     name: descend
                   - type: ComboBox
                     name: scale
           - type: Label
-            label: Method parameters
+            label: Method Parameters
             fitToGrid: true
             cell:
               column: 0

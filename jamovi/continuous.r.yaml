@@ -10,10 +10,12 @@ items:
 
     - name: instructions
       title: Instructions
+      refs: assessment
       type: Html
       visible: True
       
     - name: plot
+      refs: cNORM
       #title: Percentile Plot
       type: Image
       width:  600
@@ -22,6 +24,7 @@ items:
       renderFun: .plot
     
     - name:  norms
+      refs: epm
       title: Norm score table
       type: Table
       rows:  1
@@ -39,3 +42,4 @@ items:
       title: Model summary
       type: Html
       visible: True
+      refs: plos

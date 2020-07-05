@@ -110,10 +110,12 @@ conventionalResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                 options=options,
                 name="instructions",
                 title="Instructions",
+                refs="assessment",
                 visible=TRUE))
             self$add(jmvcore::Image$new(
                 options=options,
                 name="plot",
+                refs="cNORM",
                 width=600,
                 height=400,
                 visible=TRUE,
@@ -122,6 +124,7 @@ conventionalResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                 options=options,
                 name="norms",
                 title="Norm score table",
+                refs="epm",
                 rows=1,
                 columns=list(
                     list(

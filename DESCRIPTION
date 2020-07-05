@@ -2,15 +2,15 @@ Package: Norming
 Type: Package
 Title: Continuous Norming with cNORM for JAMOVI
 Version: 0.9.0
-Date: 2020-07-02
-Author: c(person("Wolfgang", "Lenhard", role = c("cre","aut"), email="wolfgang.lenhard@uni-wuerzburg.de", comment=c("<https://orcid.org/0000-0002-8184-6889>"))
+Date: 2020-07-10
+Author: c(person("Wolfgang", "Lenhard", role = c("cre","aut"), email="wolfgang.lenhard@uni-wuerzburg.de", comment=c("<https://orcid.org/0000-0002-8184-6889>"), person("Alexandra", "Lenhard", role = c("aut"), email="lenhard@psychometrica.de", comment=c("<https://orcid.org/0000-0001-8680-4381>"))
 Maintainer: Wolfgang Lenhard <wolfgang.lenhard@uni-wuerzburg.de>
 Description: The module provides methods  for norming in the context of psychometrics, biometrics, medical screenings...
     It features both conventional as well as continuous norming methods for the estimation of percentiles and norm scores via
     inverse normal transformation (conventional) and regression via Taylor polynomials (Continuous norming). The continuous method 
     reduces the necessary sample size, close gaps between and within the groups and increase norm score reliability. It does not require 
     specific distribution assumptions for the data. Further information: https://www.psychometrica.de/cNorm_en.html
-License: AGPL-3
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports: jmvcore (>= 0.8.5), R6, lattice (>= 0.20), leaps (>= 3.0), latticeExtra (>= 0.6), cNORM (>= 1.2.3), psych

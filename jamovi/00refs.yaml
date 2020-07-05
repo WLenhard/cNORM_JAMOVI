@@ -1,8 +1,40 @@
+---
 refs:
     cNORM:
         type: 'software'
-        author: Lenhard, W.; Lenhard, A.; Gary, S.
+        author: Lenhard, W.; Lenhard, A. & Gary, S.
         year: 2018
         title: 'cNORM: Continuous Norming'
         publisher: '[R package]. Retrieved from https://CRAN.R-project.org/package=cNORM'
         url: https://CRAN.R-project.org/package=cNORM
+
+    assessment:
+        type: 'article'
+        author: Lenhard, A.; Lenhard, W.; Sebastian, S. & Segerer, R.
+        year: 2018
+        title: 'A continuous solution to the norming problem'
+        publisher: Assessment
+        volume: 25
+        pages: 112-125
+        doi: 10.1177/1073191116656437
+
+    plos:
+        type: 'article'
+        author: Lenhard, A.; Lenhard, W. & Gary, S.
+        year: 2019
+        title: 'Continuous norming of psychometric tests: A simulation study of parametric and semi-parametric approaches'
+        publisher: PLoS One
+        volume: 14(9)
+        doi: 10.1371/journal.pone.0222279
+
+    epm:
+        type: 'article'
+        author: Lenhard, W. & Lenhard, A.
+        year: 2020
+        title: 'Improvement of Norm Score Quality via Regression-Based Continuous Norming'
+        publisher: Educational and Psychological Measurement
+        volume: Online First
+        pages: 1-33
+        doi: 10.1177/0013164420928457
+
+...

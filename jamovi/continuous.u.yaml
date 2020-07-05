@@ -29,10 +29,10 @@ children:
     children:
       - type: LayoutBox
         stretchFactor: 1
-        margin: small
+        margin: large
         children:
           - type: Label
-            label: Data preparation
+            label: Data Preparation
             fitToGrid: true
             cell:
               column: 0
@@ -43,7 +43,7 @@ children:
               - type: ComboBox
                 name: scale
           - type: Label
-            label: Model features
+            label: Regression Function
             fitToGrid: true
             cell:
               column: 0
@@ -54,8 +54,12 @@ children:
                 children:
                   - type: ComboBox
                     name: k
-                  - type: ComboBox
+                  - type: CheckBox
+                    name: manually
+                  - type: TextBox
                     name: terms
+                    format: number
+                    enable: (manually)
   - type: CollapseBox
     label: Output
     margin: normal
@@ -64,8 +68,8 @@ children:
       - type: LayoutBox
         margin: large
         children:
+          - type: CheckBox
+            name: model
           - type: TextBox
             name: normAge
             format: string
-          - type: CheckBox
-            name: model            

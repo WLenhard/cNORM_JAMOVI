@@ -17,22 +17,19 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             <p>The retrieval of norm scores is either done via inverse normal transformation (manifest data) or via modeling the 
             functional relationship between raw score (raw) and norm score (=location, L) via polynomial regression up to power 5, using the cNORM package (W. Lenhard, Lenhard & Gary, 2018).</p>
             <p>Please specify the raw score variable, the ranking order, the method and the type of norm score scale.</p>
-            <p>Further information on the procedure is available via <a href=\"https://www.psychometrica.de/cNorm_en.html\">Psychometrica</a>. References:
-            <ul>
-                <li>Lenhard, W., Lenhard, A., & Gary, S. (2018). <i>cNORM: Continuous Norming (Version 1.2.2)</i>. Vienna: The Comprehensive R Network. available via <a href=\"https://cran.r-project.org/packages=cNORM\">https://cran.r-project.org/packages=cNORM</a></p></li>
-                <li>Lenhard, A., Lenhard, W., Suggate, S. & Segerer, R. (2018). A continuous solution to the norming problem. <i>Assessment, 25</i>,  112-125. doi: 10.1177/1073191116656437</p></li>
-            </ul>            
-            </div>
+            <p>Further information on the procedure is available via <a href=\"https://www.psychometrica.de/cNorm_en.html\">Psychometrica</a>.</p>            </div>
             </body>
             </html>")
             
             self$results$plot$setVisible(visible = FALSE)
             self$results$norms$setVisible(visible = FALSE)
+            self$results$model$setVisible(visible = FALSE)
             return()
         } else {
             self$results$instructions$setContent("<html/>")
             self$results$instructions$setVisible(visible = FALSE)
             self$results$norms$setVisible(visible = TRUE)
+            self$results$model$setVisible(visible = TRUE)
         }
 
             regression <- FALSE
@@ -81,7 +78,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 }else{
                     if(self$options$model){
                 self$results$model$setContent(paste0("<html><head></head><body><div class='instructions'>", 
-                                                            "<b>Model summary:</b><br>", model$report[1], "<br>",
+                                                            "<b>Model summary</b><br>", model$report[1], "<br>",
                                                             model$report[2], "<br>",
                                                             model$report[3], "<br>",
                                                             model$report[4], "<br>",

@@ -6,11 +6,12 @@ jrs:   '1.1'
 items:
     - name: instructions
       title: Instructions
+      refs: assessment
       type: Html
       visible: True
 
     - name: plot
-      #title: Percentile Plot
+      refs: cNORM
       type: Image
       width:  600
       height: 400
@@ -19,6 +20,7 @@ items:
       
     - name:  norms
       title: Norm score table
+      refs: epm
       type: Table
       rows:  1
       columns:
@@ -34,4 +36,3 @@ items:
       title: Model summary
       type: Html
       visible: True
-      
