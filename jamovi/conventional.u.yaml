@@ -44,14 +44,15 @@ children:
             cell:
               column: 0
               row: 1
-            children:    
+            children:
               - type: LayoutBox
-                margin: small
-                children:                    
-                  - type: ComboBox
+                margin: large
+                children:
+                  - type: CheckBox
                     name: k
                   - type: ComboBox
-                    name: terms                    
+                    name: terms
+                    enable: (k)                    
   - type: CollapseBox
     label: Output
     margin: normal

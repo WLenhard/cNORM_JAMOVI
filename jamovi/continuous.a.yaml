@@ -55,7 +55,7 @@ options:
       default: Quartic
 
     - name: manually
-      title: Set term number manually
+      title: Set terms number manually
       type: Bool
       default: false
       
@@ -65,10 +65,9 @@ options:
       description:
           R: a number of terms in the regression function
       default: 4
-      
-           
+
     - name: descend
-      title: Descending ranking order
+      title: Ranking order descending
       type: Bool
       default: false
 
@@ -79,6 +78,6 @@ options:
           R: a number specifying the age for the norm score table
 
     - name: model
-      title: Display model summary
+      title: Model summary
       type: Bool
       default: true       

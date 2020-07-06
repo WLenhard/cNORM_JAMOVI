@@ -8,7 +8,7 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         initialize = function(
             raw = NULL,
             scale = "T",
-            k = "Regression",
+            k = TRUE,
             terms = "4",
             descend = FALSE,
             plotting = "Norm Score",
@@ -33,13 +33,10 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
                     "Wechsler",
                     "PISA"),
                 default="T")
-            private$..k <- jmvcore::OptionList$new(
+            private$..k <- jmvcore::OptionBool$new(
                 "k",
                 k,
-                options=list(
-                    "Inverse Normal Transformation (manifest)",
-                    "Regression"),
-                default="Regression")
+                default=TRUE)
             private$..terms <- jmvcore::OptionList$new(
                 "terms",
                 terms,
@@ -194,7 +191,7 @@ conventional <- function(
     data,
     raw,
     scale = "T",
-    k = "Regression",
+    k = TRUE,
     terms = "4",
     descend = FALSE,
     plotting = "Norm Score",

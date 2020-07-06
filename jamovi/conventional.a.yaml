@@ -33,15 +33,12 @@ options:
             `'T'`, `'IQ'`, 'z', 'Wechsler subtest scale (m = 10, sd = 3)', or 'PISA (m = 500, sd = 100)'`
 
     - name: k
-      title: Method
-      type: List
-      options:
-        - Inverse Normal Transformation (manifest)
-        - Regression
-      default: Regression  
+      title: Use regression
+      type: Bool
+      default: true
       
     - name: terms
-      title: Number of regression terms
+      title: Number of terms
       type: List
       options:
         - '1'
@@ -52,12 +49,12 @@ options:
       default: '4'
 
     - name: descend
-      title: Descending ranking order
+      title: Ranking order descending
       type: Bool
       default: false
       
     - name: plotting
-      title: Type of result plot
+      title: Result plot
       type: List
       options:
         - Norm Score
@@ -65,6 +62,6 @@ options:
       default: Norm Score
       
     - name: model
-      title: Display model summary
+      title: Model summary
       type: Bool
       default: true             

@@ -14,10 +14,14 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             </head>
             <body>
             <div class='instructions'>
-            <p>The retrieval of norm scores is either done via inverse normal transformation (manifest data) or via modeling the 
-            functional relationship between raw score (raw) and norm score (=location, L) via polynomial regression up to power 5, using the cNORM package (W. Lenhard, Lenhard & Gary, 2018).</p>
+            <p>The module estimates norm scores (= location, L) for raw scores within single groups and 
+            compiles norm tables. It is based on the Rankit procedure and inverse normal transformation. In order to smooth 
+            the norm score data and to close the missings, the functional relationship between raw score 
+            and norm score is modeled via polynomial regression up to power 5, using the cNORM package 
+            (W. Lenhard, Lenhard & Gary, 2018).</p>
             <p>Please specify the raw score variable, the ranking order, the method and the type of norm score scale.</p>
-            <p>Further information on the procedure is available via <a href=\"https://www.psychometrica.de/cNorm_en.html\">Psychometrica</a>.</p>            </div>
+            <p>Further information on the procedure is available via <a href=\"https://www.psychometrica.de/cNorm_en.html\">Psychometrica</a>.</p>
+            </div>
             </body>
             </html>")
             
@@ -32,9 +36,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             self$results$model$setVisible(visible = TRUE)
         }
 
-            regression <- FALSE
-            if(self$options$k == 'Regression')
-                regression <- TRUE
+            regression <- self$options$k
 
             terms <- 4
             if(self$options$terms == '1')
@@ -87,6 +89,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                     }
                 }
             }else{
+                self$results$model$setVisible(visible = FALSE)
                 tab <- tab1
             }
             table <- self$results$norms
@@ -104,9 +107,8 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             
             self$results$plot$setVisible(visible = TRUE)
             data <- image$state
-            regression <- FALSE
-            if(self$options$k == 'Regression')
-                regression <- TRUE
+            regression <- self$options$k
+
             
             plotting <- TRUE
             if(self$options$plotting == 'Percentile')

@@ -11,16 +11,18 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             </head>
             <body>
             <div class='instructions'>
-            <p>cNORM estimates the functional relationship between raw score (raw), norm score (L) and the grouping variable (A, e. g. age, schooling duration ...) and 
-            thus provides continuous norm scores. This improves the reliability of norm scores and reduces the necessary sizes of the norming samples, 
-            because the method makes use of the complete dataset. The resulting model closes gaps within and between the norm tables and smoothes sampling
-            errors.</p>
+            <p>The module estimates continuous norm scores by modeling the functional relationship between raw scores (raw), 
+            norm scores (L) and the grouping variable (A; e. g. age, schooling duration ...) using the cNORM package 
+            (W. Lenhard, Lenhard & Gary, 2018). The modeling procedure minimizes the error variance contained in the norm scores.   
+            It requires smaller samples sizes compared to conventional norming, closes gaps within and between the norm tables and 
+            smoothes sampling errors.</p>
             <p>Select a model with a low number of terms while preserving a high R<sup>2</sup> of the model. Avoid intersecting 
-            percentile curves in the location range of your interest. Please proceed as following:</p>
+            percentile curves. Please proceed as follows:</p>
             <ol>
               <li>Select your <b>raw score</b> variable</li>
-              <li>Place the <b>grouping variable</b> (e. g. grade) in the 'Grouping Variable' slot. Each group in the dataset should contain at minimum 50 cases, preferably 100.</li>
+              <li>Place the <b>grouping variable</b> (e. g. grade) in the 'Grouping Variable' slot. Each group in the dataset should contain at least 50 cases, preferably 100.</li>
               <li>Adjust model parameters for retrieving a favorable model via visual inspection of the percentile plot.</li>
+              <li>Specify the level of the grouping variable to generate norm table.</li>
             </ol>
             <p>Further information on the procedure is available via <a href=\"https://www.psychometrica.de/cNorm_en.html\">Psychometrica</a>.</p>
             </div>
@@ -69,13 +71,19 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             else{
                 terms <- as.integer(self$options$terms)
                 if(terms <= 0 || terms >= (k + 1)^2){
-                  print("The number of terms is out of range. It has to be 8 or lower in quadratic, 15 or lower in cubic and 24 or lower in quartic polynomials.")
+                  self$results$instructions$setVisible(visible = TRUE)
+                  self$results$model$setVisible(visible = FALSE)
+                  self$results$norms$setVisible(visible = FALSE)
+                  self$results$instructions$setContent("<html><head></head><body><div class='instructions'><p>The number of terms is out of range. It has to be 8 or lower in quadratic, 15 or lower in cubic and 24 or lower in quartic polynomials.</p></div></body></html>")
                   return()
                 }
                 model <- cNORM::bestModel(data, plot=FALSE, terms = terms, k = k)
             }
 
             if(is.null(model)){
+              self$results$instructions$setVisible(visible = TRUE)
+              self$results$model$setVisible(visible = FALSE)
+              self$results$norms$setVisible(visible = FALSE)
               self$results$instructions$setContent(paste0("<html><head></head><body><div class='instructions'>", 
                                                           "<b>Ups! Something went wrong!</b>",
                                                           "</div></body></html>"))
@@ -84,7 +92,8 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             
             if(self$options$model){
             self$results$model$setContent(paste0("<html><head></head><body><div class='instructions'>", 
-                                                        "<b>Model summary</b><br>", model$report[1], "<br>",
+                                                        "<b>Model summary</b><br>", 
+                                                        model$report[1], "<br>",
                                                         model$report[2], "<br>",
                                                         model$report[3], "<br>",
                                                         model$report[4], "<br>",
