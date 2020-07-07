@@ -1,4 +1,4 @@
-# cNORM_JAMOVI
+# cNORM Frontend for JAMOVI
 JAMOVI Frontend for Continuous Norming with cNORM. Please use the module library of JAMOVI to install the module.
 
 ## Functions:
