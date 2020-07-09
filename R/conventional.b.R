@@ -107,7 +107,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             if(regression){
                 data <- cNORM::computePowers(data, k=5)
                 model <- cNORM::bestModel(data, terms = terms)
-                tab <- cNORM::rawTable(0, model, minNorm = minNorm, maxNorm = maxNorm)
+                tab <- cNORM::rawTable(0, model, minNorm = minNorm, maxNorm = maxNorm, step = as.numeric(self$options$stepping))
                 if(is.null(model)){
                     self$results$instructions$setVisible(visible = TRUE)
                     self$results$instructions$setContent(paste0("<html><head></head><body><div class='instructions'>", 
@@ -200,7 +200,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             if(regression){
                 data <- cNORM::computePowers(data, k=5)
                 model <- cNORM::bestModel(data, terms = terms)
-                tab <- cNORM::rawTable(0, model, step = 1, minNorm = minNorm, maxNorm = maxNorm)
+                tab <- cNORM::rawTable(0, model, minNorm = minNorm, maxNorm = maxNorm, step = as.numeric(self$options$stepping))
                 if(plotting){
                     plot(norm ~ raw, data = tab1, ylab = "Norm Score", xlab = "Raw Score")
                     lines(norm ~ raw, data = tab, col = "blue")

@@ -158,20 +158,19 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
               self$results$model$setContent("<html/>")
             }
             normAge <- as.numeric(self$options$normAge)
+
             if(!is.null(self$options$normAge)){
+              if(nchar(self$options$normAge)>0){
                 self$results$norms$setVisible(visible = TRUE)
-            tab <- cNORM::rawTable(normAge, model, minNorm = minNorm, maxNorm = maxNorm)
+                tab <- cNORM::rawTable(normAge, model, minNorm = minNorm, maxNorm = maxNorm, step = as.numeric(self$options$stepping))                  
+                table <- self$results$norms
+                table$setRow(rowNo=1, values=list(Raw=tab$raw[[1]], Norm=tab$norm[[1]], Percentile=tab$percentile[[1]]))
+                
+                for(i in 2:nrow(tab))
+                  table$addRow(rowKey=i, values=list(Raw=tab$raw[[i]], Norm=tab$norm[[i]], Percentile=tab$percentile[[i]]))
             
-            table <- self$results$norms
-            table$setRow(rowNo=1, values=list(Raw=tab$raw[[1]], Norm=tab$norm[[1]], Percentile=tab$percentile[[1]]))
-            if(nrow(tab)>1){
-              self$results$norms$setNote("empty", NULL, init=FALSE)            }
-            
-            for(i in 2:nrow(tab))
-                table$addRow(rowKey=i, values=list(Raw=tab$raw[[i]], Norm=tab$norm[[i]], Percentile=tab$percentile[[i]]))
-            
-            self$results$norms$setNote("empty", paste0("Norm score table for value '", normAge, "' of the grouping variable."), init=TRUE)
-            
+                 self$results$norms$setNote("empty", paste0("Norm score table for value '", normAge, "' of the grouping variable."), init=FALSE)
+              }
             }
             
             image <- self$results$plot

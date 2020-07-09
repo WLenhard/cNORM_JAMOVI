@@ -88,5 +88,6 @@ children:
           - type: TextBox
             name: range
             format: number
-            enable: (normAge)
-
+          - type: TextBox
+            name: stepping
+            format: number

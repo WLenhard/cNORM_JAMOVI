@@ -69,4 +69,9 @@ options:
     - name: model
       title: Model summary
       type: Bool
-      default: true             
+      default: true
+      
+    - name: stepping
+      title: Stepping
+      type: Number
+      default: 1         

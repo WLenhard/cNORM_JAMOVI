@@ -31,7 +31,7 @@ items:
       visible: True
       columns:
         - name: Raw
-          type: integer
+          type: number
         - name: Norm
           type: number
         - name: Percentile

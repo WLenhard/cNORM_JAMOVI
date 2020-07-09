@@ -76,18 +76,23 @@ options:
       type: Bool
       default: false
 
+    - name: model
+      title: Model summary
+      type: Bool
+      default: true        
+      
     - name: normAge
-      title: Value for norm table
+      title: Value for norm score table
       type: String
       description:
           R: a number specifying the age for the norm score table
 
     - name: range
-      title: +/- SD norm table range
+      title: Norm table range (+/- SD)
       type: Number
       default: 3
 
-    - name: model
-      title: Model summary
-      type: Bool
-      default: true       
+    - name: stepping
+      title: Stepping
+      type: Number
+      default: 1      

@@ -13,7 +13,8 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             descend = FALSE,
             plotting = "Norm Score",
             range = 3,
-            model = TRUE, ...) {
+            model = TRUE,
+            stepping = 1, ...) {
 
             super$initialize(
                 package='Norming',
@@ -67,6 +68,10 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
                 "model",
                 model,
                 default=TRUE)
+            private$..stepping <- jmvcore::OptionNumber$new(
+                "stepping",
+                stepping,
+                default=1)
 
             self$.addOption(private$..raw)
             self$.addOption(private$..scale)
@@ -76,6 +81,7 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             self$.addOption(private$..plotting)
             self$.addOption(private$..range)
             self$.addOption(private$..model)
+            self$.addOption(private$..stepping)
         }),
     active = list(
         raw = function() private$..raw$value,
@@ -85,7 +91,8 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         descend = function() private$..descend$value,
         plotting = function() private$..plotting$value,
         range = function() private$..range$value,
-        model = function() private$..model$value),
+        model = function() private$..model$value,
+        stepping = function() private$..stepping$value),
     private = list(
         ..raw = NA,
         ..scale = NA,
@@ -94,7 +101,8 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         ..descend = NA,
         ..plotting = NA,
         ..range = NA,
-        ..model = NA)
+        ..model = NA,
+        ..stepping = NA)
 )
 
 conventionalResults <- if (requireNamespace('jmvcore')) R6::R6Class(
@@ -135,7 +143,7 @@ conventionalResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                 columns=list(
                     list(
                         `name`="Raw", 
-                        `type`="integer"),
+                        `type`="number"),
                     list(
                         `name`="Norm", 
                         `type`="number"),
@@ -182,6 +190,7 @@ conventionalBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' @param plotting .
 #' @param range .
 #' @param model .
+#' @param stepping .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$instructions} \tab \tab \tab \tab \tab a html \cr
@@ -206,7 +215,8 @@ conventional <- function(
     descend = FALSE,
     plotting = "Norm Score",
     range = 3,
-    model = TRUE) {
+    model = TRUE,
+    stepping = 1) {
 
     if ( ! requireNamespace('jmvcore'))
         stop('conventional requires jmvcore to be installed (restart may be required)')
@@ -226,7 +236,8 @@ conventional <- function(
         descend = descend,
         plotting = plotting,
         range = range,
-        model = model)
+        model = model,
+        stepping = stepping)
 
     analysis <- conventionalClass$new(
         options = options,

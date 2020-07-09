@@ -13,9 +13,10 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             selectionType = NULL,
             terms = 4,
             descend = FALSE,
+            model = TRUE,
             normAge = NULL,
             range = 3,
-            model = TRUE, ...) {
+            stepping = 1, ...) {
 
             super$initialize(
                 package='Norming',
@@ -69,6 +70,10 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
                 "descend",
                 descend,
                 default=FALSE)
+            private$..model <- jmvcore::OptionBool$new(
+                "model",
+                model,
+                default=TRUE)
             private$..normAge <- jmvcore::OptionString$new(
                 "normAge",
                 normAge)
@@ -76,10 +81,10 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
                 "range",
                 range,
                 default=3)
-            private$..model <- jmvcore::OptionBool$new(
-                "model",
-                model,
-                default=TRUE)
+            private$..stepping <- jmvcore::OptionNumber$new(
+                "stepping",
+                stepping,
+                default=1)
 
             self$.addOption(private$..raw)
             self$.addOption(private$..group)
@@ -88,9 +93,10 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             self$.addOption(private$..selectionType)
             self$.addOption(private$..terms)
             self$.addOption(private$..descend)
+            self$.addOption(private$..model)
             self$.addOption(private$..normAge)
             self$.addOption(private$..range)
-            self$.addOption(private$..model)
+            self$.addOption(private$..stepping)
         }),
     active = list(
         raw = function() private$..raw$value,
@@ -100,9 +106,10 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         selectionType = function() private$..selectionType$value,
         terms = function() private$..terms$value,
         descend = function() private$..descend$value,
+        model = function() private$..model$value,
         normAge = function() private$..normAge$value,
         range = function() private$..range$value,
-        model = function() private$..model$value),
+        stepping = function() private$..stepping$value),
     private = list(
         ..raw = NA,
         ..group = NA,
@@ -111,9 +118,10 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         ..selectionType = NA,
         ..terms = NA,
         ..descend = NA,
+        ..model = NA,
         ..normAge = NA,
         ..range = NA,
-        ..model = NA)
+        ..stepping = NA)
 )
 
 continuousResults <- if (requireNamespace('jmvcore')) R6::R6Class(
@@ -154,7 +162,7 @@ continuousResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                 columns=list(
                     list(
                         `name`="Raw", 
-                        `type`="integer"),
+                        `type`="number"),
                     list(
                         `name`="Norm", 
                         `type`="number"),
@@ -201,9 +209,10 @@ continuousBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' @param selectionType .
 #' @param terms a number of terms in the regression function
 #' @param descend .
+#' @param model .
 #' @param normAge a number specifying the age for the norm score table
 #' @param range .
-#' @param model .
+#' @param stepping .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$instructions} \tab \tab \tab \tab \tab a html \cr
@@ -228,9 +237,10 @@ continuous <- function(
     selectionType,
     terms = 4,
     descend = FALSE,
+    model = TRUE,
     normAge,
     range = 3,
-    model = TRUE) {
+    stepping = 1) {
 
     if ( ! requireNamespace('jmvcore'))
         stop('continuous requires jmvcore to be installed (restart may be required)')
@@ -252,9 +262,10 @@ continuous <- function(
         selectionType = selectionType,
         terms = terms,
         descend = descend,
+        model = model,
         normAge = normAge,
         range = range,
-        model = model)
+        stepping = stepping)
 
     analysis <- continuousClass$new(
         options = options,
