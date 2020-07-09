@@ -133,8 +133,13 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             table <- self$results$norms
             table$setRow(rowNo=1, values=list(Raw=tab$raw[[1]], Norm=tab$norm[[1]], Percentile=tab$percentile[[1]]))
             
-            for(i in 2:nrow(tab))
+            for(i in 2:nrow(tab)){
+                if(tab$norm[[i]]<tab$norm[[i-1]]){
+                    tab$norm[[i]] <- tab$norm[[i-1]]
+                    tab$percentile[[i]] <- tab$percentile[[i-1]]
+                }
                 table$addRow(rowKey=i, values=list(Raw=tab$raw[[i]], Norm=tab$norm[[i]], Percentile=tab$percentile[[i]]))
+            }
                 
             image <- self$results$plot
             image$setState(data)
@@ -201,7 +206,15 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 data <- cNORM::computePowers(data, k=5)
                 model <- cNORM::bestModel(data, terms = terms)
                 tab <- cNORM::rawTable(0, model, minNorm = minNorm, maxNorm = maxNorm, step = as.numeric(self$options$stepping))
+
                 if(plotting){
+                    for(i in 2:nrow(tab)){
+                        if(tab$norm[[i]]<tab$norm[[i-1]]){
+                            tab$norm[[i]] <- tab$norm[[i-1]]
+                            tab$percentile[[i]] <- tab$percentile[[i-1]]
+                        }
+                    }
+                    
                     plot(norm ~ raw, data = tab1, ylab = "Norm Score", xlab = "Raw Score")
                     lines(norm ~ raw, data = tab, col = "blue")
                     legend(leg, legend = c("Manifest", "Regression"), col = c("black", "blue"), pch = 19)

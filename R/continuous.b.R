@@ -166,10 +166,16 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 table <- self$results$norms
                 table$setRow(rowNo=1, values=list(Raw=tab$raw[[1]], Norm=tab$norm[[1]], Percentile=tab$percentile[[1]]))
                 
-                for(i in 2:nrow(tab))
+                for(i in 2:nrow(tab)){
+                  if(tab$norm[[i]]<tab$norm[[i-1]]){
+                    tab$norm[[i]] <- tab$norm[[i-1]]
+                    tab$percentile[[i]] <- tab$percentile[[i-1]]
+                  }
+                  
                   table$addRow(rowKey=i, values=list(Raw=tab$raw[[i]], Norm=tab$norm[[i]], Percentile=tab$percentile[[i]]))
-            
-                 self$results$norms$setNote("empty", paste0("Norm score table for value '", normAge, "' of the grouping variable."), init=FALSE)
+                }
+                
+                self$results$norms$setNote("empty", paste0("Norm score table for value '", normAge, "' of the grouping variable."), init=FALSE)
               }
             }
             
