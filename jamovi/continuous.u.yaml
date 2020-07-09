@@ -49,17 +49,29 @@ children:
               column: 0
               row: 1
             children:
-              - type: LayoutBox
-                margin: large
+              - type: ComboBox
+                name: k
+          - type: Label
+            label: Number of Terms
+            fitToGrid: true
+            cell:
+              column: 0
+              row: 2
+            children:
+              - name: selectionType_automatic
+                type: RadioButton
+                optionName: selectionType
+                optionPart: automaticSelection
+              - type: RadioButton
+                name: selectionType_manual
+                optionName: selectionType
+                optionPart: manualSelection
+                label: Manual
                 children:
-                  - type: ComboBox
-                    name: k
-                  - type: CheckBox
-                    name: manually
                   - type: TextBox
                     name: terms
                     format: number
-                    enable: (manually)
+                    enable: '(selectionType:manualSelection)'
   - type: CollapseBox
     label: Output
     margin: normal
@@ -73,3 +85,8 @@ children:
           - type: TextBox
             name: normAge
             format: string
+          - type: TextBox
+            name: range
+            format: number
+            enable: (normAge)
+

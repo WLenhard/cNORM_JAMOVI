@@ -49,7 +49,7 @@ options:
       default: '4'
 
     - name: descend
-      title: Ranking order descending
+      title: Invert ranking order
       type: Bool
       default: false
       
@@ -60,6 +60,11 @@ options:
         - Norm Score
         - Percentile
       default: Norm Score
+
+    - name: range
+      title: +/- SD norm table range
+      type: Number
+      default: 3      
       
     - name: model
       title: Model summary

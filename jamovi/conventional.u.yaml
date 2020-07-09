@@ -23,14 +23,14 @@ children:
       - type: LayoutBox
         stretchFactor: 1
         margin: small
-        children:    
+        children:
           - type: Label
             label: Data Preparation
             fitToGrid: true
             cell:
               column: 0
               row: 0
-            children:    
+            children:
               - type: LayoutBox
                 margin: large
                 children:
@@ -52,7 +52,7 @@ children:
                     name: k
                   - type: ComboBox
                     name: terms
-                    enable: (k)                    
+                    enable: (k)
   - type: CollapseBox
     label: Output
     margin: normal
@@ -60,8 +60,11 @@ children:
     children:
       - type: LayoutBox
         margin: small
-        children:                    
+        children:
           - type: ComboBox
             name: plotting
           - type: CheckBox
-            name: model            
+            name: model
+          - type: TextBox
+            name: range
+            format: number

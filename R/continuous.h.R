@@ -10,10 +10,11 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             group = NULL,
             scale = "T",
             k = "Quartic",
-            manually = FALSE,
+            selectionType = NULL,
             terms = 4,
             descend = FALSE,
             normAge = NULL,
+            range = 3,
             model = TRUE, ...) {
 
             super$initialize(
@@ -54,10 +55,12 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
                     "Cubic",
                     "Quartic"),
                 default="Quartic")
-            private$..manually <- jmvcore::OptionBool$new(
-                "manually",
-                manually,
-                default=FALSE)
+            private$..selectionType <- jmvcore::OptionList$new(
+                "selectionType",
+                selectionType,
+                options=list(
+                    "automaticSelection",
+                    "manualSelection"))
             private$..terms <- jmvcore::OptionNumber$new(
                 "terms",
                 terms,
@@ -69,6 +72,10 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             private$..normAge <- jmvcore::OptionString$new(
                 "normAge",
                 normAge)
+            private$..range <- jmvcore::OptionNumber$new(
+                "range",
+                range,
+                default=3)
             private$..model <- jmvcore::OptionBool$new(
                 "model",
                 model,
@@ -78,10 +85,11 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             self$.addOption(private$..group)
             self$.addOption(private$..scale)
             self$.addOption(private$..k)
-            self$.addOption(private$..manually)
+            self$.addOption(private$..selectionType)
             self$.addOption(private$..terms)
             self$.addOption(private$..descend)
             self$.addOption(private$..normAge)
+            self$.addOption(private$..range)
             self$.addOption(private$..model)
         }),
     active = list(
@@ -89,20 +97,22 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         group = function() private$..group$value,
         scale = function() private$..scale$value,
         k = function() private$..k$value,
-        manually = function() private$..manually$value,
+        selectionType = function() private$..selectionType$value,
         terms = function() private$..terms$value,
         descend = function() private$..descend$value,
         normAge = function() private$..normAge$value,
+        range = function() private$..range$value,
         model = function() private$..model$value),
     private = list(
         ..raw = NA,
         ..group = NA,
         ..scale = NA,
         ..k = NA,
-        ..manually = NA,
+        ..selectionType = NA,
         ..terms = NA,
         ..descend = NA,
         ..normAge = NA,
+        ..range = NA,
         ..model = NA)
 )
 
@@ -140,7 +150,7 @@ continuousResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                 refs="epm",
                 title="Norm score table",
                 rows=1,
-                visible=FALSE,
+                visible=TRUE,
                 columns=list(
                     list(
                         `name`="Raw", 
@@ -188,10 +198,11 @@ continuousBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' @param scale \code{'T'}, \code{'IQ'}, 'z', 'Wechsler subtest scale (m = 10,
 #'   sd = 3)', or 'PISA (m = 500, sd = 100)'`
 #' @param k .
-#' @param manually .
+#' @param selectionType .
 #' @param terms a number of terms in the regression function
 #' @param descend .
 #' @param normAge a number specifying the age for the norm score table
+#' @param range .
 #' @param model .
 #' @return A results object containing:
 #' \tabular{llllll}{
@@ -214,10 +225,11 @@ continuous <- function(
     group,
     scale = "T",
     k = "Quartic",
-    manually = FALSE,
+    selectionType,
     terms = 4,
     descend = FALSE,
     normAge,
+    range = 3,
     model = TRUE) {
 
     if ( ! requireNamespace('jmvcore'))
@@ -237,10 +249,11 @@ continuous <- function(
         group = group,
         scale = scale,
         k = k,
-        manually = manually,
+        selectionType = selectionType,
         terms = terms,
         descend = descend,
         normAge = normAge,
+        range = range,
         model = model)
 
     analysis <- continuousClass$new(

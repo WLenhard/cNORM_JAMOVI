@@ -54,11 +54,16 @@ options:
         - Quartic
       default: Quartic
 
-    - name: manually
-      title: Set terms number manually
-      type: Bool
-      default: false
-      
+
+    - name: selectionType
+      title: Selection type
+      type: List
+      options:
+      - name: automaticSelection
+        title: Automatic
+      - name: manualSelection
+        title: Manual
+
     - name: terms
       title: Terms
       type: Number
@@ -67,15 +72,20 @@ options:
       default: 4
 
     - name: descend
-      title: Ranking order descending
+      title: Invert ranking order
       type: Bool
       default: false
 
     - name: normAge
-      title: Value of grouping variable for norm table generation
+      title: Value for norm table
       type: String
       description:
           R: a number specifying the age for the norm score table
+
+    - name: range
+      title: +/- SD norm table range
+      type: Number
+      default: 3
 
     - name: model
       title: Model summary

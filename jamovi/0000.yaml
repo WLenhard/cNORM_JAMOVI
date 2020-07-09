@@ -33,51 +33,29 @@ datasets:
     description: >-
       Psychometric test (ELFE 1-6) on sentence comprehension per grade in
       elementary school, data file from package cNORM
-    tags:
-      - Reading comprehension
-      - Continuous norming
   - name: PPVT-IV
     path: ppvt.csv
     description: '''Vocabulary development from 3 to 17, data file from package cNORM'''
-    tags:
-      - Vocabulary development
-      - Continuous norming
   - name: BMI
-    path: bmi.csv
+    path: CDC.csv
     description: >-
       Body height, weight and BMI in childhood and adolescence from the US, data
       file from package cNORM
-    tags:
-      - BMI
-      - weight
-      - height
-      - growth curves
-      - Continuous norming
   - name: Life Expectancy at Birth
     path: life.csv
     description: >-
       Life expectancy at birth on nation level from 1960 to 2017, data file
       based on World Bank from package cNORM
-    tags:
-      - Life Expectancy
-      - Continuous norming
   - name: Mortality of Infants at Birth
     path: mortality.csv
     description: >-
       Mortality rate of life birth per country from 1960 to 2017, data file
       based on World Bank from package cNORM
-    tags:
-      - Mortality
-      - Continuous norming
   - name: Simulated IRT-based test per age
     path: epm.csv
     description: >-
       Simulated 1PL IRT test with 50 items and 200 cases per age group, data
       file from Lenhard & Lenhard (2020) and package cNORM
-    tags:
-      - Simulated data
-      - 1PL IRT
-      - Continuous norming
 usesNative: true
 minApp: 1.0.8
 

@@ -1,6 +1,6 @@
 ---
 name:  conventional
-title: Norm Score Modeling of Single Groups
+title: Single Group
 jrs:   '1.1'
 
 items:
@@ -22,6 +22,7 @@ items:
       title: Norm score table
       refs: epm
       type: Table
+      visible: True
       rows:  1
       columns:
         - name: Raw
@@ -34,5 +35,5 @@ items:
 
     - name: model
       title: Model summary
-      type: Html
       visible: True
+      type: Html

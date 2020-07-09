@@ -28,7 +28,7 @@ items:
       title: Norm score table
       type: Table
       rows:  1
-      visible: False
+      visible: True
       columns:
         - name: Raw
           type: integer
