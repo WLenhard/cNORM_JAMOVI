@@ -13,7 +13,7 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             selectionType = NULL,
             terms = 4,
             descend = FALSE,
-            model = TRUE,
+            model = FALSE,
             normAge = NULL,
             range = 3,
             minRaw = 0,
@@ -75,7 +75,7 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             private$..model <- jmvcore::OptionBool$new(
                 "model",
                 model,
-                default=TRUE)
+                default=FALSE)
             private$..normAge <- jmvcore::OptionString$new(
                 "normAge",
                 normAge)
@@ -255,7 +255,7 @@ continuous <- function(
     selectionType,
     terms = 4,
     descend = FALSE,
-    model = TRUE,
+    model = FALSE,
     normAge,
     range = 3,
     minRaw = 0,

@@ -169,7 +169,6 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                   maxRaw <- NULL
                 }
                 
-                self$results$norms$setVisible(visible = TRUE)
                 tab <- cNORM::rawTable(normAge, model, minNorm = minNorm, maxNorm = maxNorm, minRaw = minRaw, maxRaw = maxRaw, step = as.numeric(self$options$stepping))                  
                 table <- self$results$norms
                 table$setRow(rowNo=1, values=list(Raw=tab$raw[[1]], Norm=tab$norm[[1]], Percentile=tab$percentile[[1]]))

@@ -82,18 +82,25 @@ children:
         children:
           - type: CheckBox
             name: model
-          - type: TextBox
-            name: normAge
-            format: string
-          - type: TextBox
-            name: range
-            format: number
-          - type: TextBox
-            name: minRaw
-            format: number
-          - type: TextBox
-            name: maxRaw
-            format: number            
-          - type: TextBox
-            name: stepping
-            format: number
+          - type: Label
+            label: Norm Score Table
+            fitToGrid: true
+            cell:
+              column: 0
+              row: 3
+            children:
+              - type: TextBox
+                name: normAge
+                format: string
+              - type: TextBox
+                name: range
+                format: number
+              - type: TextBox
+                name: minRaw
+                format: number
+              - type: TextBox
+                name: maxRaw
+                format: number            
+              - type: TextBox
+                name: stepping
+                format: number

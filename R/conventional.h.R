@@ -13,7 +13,7 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             descend = FALSE,
             plotting = "Norm Score",
             range = 3,
-            model = TRUE,
+            model = FALSE,
             minRaw = 0,
             maxRaw = 0,
             stepping = 1, ...) {
@@ -69,7 +69,7 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             private$..model <- jmvcore::OptionBool$new(
                 "model",
                 model,
-                default=TRUE)
+                default=FALSE)
             private$..minRaw <- jmvcore::OptionNumber$new(
                 "minRaw",
                 minRaw,
@@ -233,7 +233,7 @@ conventional <- function(
     descend = FALSE,
     plotting = "Norm Score",
     range = 3,
-    model = TRUE,
+    model = FALSE,
     minRaw = 0,
     maxRaw = 0,
     stepping = 1) {
