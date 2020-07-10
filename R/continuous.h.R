@@ -16,6 +16,8 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             model = TRUE,
             normAge = NULL,
             range = 3,
+            minRaw = 0,
+            maxRaw = 0,
             stepping = 1, ...) {
 
             super$initialize(
@@ -81,6 +83,14 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
                 "range",
                 range,
                 default=3)
+            private$..minRaw <- jmvcore::OptionNumber$new(
+                "minRaw",
+                minRaw,
+                default=0)
+            private$..maxRaw <- jmvcore::OptionNumber$new(
+                "maxRaw",
+                maxRaw,
+                default=0)
             private$..stepping <- jmvcore::OptionNumber$new(
                 "stepping",
                 stepping,
@@ -96,6 +106,8 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             self$.addOption(private$..model)
             self$.addOption(private$..normAge)
             self$.addOption(private$..range)
+            self$.addOption(private$..minRaw)
+            self$.addOption(private$..maxRaw)
             self$.addOption(private$..stepping)
         }),
     active = list(
@@ -109,6 +121,8 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         model = function() private$..model$value,
         normAge = function() private$..normAge$value,
         range = function() private$..range$value,
+        minRaw = function() private$..minRaw$value,
+        maxRaw = function() private$..maxRaw$value,
         stepping = function() private$..stepping$value),
     private = list(
         ..raw = NA,
@@ -121,6 +135,8 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         ..model = NA,
         ..normAge = NA,
         ..range = NA,
+        ..minRaw = NA,
+        ..maxRaw = NA,
         ..stepping = NA)
 )
 
@@ -212,6 +228,8 @@ continuousBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' @param model .
 #' @param normAge a number specifying the age for the norm score table
 #' @param range .
+#' @param minRaw .
+#' @param maxRaw .
 #' @param stepping .
 #' @return A results object containing:
 #' \tabular{llllll}{
@@ -240,6 +258,8 @@ continuous <- function(
     model = TRUE,
     normAge,
     range = 3,
+    minRaw = 0,
+    maxRaw = 0,
     stepping = 1) {
 
     if ( ! requireNamespace('jmvcore'))
@@ -265,6 +285,8 @@ continuous <- function(
         model = model,
         normAge = normAge,
         range = range,
+        minRaw = minRaw,
+        maxRaw = maxRaw,
         stepping = stepping)
 
     analysis <- continuousClass$new(

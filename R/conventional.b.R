@@ -105,9 +105,23 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             tab1 <- tab1[order(tab1$raw),]
             
             if(regression){
+                minRaw <- self$options$minRaw
+                maxRaw <- self$options$maxRaw
+                
+                if(maxRaw <= minRaw){
+                    minRaw <- NULL
+                    maxRaw <- NULL
+                }
+                
+                if(!is.null(minRaw))
+                    foot <- paste0(" The range of raw scores was manually set from ", minRaw, " to ", maxRaw, ".")
+                else
+                    foot <- paste0(" The range of raw scores was automatically retrieved from the dataset.")
+                
+                
                 data <- cNORM::computePowers(data, k=5)
                 model <- cNORM::bestModel(data, terms = terms)
-                tab <- cNORM::rawTable(0, model, minNorm = minNorm, maxNorm = maxNorm, step = as.numeric(self$options$stepping))
+                tab <- cNORM::rawTable(0, model, minNorm = minNorm, maxNorm = maxNorm, minRaw = minRaw, maxRaw = maxRaw, step = as.numeric(self$options$stepping))
                 if(is.null(model)){
                     self$results$instructions$setVisible(visible = TRUE)
                     self$results$instructions$setContent(paste0("<html><head></head><body><div class='instructions'>", 
@@ -129,6 +143,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 }
             }else{
                 tab <- tab1
+                foot <- "The norm score table is based on the manifest frequency distriution."
             }
             table <- self$results$norms
             table$setRow(rowNo=1, values=list(Raw=tab$raw[[1]], Norm=tab$norm[[1]], Percentile=tab$percentile[[1]]))
@@ -140,7 +155,8 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 }
                 table$addRow(rowKey=i, values=list(Raw=tab$raw[[i]], Norm=tab$norm[[i]], Percentile=tab$percentile[[i]]))
             }
-                
+            
+            self$results$norms$setNote("empty", foot, init=FALSE)
             image <- self$results$plot
             image$setState(data)
         },

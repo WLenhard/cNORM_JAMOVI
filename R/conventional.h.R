@@ -14,6 +14,8 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             plotting = "Norm Score",
             range = 3,
             model = TRUE,
+            minRaw = 0,
+            maxRaw = 0,
             stepping = 1, ...) {
 
             super$initialize(
@@ -68,6 +70,14 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
                 "model",
                 model,
                 default=TRUE)
+            private$..minRaw <- jmvcore::OptionNumber$new(
+                "minRaw",
+                minRaw,
+                default=0)
+            private$..maxRaw <- jmvcore::OptionNumber$new(
+                "maxRaw",
+                maxRaw,
+                default=0)
             private$..stepping <- jmvcore::OptionNumber$new(
                 "stepping",
                 stepping,
@@ -81,6 +91,8 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             self$.addOption(private$..plotting)
             self$.addOption(private$..range)
             self$.addOption(private$..model)
+            self$.addOption(private$..minRaw)
+            self$.addOption(private$..maxRaw)
             self$.addOption(private$..stepping)
         }),
     active = list(
@@ -92,6 +104,8 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         plotting = function() private$..plotting$value,
         range = function() private$..range$value,
         model = function() private$..model$value,
+        minRaw = function() private$..minRaw$value,
+        maxRaw = function() private$..maxRaw$value,
         stepping = function() private$..stepping$value),
     private = list(
         ..raw = NA,
@@ -102,6 +116,8 @@ conventionalOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         ..plotting = NA,
         ..range = NA,
         ..model = NA,
+        ..minRaw = NA,
+        ..maxRaw = NA,
         ..stepping = NA)
 )
 
@@ -190,6 +206,8 @@ conventionalBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' @param plotting .
 #' @param range .
 #' @param model .
+#' @param minRaw .
+#' @param maxRaw .
 #' @param stepping .
 #' @return A results object containing:
 #' \tabular{llllll}{
@@ -216,6 +234,8 @@ conventional <- function(
     plotting = "Norm Score",
     range = 3,
     model = TRUE,
+    minRaw = 0,
+    maxRaw = 0,
     stepping = 1) {
 
     if ( ! requireNamespace('jmvcore'))
@@ -237,6 +257,8 @@ conventional <- function(
         plotting = plotting,
         range = range,
         model = model,
+        minRaw = minRaw,
+        maxRaw = maxRaw,
         stepping = stepping)
 
     analysis <- conventionalClass$new(

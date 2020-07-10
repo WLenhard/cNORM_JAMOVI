@@ -161,8 +161,16 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
 
             if(!is.null(self$options$normAge)){
               if(nchar(self$options$normAge)>0){
+                minRaw <- self$options$minRaw
+                maxRaw <- self$options$maxRaw
+                
+                if(maxRaw <= minRaw){
+                  minRaw <- NULL
+                  maxRaw <- NULL
+                }
+                
                 self$results$norms$setVisible(visible = TRUE)
-                tab <- cNORM::rawTable(normAge, model, minNorm = minNorm, maxNorm = maxNorm, step = as.numeric(self$options$stepping))                  
+                tab <- cNORM::rawTable(normAge, model, minNorm = minNorm, maxNorm = maxNorm, minRaw = minRaw, maxRaw = maxRaw, step = as.numeric(self$options$stepping))                  
                 table <- self$results$norms
                 table$setRow(rowNo=1, values=list(Raw=tab$raw[[1]], Norm=tab$norm[[1]], Percentile=tab$percentile[[1]]))
                 
@@ -175,7 +183,13 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                   table$addRow(rowKey=i, values=list(Raw=tab$raw[[i]], Norm=tab$norm[[i]], Percentile=tab$percentile[[i]]))
                 }
                 
-                self$results$norms$setNote("empty", paste0("Norm score table for value '", normAge, "' of the grouping variable."), init=FALSE)
+                foot <- paste0("Norm score table for value '", normAge, "' of the grouping variable.")
+                if(!is.null(minRaw))
+                  foot <- paste0(foot, " The range of raw scores was manually set from ", minRaw, " to ", maxRaw, ".")
+                else
+                  foot <- paste0(foot, " The range of raw scores was automatically retrieved from the dataset.")
+                
+                self$results$norms$setNote("empty", foot, init=FALSE)
               }
             }
             

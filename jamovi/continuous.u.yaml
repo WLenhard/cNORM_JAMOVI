@@ -89,5 +89,11 @@ children:
             name: range
             format: number
           - type: TextBox
+            name: minRaw
+            format: number
+          - type: TextBox
+            name: maxRaw
+            format: number            
+          - type: TextBox
             name: stepping
             format: number

@@ -71,6 +71,16 @@ options:
       type: Bool
       default: true
       
+    - name: minRaw
+      title: Minimum raw score
+      type: Number
+      default: 0
+      
+    - name: maxRaw
+      title: Maximum raw score
+      type: Number
+      default: 0
+      
     - name: stepping
       title: Stepping
       type: Number
