@@ -61,19 +61,36 @@ children:
       - type: LayoutBox
         margin: small
         children:
-          - type: ComboBox
-            name: plotting
-          - type: CheckBox
-            name: model
-          - type: TextBox
-            name: range
-            format: number
-          - type: TextBox
-            name: minRaw
-            format: number
-          - type: TextBox
-            name: maxRaw
-            format: number
-          - type: TextBox
-            name: stepping
-            format: number
+          - type: Label
+            label: Results
+            fitToGrid: true
+            cell:
+              column: 0
+              row: 3
+            children:
+              - type: ComboBox
+                name: plotting
+              - type: CheckBox
+                name: model
+          - type: Label
+            label: Norm Score Table
+            fitToGrid: true
+            cell:
+              column: 0
+              row: 4
+            children:
+              - type: LayoutBox
+                margin: large
+                children:            
+                  - type: TextBox
+                    name: range
+                    format: number
+                  - type: TextBox
+                    name: minRaw
+                    format: number
+                  - type: TextBox
+                    name: maxRaw
+                    format: number
+                  - type: TextBox
+                    name: stepping
+                    format: number
