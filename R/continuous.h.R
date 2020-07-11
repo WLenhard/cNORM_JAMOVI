@@ -13,7 +13,7 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             selectionType = NULL,
             terms = 4,
             descend = FALSE,
-            model = FALSE,
+            model = TRUE,
             normAge = NULL,
             range = 3,
             minRaw = 0,
@@ -75,7 +75,7 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             private$..model <- jmvcore::OptionBool$new(
                 "model",
                 model,
-                default=FALSE)
+                default=TRUE)
             private$..normAge <- jmvcore::OptionString$new(
                 "normAge",
                 normAge)
@@ -146,7 +146,7 @@ continuousResults <- if (requireNamespace('jmvcore')) R6::R6Class(
         instructions = function() private$.items[["instructions"]],
         plot = function() private$.items[["plot"]],
         norms = function() private$.items[["norms"]],
-        model = function() private$.items[["model"]]),
+        modelTab = function() private$.items[["modelTab"]]),
     private = list(),
     public=list(
         initialize=function(options) {
@@ -186,12 +186,33 @@ continuousResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                         `name`="Percentile", 
                         `type`="number", 
                         `format`="zto,pvalue"))))
-            self$add(jmvcore::Html$new(
+            self$add(jmvcore::Table$new(
                 options=options,
-                name="model",
-                title="Model summary",
+                name="modelTab",
+                title="Model Summary",
                 visible=TRUE,
-                refs="plos"))}))
+                rows=1,
+                refs="plos",
+                columns=list(
+                    list(
+                        `name`="Variable", 
+                        `title`="", 
+                        `type`="text"),
+                    list(
+                        `name`="Weight", 
+                        `type`="number"),
+                    list(
+                        `name`="Terms", 
+                        `type`="integer"),
+                    list(
+                        `name`="RMSE", 
+                        `type`="number"),
+                    list(
+                        `name`="R2adj", 
+                        `type`="number"),
+                    list(
+                        `name`="BIC", 
+                        `type`="number"))))}))
 
 continuousBase <- if (requireNamespace('jmvcore')) R6::R6Class(
     "continuousBase",
@@ -236,7 +257,7 @@ continuousBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #'   \code{results$instructions} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$plot} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$norms} \tab \tab \tab \tab \tab a table \cr
-#'   \code{results$model} \tab \tab \tab \tab \tab a html \cr
+#'   \code{results$modelTab} \tab \tab \tab \tab \tab a table \cr
 #' }
 #'
 #' Tables can be converted to data frames with \code{asDF} or \code{\link{as.data.frame}}. For example:
@@ -255,7 +276,7 @@ continuous <- function(
     selectionType,
     terms = 4,
     descend = FALSE,
-    model = FALSE,
+    model = TRUE,
     normAge,
     range = 3,
     minRaw = 0,

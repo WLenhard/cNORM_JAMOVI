@@ -54,7 +54,6 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             </div>
             </body>
             </html>")
-              self$results$model$setContent("<html/>")
               return()
             }else{
               self$results$instructions$setContent("<html/>")
@@ -76,7 +75,6 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                                                      <p>Warning! The data are inconsistent. There are not enough cases 
                                                      per group. Please check your grouping variable.</p>
                                                      </div></body></html>")
-                self$results$model$setContent("<html/>")
                 return()
             }
             
@@ -130,7 +128,6 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 if(terms <= 0 || terms >= (k + 1)^2){
                   self$results$instructions$setVisible(visible = TRUE)
                   self$results$instructions$setContent("<html><head></head><body><div class='instructions'><p>The number of terms is out of range. It has to be 8 or lower in quadratic, 15 or lower in cubic and 24 or lower in quartic polynomials.</p></div></body></html>")
-                  self$results$model$setContent("<html/>")
                   return()
                 }
                 model <- cNORM::bestModel(data, plot=FALSE, terms = terms, k = k)
@@ -141,22 +138,17 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
               self$results$instructions$setContent(paste0("<html><head></head><body><div class='instructions'>", 
                                                           "<b>Ups! Something went wrong!</b>",
                                                           "</div></body></html>"))
-              self$results$model$setContent("<html/>")
               return()
             }
             
             if(self$options$model){
-            self$results$model$setContent(paste0("<html><head></head><body><div class='instructions'>", 
-                                                        "<b>Model summary</b><br>", 
-                                                        model$report[1], "<br>",
-                                                        model$report[2], "<br>",
-                                                        model$report[3], "<br>",
-                                                        model$report[4], "<br>",
-                                                        model$report[5], "<br>",
-                                                        "</div></body></html>"))
-            }else{
-              self$results$model$setContent("<html/>")
+              self$results$modelTab$setRow(rowNo=1, values=list(Variable="Model summary", Weight="", Terms=model$ideal.model, RMSE=model$rmse, R2adj=model$subset$adjr2[model$ideal.model], BIC=model$subset$bic[model$ideal.model]))
+              for(i in 1:length(model$coefficients)){
+                self$results$modelTab$addRow(rowKey=(i+1), values=list(Variable=names(model$coefficients)[i], Weight=model$coefficients[[i]], Terms="", RMSE="", R2adj="", BIC=""))
+                
+              }
             }
+            
             normAge <- as.numeric(self$options$normAge)
 
             if(!is.null(self$options$normAge)){
@@ -192,7 +184,8 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
               }
             }
             
-            image <- self$results$plot
+
+             image <- self$results$plot
             image$setState(data)
             
         },

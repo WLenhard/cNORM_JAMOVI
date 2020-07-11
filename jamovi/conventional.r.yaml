@@ -33,7 +33,23 @@ items:
           type: number
           format: zto,pvalue
 
-    - name: model
-      title: Model summary
+    - name:  modelTab
+      title: Model Summary
       visible: True
-      type: Html
+      type: Table
+      rows:  1
+      refs: plos
+      columns:
+        - name: Variable
+          title: ''
+          type: text
+        - name: Weight
+          type: number
+        - name: Terms
+          type: integer
+        - name: RMSE
+          type: number
+        - name: R2adj
+          type: number
+        - name: BIC
+          type: number      

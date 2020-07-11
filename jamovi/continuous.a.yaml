@@ -79,7 +79,7 @@ options:
     - name: model
       title: Model summary
       type: Bool
-      default: false        
+      default: true        
       
     - name: normAge
       title: Value for norm score table

@@ -42,7 +42,6 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 </div>
                 </body>
                 </html>")
-                self$results$model$setContent("<html/>")
                 return()
             } else {
                 self$results$instructions$setContent("<html/>")
@@ -130,15 +129,13 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                     return()
                 }else{
                     if(self$options$model){
-                self$results$model$setContent(paste0("<html><head></head><body><div class='instructions'>", 
-                                                            "<b>Model summary</b><br>", model$report[1], "<br>",
-                                                            model$report[2], "<br>",
-                                                            model$report[3], "<br>",
-                                                            model$report[4], "<br>",
-                                                            model$report[5], "<br>",
-                                                              "</div></body></html>"))
-                    }else{
-                        self$results$model$setContent("<html/>")
+                        if(self$options$model){
+                            self$results$modelTab$setRow(rowNo=1, values=list(Variable="Model summary", Weight="", Terms=model$ideal.model, RMSE=model$rmse, R2adj=model$subset$adjr2[model$ideal.model], BIC=model$subset$bic[model$ideal.model]))
+                            for(i in 1:length(model$coefficients)){
+                                self$results$modelTab$addRow(rowKey=(i+1), values=list(Variable=names(model$coefficients)[i], Weight=model$coefficients[[i]], Terms="", RMSE="", R2adj="", BIC=""))
+                                
+                            }
+                        }
                     }
                 }
             }else{
