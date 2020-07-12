@@ -1,8 +1,8 @@
-Package: Norming
+Package: cNORMj
 Type: Package
 Title: Continuous Norming with cNORM for JAMOVI
-Version: 1.0.2
-Date: 2020-07-11
+Version: 1.0.3
+Date: 2020-07-12
 Author: c(person("Wolfgang", "Lenhard", role = c("cre","aut"), email="wolfgang.lenhard@uni-wuerzburg.de", comment=c("<https://orcid.org/0000-0002-8184-6889>"), person("Alexandra", "Lenhard", role = c("aut"), email="lenhard@psychometrica.de", comment=c("<https://orcid.org/0000-0001-8680-4381>"))
 Maintainer: Wolfgang Lenhard <wolfgang.lenhard@uni-wuerzburg.de>
 Description:   Conventional and regression-based continuous norming methods for psychometric, 

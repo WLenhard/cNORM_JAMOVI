@@ -1,7 +1,7 @@
 ---
 name:  continuous
 title: Continuous Norming
-menuGroup: Norming
+menuGroup: cNORMj
 version: '1.0.0'
 jas: '1.2'
 

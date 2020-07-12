@@ -22,7 +22,7 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
               <li>Adjust model parameters for retrieving a favorable model via visual inspection of the percentile plot.</li>
               <li>Specify the level of the grouping variable to generate norm table.</li>
             </ol>
-            <p>Further information on the procedure is available via <a href=\"https://www.psychometrica.de/cNorm_en.html\">Psychometrica</a>.</p>
+            <p>Further information on the procedure is available via <a href=\"https://www.psychometrica.de/cNorm_jamovi_en.html\" target=\"_blank\">Psychometrica</a>.</p>
             </div>
             </body>
             </html>")
@@ -50,7 +50,7 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
               <li>Adjust model parameters for retrieving a favorable model via visual inspection of the percentile plot.</li>
               <li>Specify the level of the grouping variable to generate norm table.</li>
             </ol>
-            <p>Further information on the procedure is available via <a href=\"https://www.psychometrica.de/cNorm_en.html\">Psychometrica</a>.</p>
+            <p>Further information on the procedure is available via <a href=\"https://www.psychometrica.de/cNorm_jamovi_en.html\" target=\"_blank\">Psychometrica</a>.</p>
             </div>
             </body>
             </html>")

@@ -1,13 +1,13 @@
 ---
 title: Continuous Norming
-name: Norming
-version: 1.0.0
+name: cNORMj
+version: 1.0.3
 jms: '1.0'
 authors:
   - Wolfgang Lenhard
   - Alexandra Lenhard
 maintainer: Wolfgang Lenhard <wolfgang.lenhard@uni-wuerzburg.de>
-date: '2020-07-10'
+date: '2020-07-12'
 type: R
 description: >-
   Conventional and regression-based continuous norming methods for
@@ -19,13 +19,13 @@ description: >-
 analyses:
   - title: Single Group
     name: conventional
-    ns: Norming
-    menuGroup: Norming
+    ns: cNORMj
+    menuGroup: cNORMj
     menuTitle: Single Group
   - title: Continuous Norming
     name: continuous
-    ns: Norming
-    menuGroup: Norming
+    ns: cNORMj
+    menuGroup: cNORMj
     menuTitle: Continuous Norming
 datasets:
   - name: Sentence comprehension

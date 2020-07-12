@@ -21,7 +21,7 @@ continuousOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             stepping = 1, ...) {
 
             super$initialize(
-                package='Norming',
+                package='cNORMj',
                 name='continuous',
                 requiresData=TRUE,
                 ...)
@@ -220,7 +220,7 @@ continuousBase <- if (requireNamespace('jmvcore')) R6::R6Class(
     public = list(
         initialize = function(options, data=NULL, datasetId="", analysisId="", revision=0) {
             super$initialize(
-                package = 'Norming',
+                package = 'cNORMj',
                 name = 'continuous',
                 version = c(1,0,0),
                 options = options,
