@@ -63,8 +63,16 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 terms <- 5
             
             x <- jmvcore::toNumeric(self$data[[self$options$raw]])
-            x <- x[!is.na(x)]
-            data <- data.frame(raw = x)
+            w <- rep(1, length(x))
+            
+            if(!is.null(self$options$weights))
+              w <- jmvcore::toNumeric(self$data[[self$options$weights]])
+            
+            data <- data.frame(raw = x, weights = w)
+            rownames(data) <- rownames(self$finalData)
+              
+            data <- data[complete.cases(data),]
+            
             scale <- self$options$scale
             
             sd <- self$options$range
@@ -97,7 +105,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
 
             descend <- self$options$descend
             
-            data <- cNORM::rankByGroup(data, raw=data$raw, group=FALSE, scale = scale, descend = descend)
+            data <- cNORM::rankByGroup(data, raw=data$raw, group=FALSE, scale = scale, descend = descend, weights = data$weights)
             
             tab1 <- data.frame(raw = data$raw, norm=data$normValue, percentile=data$percentile*100)
             tab1 <- unique(tab1)
@@ -120,7 +128,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 
                 
                 data <- cNORM::computePowers(data, k=5)
-                model <- cNORM::bestModel(data, terms = terms)
+                model <- cNORM::bestModel(data, terms = terms, weights = data$weights)
                 tab <- cNORM::rawTable(0, model, minNorm = minNorm, maxNorm = maxNorm, minRaw = minRaw, maxRaw = maxRaw, step = as.numeric(self$options$stepping))
                 tab$type <- rep(1)
                 
@@ -166,6 +174,17 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             }else{
                 image$setState(tab1)
             }
+        },
+        .populateOutputs=function() {
+            if (self$options$manifestNorms && self$results$manifestNorms$isNotFilled()) {
+              self$results$manifestNorms$setValues(data$normValue)
+            }
+          
+          #  if (self$options$saveManifest && self$results$NormScore$isNotFilled()) {
+          #    self$results$NormScore$setRowNums(rownames(self$finalData))
+          #    self$results$NormScore$setValues(data$normValue)
+          #    self$results$NormScore$setValues(rep(1, length(nrow(self$results))))
+          #  }
         },
         .plot=function(image, ...) {  # <-- the plot function
             if (is.null(self$options$raw))

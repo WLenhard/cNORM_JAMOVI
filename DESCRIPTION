@@ -1,8 +1,8 @@
 Package: cNORMj
 Type: Package
 Title: Continuous Norming with cNORM for JAMOVI
-Version: 1.0.3
-Date: 2020-07-12
+Version: 2.0.0
+Date: 2022-17-08
 Author: c(person("Wolfgang", "Lenhard", role = c("cre","aut"), email="wolfgang.lenhard@uni-wuerzburg.de", comment=c("<https://orcid.org/0000-0002-8184-6889>"), person("Alexandra", "Lenhard", role = c("aut"), email="lenhard@psychometrica.de", comment=c("<https://orcid.org/0000-0001-8680-4381>"))
 Maintainer: Wolfgang Lenhard <wolfgang.lenhard@uni-wuerzburg.de>
 Description:   Conventional and regression-based continuous norming methods for psychometric, 
@@ -13,4 +13,4 @@ Description:   Conventional and regression-based continuous norming methods for 
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: jmvcore (>= 0.8.5), R6, lattice (>= 0.20), leaps (>= 3.0), latticeExtra (>= 0.6), cNORM (>= 1.2.3)
+Imports: jmvcore (>= 2.3.12), R6, lattice (>= 0.20), leaps (>= 3.0), latticeExtra (>= 0.6), cNORM (>= 3.0.2)

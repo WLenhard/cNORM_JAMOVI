@@ -2,7 +2,7 @@
 name:  continuous
 title: Continuous Norming
 menuGroup: cNORMj
-version: '1.0.0'
+version: '2.0.0'
 jas: '1.2'
 
 options:
@@ -19,7 +19,7 @@ options:
       permitted:
         - numeric
       description:
-          R: a string specifying the raw score variable in `data`
+          R: the raw score variable in the data
 
     - name: group
       title: Grouping variable (discrete)
@@ -29,8 +29,18 @@ options:
       permitted:
         - numeric
       description:
-          R: a string specifying the grouping variable in `data`
+          R: the grouping variable in the data
 
+    - name: weights
+      title: Weights (optional)
+      type: Variable
+      suggested:
+        - continuous
+      permitted:
+        - numeric
+      description:
+          R: on optional weighting variable, specifying the weights of the single cases
+          
     - name: scale
       title: Type of Norm Scale
       type: List
@@ -46,15 +56,29 @@ options:
             `'T'`, `'IQ'`, 'z', 'Wechsler subtest scale (m = 10, sd = 3)', or 'PISA (m = 500, sd = 100)'`
 
     - name: k
-      title: Degree of polynomial
+      title: Degree of location
       type: List
       options:
-        - Quadratic
-        - Cubic
-        - Quartic
-      default: Quartic
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+        - "5"
+        - "6"
+      default: "5"
 
-
+    - name: t
+      title: Degree of age
+      type: List
+      options:
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+        - "5"
+        - "6"
+      default: "3"
+      
     - name: selectionType
       title: Selection type
       type: List

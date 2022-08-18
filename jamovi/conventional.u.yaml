@@ -15,6 +15,13 @@ children:
             name: raw
             maxItemCount: 1
             isTarget: true
+      - type: TargetLayoutBox
+        label: Weights (optional)
+        children:
+          - type: VariablesListBox
+            name: weights
+            maxItemCount: 1
+            isTarget: true
   - type: CollapseBox
     label: Parameters
     margin: normal
@@ -81,7 +88,7 @@ children:
             children:
               - type: LayoutBox
                 margin: large
-                children:            
+                children:
                   - type: TextBox
                     name: range
                     format: number
@@ -94,3 +101,22 @@ children:
                   - type: TextBox
                     name: stepping
                     format: number
+          - type: LayoutBox
+            margin: large
+            children:
+              - type: Output
+                name: manifestNorms
+              - type: Output
+                name: predictedNorms
+  - type: CollapseBox
+    label: Save
+    margin: normal
+    collapsed: true
+    children:
+          - type: LayoutBox
+            margin: large
+            children:
+              - type: Output
+                name: saveManifest
+              - type: Output
+                name: savePredicted

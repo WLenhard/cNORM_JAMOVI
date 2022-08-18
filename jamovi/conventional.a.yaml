@@ -2,7 +2,7 @@
 name:  conventional
 title: Single Group
 menuGroup: cNORMj
-version: '1.0.0'
+version: '2.0.0'
 jas: '1.2'
 
 options:
@@ -14,10 +14,23 @@ options:
     - name: raw
       title: Raw Score Variable
       type: Variable
+      suggested:
+        - continuous
+      permitted:
+        - numeric      
       description:
           R: a string specifying the raw score variable in `data`
 
-
+    - name: weights
+      title: Weights (optional)
+      type: Variable
+      suggested:
+        - continuous
+      permitted:
+        - numeric
+      description:
+          R: on optional weighting variable, specifying the weights of the single cases
+          
     - name: scale
       title: Type of norm scale
       type: List
@@ -84,4 +97,21 @@ options:
     - name: stepping
       title: Stepping
       type: Number
-      default: 1         
+      default: 1
+      
+    - name: manifestNorms
+      title: Manifest Norm Scores
+      type: Output
+      
+    - name: predictedNorms
+      title: Predicted Norm Scores
+      type: Output
+      
+    - name: saveManifest
+      title: Manifest Norm Scores
+      type: Output
+      
+    - name: savePredicted
+      title: Predicted Norm Scores
+      type: Output      
+...

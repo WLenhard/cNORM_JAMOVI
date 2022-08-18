@@ -64,7 +64,12 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
       
             x <- jmvcore::toNumeric(self$data[[self$options$raw]])
             g <- jmvcore::toNumeric(self$data[[self$options$group]])
-            data <- data.frame(raw = x, group=g)
+            w <- rep(1, length(x))
+            
+            if(!is.null(self$options$weights))
+              w <- jmvcore::toNumeric(self$data[[self$options$weights]])
+            
+            data <- data.frame(raw = x, group=g, weights = w)
             data <- data[complete.cases(data),]
             
             casesPerGroup <- nrow(data)/unique(data$group)
@@ -78,11 +83,38 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 return()
             }
             
-            k <- 4
-            if(self$options$k == 'Cubic')
-                k <- 3
-            else if(self$options$k == 'Quadratic')
+            if(min(w)<1){
+              self$results$instructions$setVisible(visible = TRUE)
+              self$results$instructions$setContent("<html><head></head><body>
+                                                     <div class='instructions'>
+                                                     <p>The weighting variable must only contain >= 1.</p>
+                                                     </div></body></html>")
+              return()
+            }
+            
+            k <- 5
+            if(self$options$k == '1')
+                k <- 1
+            else if(self$options$k == '2')
                 k <- 2
+            else if(self$options$k == '3')
+               k <- 3
+            else if(self$options$k == '4')
+              k <- 4
+            else if(self$options$k == '6')
+              k <- 6
+            
+            t <- 3
+            if(self$options$t == '1')
+              t <- 1
+            else if(self$options$t == '2')
+              t <- 2
+            else if(self$options$t == '5')
+              t <- 5
+            else if(self$options$t == '4')
+              t <- 4
+            else if(self$options$t == '6')
+              t <- 6
             
             scale <- self$options$scale
             
@@ -116,21 +148,22 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             
             descend <- self$options$descend
             
-            data <- cNORM::rankByGroup(data, raw=data$raw, group=data$group, scale = scale, descend = descend)
-            data <- cNORM::computePowers(data, k=k)
+            data <- cNORM::rankByGroup(data, raw=data$raw, group=data$group, weights = data$weights, scale = scale, descend = descend)
+            data <- cNORM::computePowers(data, k=k, t=t)
             attr(data, "k") <- k
+            attr(data, "t") <- t
             
             terms <- 4
             if(self$options$selectionType=="automaticSelection")
-              model <- cNORM::bestModel(data, plot=FALSE, k = k)
+              model <- cNORM::bestModel(data, plot=FALSE, k = k, t=t, weights=data$weights)
             else{
                 terms <- as.integer(self$options$terms)
-                if(terms <= 0 || terms >= (k + 1)^2){
+                if(terms <= 0 || terms >= ((k + 1)*(t + 1) - 1)){
                   self$results$instructions$setVisible(visible = TRUE)
-                  self$results$instructions$setContent("<html><head></head><body><div class='instructions'><p>The number of terms is out of range. It has to be 8 or lower in quadratic, 15 or lower in cubic and 24 or lower in quartic polynomials.</p></div></body></html>")
+                  self$results$instructions$setContent("<html><head></head><body><div class='instructions'><p>The number of terms is out of range.</p></div></body></html>")
                   return()
                 }
-                model <- cNORM::bestModel(data, plot=FALSE, terms = terms, k = k)
+                model <- cNORM::bestModel(data, plot=FALSE, terms = terms, k = k, t=t, weights=data$weights)
             }
 
             if(is.null(model)){

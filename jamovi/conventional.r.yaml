@@ -53,3 +53,37 @@ items:
           type: number
         - name: BIC
           type: number      
+
+    - name: manifestNorms
+      title: Manifest Norm Scores
+      type: Output
+      varTitle: manifestNorms
+      varDescription: Frequency-based norm scores
+      measureType: continuous
+      
+    - name: predictedNorms
+      title: Predicted Norm Scores
+      type: Output
+      varTitle: predictedNorms
+      varDescription: Regression-based norm scores
+      measureType: continuous
+      
+    - name: saveManifest
+      title: Manifest Norm Scores
+      type: Output
+      varTitle: NormScore
+      varDescription: Manifest norm score
+      measureType: continuous
+      clearWith:
+        - raw
+        - weights
+
+    - name: savePredicted
+      title: Predicted Norm Scores
+      type: Output
+      varTitle: PredictedNorm
+      varDescription: Predicted norm score
+      measureType: continuous
+      clearWith:
+        - raw
+        - weights

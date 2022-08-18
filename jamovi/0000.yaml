@@ -1,13 +1,13 @@
 ---
 title: Continuous Norming
 name: cNORMj
-version: 1.0.3
+version: 2.0.0
 jms: '1.0'
 authors:
   - Wolfgang Lenhard
   - Alexandra Lenhard
 maintainer: Wolfgang Lenhard <wolfgang.lenhard@uni-wuerzburg.de>
-date: '2020-07-12'
+date: '2021-28-07'
 type: R
 description: >-
   Conventional and regression-based continuous norming methods for
