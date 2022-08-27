@@ -100,8 +100,12 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                 "predictedNorms")
             private$..saveManifest <- jmvcore::OptionOutput$new(
                 "saveManifest")
+            private$..saveManifestPerc <- jmvcore::OptionOutput$new(
+                "saveManifestPerc")
             private$..savePredicted <- jmvcore::OptionOutput$new(
                 "savePredicted")
+            private$..savePredictedPerc <- jmvcore::OptionOutput$new(
+                "savePredictedPerc")
 
             self$.addOption(private$..raw)
             self$.addOption(private$..weights)
@@ -118,7 +122,9 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
             self$.addOption(private$..manifestNorms)
             self$.addOption(private$..predictedNorms)
             self$.addOption(private$..saveManifest)
+            self$.addOption(private$..saveManifestPerc)
             self$.addOption(private$..savePredicted)
+            self$.addOption(private$..savePredictedPerc)
         }),
     active = list(
         raw = function() private$..raw$value,
@@ -136,7 +142,9 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
         manifestNorms = function() private$..manifestNorms$value,
         predictedNorms = function() private$..predictedNorms$value,
         saveManifest = function() private$..saveManifest$value,
-        savePredicted = function() private$..savePredicted$value),
+        saveManifestPerc = function() private$..saveManifestPerc$value,
+        savePredicted = function() private$..savePredicted$value,
+        savePredictedPerc = function() private$..savePredictedPerc$value),
     private = list(
         ..raw = NA,
         ..weights = NA,
@@ -153,7 +161,9 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
         ..manifestNorms = NA,
         ..predictedNorms = NA,
         ..saveManifest = NA,
-        ..savePredicted = NA)
+        ..saveManifestPerc = NA,
+        ..savePredicted = NA,
+        ..savePredictedPerc = NA)
 )
 
 conventionalResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
@@ -167,7 +177,9 @@ conventionalResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
         manifestNorms = function() private$.items[["manifestNorms"]],
         predictedNorms = function() private$.items[["predictedNorms"]],
         saveManifest = function() private$.items[["saveManifest"]],
-        savePredicted = function() private$.items[["savePredicted"]]),
+        saveManifestPerc = function() private$.items[["saveManifestPerc"]],
+        savePredicted = function() private$.items[["savePredicted"]],
+        savePredictedPerc = function() private$.items[["savePredictedPerc"]]),
     private = list(),
     public=list(
         initialize=function(options) {
@@ -238,7 +250,7 @@ conventionalResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                 options=options,
                 name="manifestNorms",
                 title="Manifest Norm Scores",
-                varTitle="manifestNorms",
+                varTitle="ManifestNorms",
                 varDescription="Frequency-based norm scores",
                 measureType="continuous"))
             self$add(jmvcore::Output$new(
@@ -252,12 +264,26 @@ conventionalResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                 options=options,
                 name="saveManifest",
                 title="Manifest Norm Scores",
-                varTitle="NormScore",
+                varTitle="ManifestNorm",
                 varDescription="Manifest norm score",
                 measureType="continuous",
                 clearWith=list(
                     "raw",
-                    "weights")))
+                    "weights",
+                    "scale",
+                    "descend")))
+            self$add(jmvcore::Output$new(
+                options=options,
+                name="saveManifestPerc",
+                title="Manifest Percentile Scores",
+                varTitle="ManifestPercentile",
+                varDescription="Manifest percentile score",
+                measureType="continuous",
+                clearWith=list(
+                    "raw",
+                    "weights",
+                    "scale",
+                    "descend")))
             self$add(jmvcore::Output$new(
                 options=options,
                 name="savePredicted",
@@ -267,7 +293,25 @@ conventionalResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                 measureType="continuous",
                 clearWith=list(
                     "raw",
-                    "weights")))}))
+                    "weights",
+                    "scale",
+                    "k",
+                    "descend",
+                    "terms")))
+            self$add(jmvcore::Output$new(
+                options=options,
+                name="savePredictedPerc",
+                title="Predicted Percentile Scores",
+                varTitle="PredictedPercentile",
+                varDescription="Manifest percentile score",
+                measureType="continuous",
+                clearWith=list(
+                    "raw",
+                    "weights",
+                    "scale",
+                    "k",
+                    "descend",
+                    "terms")))}))
 
 conventionalBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
     "conventionalBase",
@@ -316,7 +360,9 @@ conventionalBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   \code{results$manifestNorms} \tab \tab \tab \tab \tab an output \cr
 #'   \code{results$predictedNorms} \tab \tab \tab \tab \tab an output \cr
 #'   \code{results$saveManifest} \tab \tab \tab \tab \tab an output \cr
+#'   \code{results$saveManifestPerc} \tab \tab \tab \tab \tab an output \cr
 #'   \code{results$savePredicted} \tab \tab \tab \tab \tab an output \cr
+#'   \code{results$savePredictedPerc} \tab \tab \tab \tab \tab an output \cr
 #' }
 #'
 #' Tables can be converted to data frames with \code{asDF} or \code{\link{as.data.frame}}. For example:

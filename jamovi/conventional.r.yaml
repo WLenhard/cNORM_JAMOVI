@@ -57,7 +57,7 @@ items:
     - name: manifestNorms
       title: Manifest Norm Scores
       type: Output
-      varTitle: manifestNorms
+      varTitle: ManifestNorms
       varDescription: Frequency-based norm scores
       measureType: continuous
       
@@ -71,13 +71,27 @@ items:
     - name: saveManifest
       title: Manifest Norm Scores
       type: Output
-      varTitle: NormScore
+      varTitle: ManifestNorm
       varDescription: Manifest norm score
       measureType: continuous
       clearWith:
         - raw
         - weights
+        - scale
+        - descend        
 
+    - name: saveManifestPerc
+      title: Manifest Percentile Scores
+      type: Output
+      varTitle: ManifestPercentile
+      varDescription: Manifest percentile score
+      measureType: continuous
+      clearWith:
+        - raw
+        - weights
+        - scale
+        - descend
+        
     - name: savePredicted
       title: Predicted Norm Scores
       type: Output
@@ -87,3 +101,21 @@ items:
       clearWith:
         - raw
         - weights
+        - scale
+        - k
+        - descend
+        - terms
+        
+    - name: savePredictedPerc
+      title: Predicted Percentile Scores
+      type: Output
+      varTitle: PredictedPercentile
+      varDescription: Manifest percentile score
+      measureType: continuous
+      clearWith:
+        - raw
+        - weights
+        - scale
+        - k
+        - descend
+        - terms        

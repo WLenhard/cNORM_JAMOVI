@@ -111,7 +111,15 @@ options:
       title: Manifest Norm Scores
       type: Output
       
+    - name: saveManifestPerc
+      title: Manifest Percentile Scores
+      type: Output
+      
     - name: savePredicted
       title: Predicted Norm Scores
-      type: Output      
+      type: Output
+      
+    - name: savePredictedPerc
+      title: Predicted Percentile Scores
+      type: Output            
 ...

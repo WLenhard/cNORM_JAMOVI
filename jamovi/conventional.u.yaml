@@ -113,10 +113,14 @@ children:
     margin: normal
     collapsed: true
     children:
-          - type: LayoutBox
-            margin: large
-            children:
-              - type: Output
-                name: saveManifest
-              - type: Output
-                name: savePredicted
+      - type: LayoutBox
+        margin: large
+        children:
+          - type: Output
+            name: saveManifest
+          - type: Output
+            name: saveManifestPerc
+          - type: Output
+            name: savePredicted
+          - type: Output
+            name: savePredictedPerc

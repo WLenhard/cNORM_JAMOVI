@@ -5,7 +5,16 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
     "conventionalClass",
     inherit = conventionalBase,
     private = list(
+      .manifestNorms = NA,
+      .manifestPerc = NA,
+      .predictedNorms = NA,
+      .predictedPerc = NA,      
         .init = function() {
+          private$.manifestNorms <- NULL
+          private$.manifestPerc <- NULL
+          private$.predictedNorms <- NULL
+          private$.predictedPerc <- NULL
+          
             self$results$instructions$setContent(
                 "<html>
                 <head>
@@ -78,23 +87,33 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             sd <- self$options$range
             minNorm <- 20
             maxNorm <- 80
+            sd1 <- 1
+            m1 <- 0
             
             scale <- self$options$scale
             if(scale=="Wechsler"){
+                m1 <- 10
+                sd1 <- 3
                 scale <- c(10, 3)
                 minNorm <- 10 - (sd*3)
                 maxNorm <- 10 + (sd*3)
             }
             else if(scale=="PISA"){
+              m1 <- 500
+              sd1 <- 100              
                 scale <- c(500, 100)
                 minNorm <- 500 - (sd*100)
                 maxNorm <- 500 + (sd*100)
             } 
             else if(scale=="T"){
+              m1 <- 50
+              sd1 <- 10
                 minNorm <- 50 - (sd*10)
                 maxNorm <- 50 + (sd*10)
             }
             else if(scale=="IQ"){
+              m1 <- 100
+              sd1 <- 15
                 minNorm <- 100 - (sd*15)
                 maxNorm <- 100 + (sd*15)
             } 
@@ -106,6 +125,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             descend <- self$options$descend
             
             data <- cNORM::rankByGroup(data, raw=data$raw, group=FALSE, scale = scale, descend = descend, weights = data$weights)
+            
             
             tab1 <- data.frame(raw = data$raw, norm=data$normValue, percentile=data$percentile*100)
             tab1 <- unique(tab1)
@@ -165,7 +185,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             }
             
             self$results$norms$setNote("empty", foot, init=FALSE)
-            
+           
             
             
             image <- self$results$plot
@@ -174,18 +194,41 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             }else{
                 image$setState(tab1)
             }
+            
+            
+            private$.manifestNorms <- data$normValue
+            private$.manifestPerc <- data$percentile * 100
+            
+            data$predictedNorm <- cNORM::predictNorm(data$raw, 0, model, minNorm=minNorm, maxNorm=maxNorm)
+            data$predictedPercentile <- pnorm((data$predictedNorm-m1)/sd1) * 100
+            
+            private$.predictedNorms <- data$predictedNorm
+            private$.predictedPerc <- data$predictedPercentile
+            
+            private$.populateOutputs()
         },
+      
         .populateOutputs=function() {
-            if (self$options$manifestNorms && self$results$manifestNorms$isNotFilled()) {
-              self$results$manifestNorms$setValues(data$normValue)
-            }
+          #TODO isNotFilled
+          #TODO row numbers
+          if (self$options$saveManifest) {
+              self$results$saveManifest$setValues(private$.manifestNorms)
+          }
           
-          #  if (self$options$saveManifest && self$results$NormScore$isNotFilled()) {
-          #    self$results$NormScore$setRowNums(rownames(self$finalData))
-          #    self$results$NormScore$setValues(data$normValue)
-          #    self$results$NormScore$setValues(rep(1, length(nrow(self$results))))
-          #  }
+          if (self$options$saveManifestPerc) {
+            self$results$saveManifestPerc$setValues(private$.manifestPerc)
+          }
+          
+          if (self$options$savePredicted) {
+            self$results$savePredicted$setValues(private$.predictedNorms)
+          }
+          
+          if (self$options$savePredictedPerc) {
+            self$results$savePredictedPerc$setValues(private$.predictedPerc)
+          }
+          
         },
+      
         .plot=function(image, ...) {  # <-- the plot function
             if (is.null(self$options$raw))
                 return()
