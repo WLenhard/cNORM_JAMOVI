@@ -118,6 +118,14 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 "stepping",
                 stepping,
                 default=1)
+            private$..saveManifest <- jmvcore::OptionOutput$new(
+                "saveManifest")
+            private$..saveManifestPerc <- jmvcore::OptionOutput$new(
+                "saveManifestPerc")
+            private$..savePredicted <- jmvcore::OptionOutput$new(
+                "savePredicted")
+            private$..savePredictedPerc <- jmvcore::OptionOutput$new(
+                "savePredictedPerc")
 
             self$.addOption(private$..raw)
             self$.addOption(private$..group)
@@ -134,6 +142,10 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..minRaw)
             self$.addOption(private$..maxRaw)
             self$.addOption(private$..stepping)
+            self$.addOption(private$..saveManifest)
+            self$.addOption(private$..saveManifestPerc)
+            self$.addOption(private$..savePredicted)
+            self$.addOption(private$..savePredictedPerc)
         }),
     active = list(
         raw = function() private$..raw$value,
@@ -150,7 +162,11 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         range = function() private$..range$value,
         minRaw = function() private$..minRaw$value,
         maxRaw = function() private$..maxRaw$value,
-        stepping = function() private$..stepping$value),
+        stepping = function() private$..stepping$value,
+        saveManifest = function() private$..saveManifest$value,
+        saveManifestPerc = function() private$..saveManifestPerc$value,
+        savePredicted = function() private$..savePredicted$value,
+        savePredictedPerc = function() private$..savePredictedPerc$value),
     private = list(
         ..raw = NA,
         ..group = NA,
@@ -166,7 +182,11 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..range = NA,
         ..minRaw = NA,
         ..maxRaw = NA,
-        ..stepping = NA)
+        ..stepping = NA,
+        ..saveManifest = NA,
+        ..saveManifestPerc = NA,
+        ..savePredicted = NA,
+        ..savePredictedPerc = NA)
 )
 
 continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
@@ -176,7 +196,11 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         instructions = function() private$.items[["instructions"]],
         plot = function() private$.items[["plot"]],
         norms = function() private$.items[["norms"]],
-        modelTab = function() private$.items[["modelTab"]]),
+        modelTab = function() private$.items[["modelTab"]],
+        saveManifest = function() private$.items[["saveManifest"]],
+        saveManifestPerc = function() private$.items[["saveManifestPerc"]],
+        savePredicted = function() private$.items[["savePredicted"]],
+        savePredictedPerc = function() private$.items[["savePredictedPerc"]]),
     private = list(),
     public=list(
         initialize=function(options) {
@@ -242,7 +266,67 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                         `type`="number"),
                     list(
                         `name`="BIC", 
-                        `type`="number"))))}))
+                        `type`="number"))))
+            self$add(jmvcore::Output$new(
+                options=options,
+                name="saveManifest",
+                title="Manifest Norm Scores",
+                varTitle="ManifestNorm",
+                varDescription="Manifest norm score",
+                measureType="continuous",
+                clearWith=list(
+                    "raw",
+                    "weights",
+                    "scale",
+                    "descend",
+                    "group",
+                    "t")))
+            self$add(jmvcore::Output$new(
+                options=options,
+                name="saveManifestPerc",
+                title="Manifest Percentile Scores",
+                varTitle="ManifestPercentile",
+                varDescription="Manifest percentile score",
+                measureType="continuous",
+                clearWith=list(
+                    "raw",
+                    "weights",
+                    "scale",
+                    "descend",
+                    "group",
+                    "t")))
+            self$add(jmvcore::Output$new(
+                options=options,
+                name="savePredicted",
+                title="Predicted Norm Scores",
+                varTitle="PredictedNorm",
+                varDescription="Predicted norm score",
+                measureType="continuous",
+                clearWith=list(
+                    "raw",
+                    "weights",
+                    "scale",
+                    "k",
+                    "descend",
+                    "terms",
+                    "group",
+                    "t")))
+            self$add(jmvcore::Output$new(
+                options=options,
+                name="savePredictedPerc",
+                title="Predicted Percentile Scores",
+                varTitle="PredictedPercentile",
+                varDescription="Predicted percentile score",
+                measureType="continuous",
+                clearWith=list(
+                    "raw",
+                    "weights",
+                    "scale",
+                    "k",
+                    "descend",
+                    "terms",
+                    "group",
+                    "t")))}))
 
 continuousBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
     "continuousBase",
@@ -291,6 +375,10 @@ continuousBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   \code{results$plot} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$norms} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$modelTab} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$saveManifest} \tab \tab \tab \tab \tab an output \cr
+#'   \code{results$saveManifestPerc} \tab \tab \tab \tab \tab an output \cr
+#'   \code{results$savePredicted} \tab \tab \tab \tab \tab an output \cr
+#'   \code{results$savePredictedPerc} \tab \tab \tab \tab \tab an output \cr
 #' }
 #'
 #' Tables can be converted to data frames with \code{asDF} or \code{\link{as.data.frame}}. For example:

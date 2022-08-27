@@ -59,3 +59,64 @@ items:
         - name: BIC
           type: number
       
+    - name: saveManifest
+      title: Manifest Norm Scores
+      type: Output
+      varTitle: ManifestNorm
+      varDescription: Manifest norm score
+      measureType: continuous
+      clearWith:
+        - raw
+        - weights
+        - scale
+        - descend
+        - group
+        - t        
+
+    - name: saveManifestPerc
+      title: Manifest Percentile Scores
+      type: Output
+      varTitle: ManifestPercentile
+      varDescription: Manifest percentile score
+      measureType: continuous
+      clearWith:
+        - raw
+        - weights
+        - scale
+        - descend
+        - group
+        - t
+        
+    - name: savePredicted
+      title: Fitted Norm Scores
+      type: Output
+      varTitle: FittedNorm
+      varDescription: Fitted norm score
+      measureType: continuous
+      clearWith:
+        - raw
+        - weights
+        - scale
+        - k
+        - descend
+        - terms
+        - group
+        - t
+        
+    - name: savePredictedPerc
+      title: Fitted Percentile Scores
+      type: Output
+      varTitle: FittedPercentile
+      varDescription: Fitted percentile score
+      measureType: continuous
+      clearWith:
+        - raw
+        - weights
+        - scale
+        - k
+        - descend
+        - terms
+        - group
+        - t        
+
+...

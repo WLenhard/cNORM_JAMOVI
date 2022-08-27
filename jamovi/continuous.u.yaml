@@ -113,3 +113,21 @@ children:
               - type: TextBox
                 name: stepping
                 format: number
+  - type: CollapseBox
+    label: Save
+    margin: normal
+    collapsed: true
+    children:
+      - type: LayoutBox
+        margin: large
+        children:
+          - type: Output
+            name: saveManifest
+          - type: Output
+            name: saveManifestPerc
+          - type: Output
+            name: savePredicted
+          - type: Output
+            name: savePredictedPerc
+          
+...

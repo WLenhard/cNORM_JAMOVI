@@ -9,14 +9,12 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
     .manifestPerc = NA,
     .predictedNorms = NA,
     .predictedPerc = NA,
-    .predictedRaw = NA,
     .rowNames = NA,
     .init = function() {
       private$.manifestNorms <- NULL
       private$.manifestPerc <- NULL
       private$.predictedNorms <- NULL
       private$.predictedPerc <- NULL
-      private$.predictedRaw <- NULL
       private$.rowNames <- NULL
       
       self$results$instructions$setContent(
@@ -210,7 +208,6 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         
         private$.predictedNorms <- data$predictedNorm
         private$.predictedPerc <- data$predictedPercentile
-        private$.predictedRaw <- model$fitted.values
       }
       private$.populateOutputs()
     },
@@ -235,11 +232,6 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         if (self$options$savePredictedPerc && self$results$savePredictedPerc$isNotFilled()) {
           self$results$savePredictedPerc$setRowNums(private$.rowNames)
           self$results$savePredictedPerc$setValues(private$.predictedPerc)
-        }
-        
-        if (self$options$savePredictedRaw && self$results$savePredictedRaw$isNotFilled()) {
-          self$results$savePredictedRaw$setRowNums(private$.rowNames)
-          self$results$savePredictedRaw$setValues(private$.predictedRaw)
         }
       }
     },

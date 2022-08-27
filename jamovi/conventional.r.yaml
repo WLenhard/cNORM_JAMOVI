@@ -93,10 +93,10 @@ items:
         - descend
         
     - name: savePredicted
-      title: Predicted Norm Scores
+      title: Fitted Norm Scores
       type: Output
-      varTitle: PredictedNorm
-      varDescription: Predicted norm score
+      varTitle: FittedNorm
+      varDescription: Fitted norm score
       measureType: continuous
       clearWith:
         - raw
@@ -107,10 +107,10 @@ items:
         - terms
         
     - name: savePredictedPerc
-      title: Predicted Percentile Scores
+      title: Fitted Percentile Scores
       type: Output
-      varTitle: PredictedPercentile
-      varDescription: Predicted percentile score
+      varTitle: FittedPercentile
+      varDescription: Fitted percentile score
       measureType: continuous
       clearWith:
         - raw
@@ -120,16 +120,4 @@ items:
         - descend
         - terms        
         
-    - name: savePredictedRaw
-      title: Fitted Raw Scores
-      type: Output
-      varTitle: FittedRaw
-      varDescription: Fitted Raw Scores in Regression
-      measureType: continuous
-      clearWith:
-        - raw
-        - weights
-        - scale
-        - k
-        - descend
-        - terms            
+...   

@@ -130,3 +130,21 @@ options:
       title: Stepping
       type: Number
       default: 1      
+      
+    - name: saveManifest
+      title: Manifest Norm Scores
+      type: Output
+      
+    - name: saveManifestPerc
+      title: Manifest Percentile Scores
+      type: Output
+      
+    - name: savePredicted
+      title: Fitted Norm Scores
+      type: Output
+      
+    - name: savePredictedPerc
+      title: Fitted Percentile Scores
+      type: Output   
+      
+...      

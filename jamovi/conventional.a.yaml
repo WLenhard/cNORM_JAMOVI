@@ -116,14 +116,11 @@ options:
       type: Output
       
     - name: savePredicted
-      title: Predicted Norm Scores
+      title: Fitted Norm Scores
       type: Output
       
     - name: savePredictedPerc
-      title: Predicted Percentile Scores
+      title: Fitted Percentile Scores
       type: Output   
       
-    - name: savePredictedRaw
-      title: Predicted Raw Scores
-      type: Output        
 ...
