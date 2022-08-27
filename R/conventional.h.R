@@ -106,6 +106,8 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                 "savePredicted")
             private$..savePredictedPerc <- jmvcore::OptionOutput$new(
                 "savePredictedPerc")
+            private$..savePredictedRaw <- jmvcore::OptionOutput$new(
+                "savePredictedRaw")
 
             self$.addOption(private$..raw)
             self$.addOption(private$..weights)
@@ -125,6 +127,7 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
             self$.addOption(private$..saveManifestPerc)
             self$.addOption(private$..savePredicted)
             self$.addOption(private$..savePredictedPerc)
+            self$.addOption(private$..savePredictedRaw)
         }),
     active = list(
         raw = function() private$..raw$value,
@@ -144,7 +147,8 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
         saveManifest = function() private$..saveManifest$value,
         saveManifestPerc = function() private$..saveManifestPerc$value,
         savePredicted = function() private$..savePredicted$value,
-        savePredictedPerc = function() private$..savePredictedPerc$value),
+        savePredictedPerc = function() private$..savePredictedPerc$value,
+        savePredictedRaw = function() private$..savePredictedRaw$value),
     private = list(
         ..raw = NA,
         ..weights = NA,
@@ -163,7 +167,8 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
         ..saveManifest = NA,
         ..saveManifestPerc = NA,
         ..savePredicted = NA,
-        ..savePredictedPerc = NA)
+        ..savePredictedPerc = NA,
+        ..savePredictedRaw = NA)
 )
 
 conventionalResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
@@ -179,7 +184,8 @@ conventionalResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
         saveManifest = function() private$.items[["saveManifest"]],
         saveManifestPerc = function() private$.items[["saveManifestPerc"]],
         savePredicted = function() private$.items[["savePredicted"]],
-        savePredictedPerc = function() private$.items[["savePredictedPerc"]]),
+        savePredictedPerc = function() private$.items[["savePredictedPerc"]],
+        savePredictedRaw = function() private$.items[["savePredictedRaw"]]),
     private = list(),
     public=list(
         initialize=function(options) {
@@ -303,7 +309,21 @@ conventionalResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                 name="savePredictedPerc",
                 title="Predicted Percentile Scores",
                 varTitle="PredictedPercentile",
-                varDescription="Manifest percentile score",
+                varDescription="Predicted percentile score",
+                measureType="continuous",
+                clearWith=list(
+                    "raw",
+                    "weights",
+                    "scale",
+                    "k",
+                    "descend",
+                    "terms")))
+            self$add(jmvcore::Output$new(
+                options=options,
+                name="savePredictedRaw",
+                title="Fitted Raw Scores",
+                varTitle="FittedRaw",
+                varDescription="Fitted Raw Scores in Regression",
                 measureType="continuous",
                 clearWith=list(
                     "raw",
@@ -363,6 +383,7 @@ conventionalBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   \code{results$saveManifestPerc} \tab \tab \tab \tab \tab an output \cr
 #'   \code{results$savePredicted} \tab \tab \tab \tab \tab an output \cr
 #'   \code{results$savePredictedPerc} \tab \tab \tab \tab \tab an output \cr
+#'   \code{results$savePredictedRaw} \tab \tab \tab \tab \tab an output \cr
 #' }
 #'
 #' Tables can be converted to data frames with \code{asDF} or \code{\link{as.data.frame}}. For example:

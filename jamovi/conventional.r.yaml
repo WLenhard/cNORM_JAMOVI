@@ -110,7 +110,7 @@ items:
       title: Predicted Percentile Scores
       type: Output
       varTitle: PredictedPercentile
-      varDescription: Manifest percentile score
+      varDescription: Predicted percentile score
       measureType: continuous
       clearWith:
         - raw
@@ -119,3 +119,17 @@ items:
         - k
         - descend
         - terms        
+        
+    - name: savePredictedRaw
+      title: Fitted Raw Scores
+      type: Output
+      varTitle: FittedRaw
+      varDescription: Fitted Raw Scores in Regression
+      measureType: continuous
+      clearWith:
+        - raw
+        - weights
+        - scale
+        - k
+        - descend
+        - terms            

@@ -121,5 +121,9 @@ options:
       
     - name: savePredictedPerc
       title: Predicted Percentile Scores
-      type: Output            
+      type: Output   
+      
+    - name: savePredictedRaw
+      title: Predicted Raw Scores
+      type: Output        
 ...
