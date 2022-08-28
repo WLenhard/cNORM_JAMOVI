@@ -76,8 +76,10 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
       x <- jmvcore::toNumeric(self$data[[self$options$raw]])
       w <- rep(1, length(x))
       
-      if(!is.null(self$options$weights))
+      if(!is.null(self$options$weights)){
         w <- jmvcore::toNumeric(self$data[[self$options$weights]])
+      }
+        
       
       data <- data.frame(raw = x, weights = w)
       rownames(data) <- rownames(self$finalData)
@@ -127,8 +129,11 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
       
       descend <- self$options$descend
       
-      data <- cNORM::rankByGroup(data, raw=data$raw, group=FALSE, scale = scale, descend = descend, weights = data$weights)
-      
+      if(!is.null(self$options$weights)){
+        data <- cNORM::rankByGroup(data, raw=data$raw, group=FALSE, scale = scale, descend = descend, weights = data$weights)
+      }else{
+        data <- cNORM::rankByGroup(data, raw=data$raw, group=FALSE, scale = scale, descend = descend)
+      }
       
       tab1 <- data.frame(raw = data$raw, norm=data$normValue, percentile=data$percentile*100)
       tab1 <- unique(tab1)
@@ -151,7 +156,11 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         
         
         data <- cNORM::computePowers(data, k=5)
-        model <- cNORM::bestModel(data, terms = terms, weights = data$weights)
+        if(!is.null(self$options$weights)){
+          model <- cNORM::bestModel(data, terms = terms, weights = data$weights)
+        }else{
+          model <- cNORM::bestModel(data, terms = terms)
+        }
         tab <- cNORM::rawTable(0, model, minNorm = minNorm, maxNorm = maxNorm, minRaw = minRaw, maxRaw = maxRaw, step = as.numeric(self$options$stepping))
         tab$type <- rep(1)
         

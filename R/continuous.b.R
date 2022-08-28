@@ -7,11 +7,13 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
     .predictedNorms = NA,
     .predictedPerc = NA,
     .rowNames = NA,
+    .raw = NA,
     .init = function() {
       private$.manifestNorms <- NULL
       private$.manifestPerc <- NULL
       private$.predictedNorms <- NULL
       private$.predictedPerc <- NULL
+      private$.raw <- NULL
       private$.rowNames <- NULL
       self$results$instructions$setContent(
         "<html>
@@ -76,10 +78,13 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
       g <- jmvcore::toNumeric(self$data[[self$options$group]])
       w <- rep(1, length(x))
       
-      if(!is.null(self$options$weights))
+      if(!is.null(self$options$weights)){
         w <- jmvcore::toNumeric(self$data[[self$options$weights]])
+        data <- data.frame(raw = x, group=g, weights = w)
+      }else{
+        data <- data.frame(raw = x, group=g)  
+      }
       
-      data <- data.frame(raw = x, group=g, weights = w)
       rownames(data) <- rownames(self$finalData)
       data <- data[complete.cases(data),]
       private$.rowNames <- rownames(data)
@@ -172,22 +177,34 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
       
       descend <- self$options$descend
       
-      data <- cNORM::rankByGroup(data, raw=data$raw, group=data$group, weights = data$weights, scale = scale, descend = descend)
+      if(!is.null(self$options$weights)){
+        data <- cNORM::rankByGroup(data, raw=data$raw, group=data$group, weights = data$weights, scale = scale, descend = descend)
+      }else{
+        data <- cNORM::rankByGroup(data, raw=data$raw, group=data$group, scale = scale, descend = descend)
+      }
       data <- cNORM::computePowers(data, k=k, t=t)
       attr(data, "k") <- k
       attr(data, "t") <- t
       
       terms <- 4
-      if(self$options$selectionType=="automaticSelection")
-        model <- cNORM::bestModel(data, plot=FALSE, k = k, t=t, weights=data$weights)
-      else{
+      if(self$options$selectionType=="automaticSelection"){
+        if(!is.null(self$options$weights)){
+          model <- cNORM::bestModel(data, plot=FALSE, k = k, t=t, weights=data$weights)
+        }else{
+          model <- cNORM::bestModel(data, plot=FALSE, k = k, t=t)
+        }
+      }else{
         terms <- as.integer(self$options$terms)
         if(terms <= 0 || terms >= ((k + 1)*(t + 1) - 1)){
           self$results$instructions$setVisible(visible = TRUE)
           self$results$instructions$setContent("<html><head></head><body><div class='instructions'><p>The number of terms is out of range.</p></div></body></html>")
           return()
         }
-        model <- cNORM::bestModel(data, plot=FALSE, terms = terms, k = k, t=t, weights=data$weights)
+        if(!is.null(self$options$weights)){
+          model <- cNORM::bestModel(data, plot=FALSE, terms = terms, k = k, t=t, weights=data$weights)
+        }else{
+          model <- cNORM::bestModel(data, plot=FALSE, terms = terms, k = k, t=t)
+        }
       }
       
       if(is.null(model)){
@@ -241,6 +258,7 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         }
       }
       
+      private$.raw <- data$raw
       private$.manifestNorms <- data$normValue
       private$.manifestPerc <- data$percentile * 100
       
@@ -266,16 +284,16 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         self$results$saveManifestPerc$setValues(private$.manifestPerc)
       }
       
-        if (self$options$savePredicted && self$results$savePredicted$isNotFilled()) {
-          self$results$savePredicted$setRowNums(private$.rowNames)
-          self$results$savePredicted$setValues(private$.predictedNorms)
-        }
-        
-        if (self$options$savePredictedPerc && self$results$savePredictedPerc$isNotFilled()) {
-          self$results$savePredictedPerc$setRowNums(private$.rowNames)
-          self$results$savePredictedPerc$setValues(private$.predictedPerc)
-        }
-        
+      if (self$options$savePredicted && self$results$savePredicted$isNotFilled()) {
+        self$results$savePredicted$setRowNums(private$.rowNames)
+        self$results$savePredicted$setValues(private$.predictedNorms)
+      }
+      
+      if (self$options$savePredictedPerc && self$results$savePredictedPerc$isNotFilled()) {
+        self$results$savePredictedPerc$setRowNums(private$.rowNames)
+        self$results$savePredictedPerc$setValues(private$.predictedPerc)
+      }
+      
     },    
     
     .plot=function(image, ...) {  # <-- the plot function
@@ -307,8 +325,13 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
       else if(self$options$t == '6')
         t <- 6
       
-      if(self$options$selectionType=="automaticSelection")
-        model <- cNORM::bestModel(image$state, k = k, t=t, weights=image$state$weights)
+      if(self$options$selectionType=="automaticSelection"){
+        if(!is.null(self$options$weights)){
+          model <- cNORM::bestModel(image$state, k = k, t=t, weights=image$state$weights)
+        }else{
+          model <- cNORM::bestModel(image$state, k = k, t=t)
+        }
+      }
       else{
         terms <- as.integer(self$options$terms)
         if(terms <= 0 || terms >= ((k + 1)*(t + 1) - 1)){

@@ -298,9 +298,9 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$add(jmvcore::Output$new(
                 options=options,
                 name="savePredicted",
-                title="Predicted Norm Scores",
-                varTitle="PredictedNorm",
-                varDescription="Predicted norm score",
+                title="Fitted Norm Scores",
+                varTitle="FittedNorm",
+                varDescription="Fitted norm score",
                 measureType="continuous",
                 clearWith=list(
                     "raw",
@@ -314,9 +314,9 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$add(jmvcore::Output$new(
                 options=options,
                 name="savePredictedPerc",
-                title="Predicted Percentile Scores",
-                varTitle="PredictedPercentile",
-                varDescription="Predicted percentile score",
+                title="Fitted Percentile Scores",
+                varTitle="FittedPercentile",
+                varDescription="Fitted percentile score",
                 measureType="continuous",
                 clearWith=list(
                     "raw",
