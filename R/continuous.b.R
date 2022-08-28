@@ -31,9 +31,19 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             <ol>
               <li>Select your <b>raw score</b> variable</li>
               <li>Place the <b>grouping variable</b> (e. g. grade) in the 'Grouping Variable' slot. Each group in the dataset should contain at least 50 cases, preferably 100.</li>
-              <li>Adjust model parameters for retrieving a favorable model via visual inspection of the percentile plot.</li>
+              <li>Adjust model parameters for retrieving a favorable model via visual inspection of the percentile plot. Pay attention to the following parameters:
+                  <ul>
+                    <li><b>Invert ranking order</b>: Please tick, e. g. if higher values depict lower performance as it is the case in error rates, reaction times ...</li>
+                    <li><b>Degree of location</b>: To model the distribution of raw scores per group, it is advisable to set this value to 5 (indicating modelling up to power 5 in the polynomials)</li>
+                    <li><b>Degree of age</b>: Indicates the complexity of the age trajectory. Setting this value to three models the age trajectories up to cubic relationships in the polynomila.</li>
+                    <li><b>Number of terms</b>: cNORM tries to find a model that is both well fitting and parsimonious. You might want to change this manually to find other suiting solutions. Beware of high values (e.g. > 10) since these entail the risk of overfitting.</li>
+                  </ul>
+              </li>
               <li>Specify the level of the grouping variable to generate norm table.</li>
             </ol>
+            
+            
+            
             <p>Further information on the procedure is available via <a href=\"https://www.psychometrica.de/cNorm_jamovi_en.html\" target=\"_blank\">Psychometrica</a>.</p>
             </div>
             </body>
@@ -59,9 +69,19 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             <ol>
               <li>Select your <b>raw score</b> variable</li>
               <li>Place the <b>grouping variable</b> (e. g. grade) in the 'Grouping Variable' slot. Each group in the dataset should contain at least 50 cases, preferably 100.</li>
-              <li>Adjust model parameters for retrieving a favorable model via visual inspection of the percentile plot.</li>
+              <li>Adjust model parameters for retrieving a favorable model via visual inspection of the percentile plot. Pay attention to the following parameters:
+                  <ul>
+                    <li><b>Invert ranking order</b>: Please tick, e. g. if higher values depict lower performance as it is the case in error rates, reaction times ...</li>
+                    <li><b>Degree of location</b>: To model the distribution of raw scores per group, it is advisable to set this value to 5 (indicating modelling up to power 5 in the polynomials)</li>
+                    <li><b>Degree of age</b>: Indicates the complexity of the age trajectory. Setting this value to three models the age trajectories up to cubic relationships in the polynomila.</li>
+                    <li><b>Number of terms</b>: cNORM tries to find a model that is both well fitting and parsimonious. You might want to change this manually to find other suiting solutions. Beware of high values (e.g. > 10) since these entail the risk of overfitting.</li>
+                  </ul>
+              </li>
               <li>Specify the level of the grouping variable to generate norm table.</li>
             </ol>
+            
+            
+            
             <p>Further information on the procedure is available via <a href=\"https://www.psychometrica.de/cNorm_jamovi_en.html\" target=\"_blank\">Psychometrica</a>.</p>
             </div>
             </body>
