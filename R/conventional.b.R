@@ -157,9 +157,9 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         
         data <- cNORM::computePowers(data, k=5)
         if(!is.null(self$options$weights)){
-          model <- cNORM::bestModel(data, terms = terms, weights = data$weights)
+          model <- cNORM::bestModel(data, terms = terms, weights = data$weights, plot=FALSE)
         }else{
-          model <- cNORM::bestModel(data, terms = terms)
+          model <- cNORM::bestModel(data, terms = terms, plot=FALSE)
         }
         tab <- cNORM::rawTable(0, model, minNorm = minNorm, maxNorm = maxNorm, minRaw = minRaw, maxRaw = maxRaw, step = as.numeric(self$options$stepping))
         tab$type <- rep(1)
@@ -255,26 +255,43 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
       if(self$options$plotting == 'Percentile')
         plotting <- FALSE
       
-      if(plotting){
-        plot(norm ~ raw, data = data[data$type==0, ], ylab = "Norm Score", xlab = "Raw Score")
-      }else{
-        plot(percentile ~ raw, data = data[data$type==0, ], ylab = "Percentile", xlab = "Raw Score")
+      # Create the base plot
+      p <- ggplot(data = data[data$type == 0, ]) +
+        theme_bw() +
+        theme(legend.position = ifelse(self$options$descend, "topright", "topleft"))
+      
+      # Add points based on the plotting condition
+      if (plotting) {
+        p <- p + 
+          geom_point(aes(x = raw, y = norm)) +
+          labs(x = "Raw Score", y = "Norm Score")
+      } else {
+        p <- p + 
+          geom_point(aes(x = raw, y = percentile)) +
+          labs(x = "Raw Score", y = "Percentile")
       }
       
-      if(regression){
-        
-        if(plotting){
-          lines(norm ~ raw, data = data[data$type==1, ], col = "blue")
-        }else{
-          lines(percentile ~ raw, data = data[data$type==1, ], col = "blue")
+      # Add regression line if required
+      if (regression) {
+        if (plotting) {
+          p <- p + 
+            geom_line(data = data[data$type == 1, ], aes(x = raw, y = norm, color = "Regression"))
+        } else {
+          p <- p + 
+            geom_line(data = data[data$type == 1, ], aes(x = raw, y = percentile, color = "Regression"))
         }
         
-        leg <- "topleft"
-        if(self$options$descend)
-          leg <- "topright"
-        
-        legend(leg, legend = c("Manifest", "Regression"), col = c("black", "blue"), pch = 19)
+        # Add legend
+        p <- p + 
+          scale_color_manual(values = c("Regression" = "blue")) +
+          guides(color = guide_legend(override.aes = list(linetype = 1, shape = NA))) +
+          scale_shape_manual(values = c("Manifest" = 19)) +
+          guides(shape = guide_legend(override.aes = list(color = "black"))) +
+          labs(color = NULL, shape = NULL)
       }
+      
+      # Print the plot
+      print(p)
       
       TRUE
     })

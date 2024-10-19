@@ -321,7 +321,7 @@ conventionalBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 package = "cNORMj",
                 name = "conventional",
-                version = c(2,0,0),
+                version = c(3,0,0),
                 options = options,
                 results = conventionalResults$new(options=options),
                 data = data,
@@ -330,7 +330,8 @@ conventionalBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 revision = revision,
                 pause = NULL,
                 completeWhenFilled = FALSE,
-                requiresMissings = FALSE)
+                requiresMissings = FALSE,
+                weightsSupport = 'none')
         }))
 
 #' Single Group

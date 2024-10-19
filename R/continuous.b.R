@@ -109,17 +109,6 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
       data <- data[complete.cases(data),]
       private$.rowNames <- rownames(data)
       
-      casesPerGroup <- nrow(data)/unique(data$group)
-      if(casesPerGroup<20){
-        self$results$instructions$setVisible(visible = TRUE)
-        self$results$instructions$setContent("<html><head></head><body>
-                                                     <div class='instructions'>
-                                                     <p>Warning! The data are inconsistent. There are not enough cases 
-                                                     per group. Please check your grouping variable.</p>
-                                                     </div></body></html>")
-        return()
-      }
-      
       if(min(w)<1){
         self$results$instructions$setVisible(visible = TRUE)
         self$results$instructions$setContent("<html><head></head><body>

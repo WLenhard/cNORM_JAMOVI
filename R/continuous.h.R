@@ -336,7 +336,7 @@ continuousBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 package = "cNORMj",
                 name = "continuous",
-                version = c(2,0,0),
+                version = c(3,0,0),
                 options = options,
                 results = continuousResults$new(options=options),
                 data = data,
@@ -345,7 +345,8 @@ continuousBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 revision = revision,
                 pause = NULL,
                 completeWhenFilled = FALSE,
-                requiresMissings = FALSE)
+                requiresMissings = FALSE,
+                weightsSupport = 'none')
         }))
 
 #' Continuous Norming

@@ -1,7 +1,7 @@
 ---
 title: Continuous Norming
 name: cNORMj
-version: 2.0.0
+version: 3.0.0
 jms: '1.0'
 authors:
   - Wolfgang Lenhard
@@ -41,21 +41,6 @@ datasets:
     description: >-
       Body height, weight and BMI in childhood and adolescence from the US, data
       file from package cNORM
-  - name: Life Expectancy at Birth
-    path: life.csv
-    description: >-
-      Life expectancy at birth on nation level from 1960 to 2017, data file
-      based on World Bank from package cNORM
-  - name: Mortality of Infants at Birth
-    path: mortality.csv
-    description: >-
-      Mortality rate of life birth per country from 1960 to 2017, data file
-      based on World Bank from package cNORM
-  - name: Simulated IRT-based test per age
-    path: epm.csv
-    description: >-
-      Simulated 1PL IRT test with 50 items and 200 cases per age group, data
-      file from Lenhard & Lenhard (2020) and package cNORM
 usesNative: true
 minApp: 1.0.8
 

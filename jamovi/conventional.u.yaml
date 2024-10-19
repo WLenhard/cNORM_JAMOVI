@@ -101,13 +101,6 @@ children:
                   - type: TextBox
                     name: stepping
                     format: number
-          - type: LayoutBox
-            margin: large
-            children:
-              - type: Output
-                name: manifestNorms
-              - type: Output
-                name: predictedNorms
   - type: CollapseBox
     label: Save
     margin: normal
