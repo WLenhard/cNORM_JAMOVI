@@ -98,15 +98,7 @@ options:
       title: Stepping
       type: Number
       default: 1
-      
-    - name: manifestNorms
-      title: Manifest Norm Scores
-      type: Output
-      
-    - name: predictedNorms
-      title: Predicted Norm Scores
-      type: Output
-      
+
     - name: saveManifest
       title: Manifest Norm Scores
       type: Output

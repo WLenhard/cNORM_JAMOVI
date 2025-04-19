@@ -94,10 +94,6 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                 "stepping",
                 stepping,
                 default=1)
-            private$..manifestNorms <- jmvcore::OptionOutput$new(
-                "manifestNorms")
-            private$..predictedNorms <- jmvcore::OptionOutput$new(
-                "predictedNorms")
             private$..saveManifest <- jmvcore::OptionOutput$new(
                 "saveManifest")
             private$..saveManifestPerc <- jmvcore::OptionOutput$new(
@@ -119,8 +115,6 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
             self$.addOption(private$..minRaw)
             self$.addOption(private$..maxRaw)
             self$.addOption(private$..stepping)
-            self$.addOption(private$..manifestNorms)
-            self$.addOption(private$..predictedNorms)
             self$.addOption(private$..saveManifest)
             self$.addOption(private$..saveManifestPerc)
             self$.addOption(private$..savePredicted)
@@ -139,8 +133,6 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
         minRaw = function() private$..minRaw$value,
         maxRaw = function() private$..maxRaw$value,
         stepping = function() private$..stepping$value,
-        manifestNorms = function() private$..manifestNorms$value,
-        predictedNorms = function() private$..predictedNorms$value,
         saveManifest = function() private$..saveManifest$value,
         saveManifestPerc = function() private$..saveManifestPerc$value,
         savePredicted = function() private$..savePredicted$value,
@@ -158,8 +150,6 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
         ..minRaw = NA,
         ..maxRaw = NA,
         ..stepping = NA,
-        ..manifestNorms = NA,
-        ..predictedNorms = NA,
         ..saveManifest = NA,
         ..saveManifestPerc = NA,
         ..savePredicted = NA,
@@ -174,8 +164,6 @@ conventionalResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
         plot = function() private$.items[["plot"]],
         norms = function() private$.items[["norms"]],
         modelTab = function() private$.items[["modelTab"]],
-        manifestNorms = function() private$.items[["manifestNorms"]],
-        predictedNorms = function() private$.items[["predictedNorms"]],
         saveManifest = function() private$.items[["saveManifest"]],
         saveManifestPerc = function() private$.items[["saveManifestPerc"]],
         savePredicted = function() private$.items[["savePredicted"]],
@@ -246,20 +234,6 @@ conventionalResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                     list(
                         `name`="BIC", 
                         `type`="number"))))
-            self$add(jmvcore::Output$new(
-                options=options,
-                name="manifestNorms",
-                title="Manifest Norm Scores",
-                varTitle="ManifestNorms",
-                varDescription="Frequency-based norm scores",
-                measureType="continuous"))
-            self$add(jmvcore::Output$new(
-                options=options,
-                name="predictedNorms",
-                title="Predicted Norm Scores",
-                varTitle="predictedNorms",
-                varDescription="Regression-based norm scores",
-                measureType="continuous"))
             self$add(jmvcore::Output$new(
                 options=options,
                 name="saveManifest",
@@ -358,8 +332,6 @@ conventionalBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   \code{results$plot} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$norms} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$modelTab} \tab \tab \tab \tab \tab a table \cr
-#'   \code{results$manifestNorms} \tab \tab \tab \tab \tab an output \cr
-#'   \code{results$predictedNorms} \tab \tab \tab \tab \tab an output \cr
 #'   \code{results$saveManifest} \tab \tab \tab \tab \tab an output \cr
 #'   \code{results$saveManifestPerc} \tab \tab \tab \tab \tab an output \cr
 #'   \code{results$savePredicted} \tab \tab \tab \tab \tab an output \cr
