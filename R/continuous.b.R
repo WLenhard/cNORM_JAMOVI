@@ -27,10 +27,11 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             <div class='instructions'>
             <p>The module estimates continuous norm scores by modeling the functional relationship between raw scores (raw), 
             norm scores (L) and the grouping variable (A; e. g. age, schooling duration ...) using the cNORM package 
-            (W. Lenhard, Lenhard & Gary, 2018). The modeling procedure minimizes the error variance contained in the norm scores.   
-            It requires smaller samples sizes compared to conventional norming, closes gaps within and between the norm tables and 
-            smoothes sampling errors.</p>
-            <p>Select a model with a low number of terms while preserving a high R<sup>2</sup> of the model. Avoid intersecting 
+            (A. Lenhard, Lenhard & Gary, 2024; v.3.4.0). The modeling procedure minimizes the error variance contained in the norm 
+            scores. It requires smaller samples sizes compared to conventional norming, closes gaps within and between the norm 
+            tables and smoothes sampling errors. The approach is distibution free and does not rely on assumptions on the nature 
+            of the data.</p>
+            <p>The functions tries to determine a closely fitting, yet consistent model. Avoid intersecting 
             percentile curves. Please proceed as follows:</p>
             <ol>
               <li>Select your <b>raw score</b> variable</li>
@@ -39,8 +40,8 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                   <ul>
                     <li><b>Invert ranking order</b>: Please tick, e. g. if higher values depict lower performance as it is the case in error rates, reaction times ...</li>
                     <li><b>Degree of location</b>: To model the distribution of raw scores per group, it is advisable to set this value to 5 (indicating modelling up to power 5 in the polynomials)</li>
-                    <li><b>Degree of age</b>: Indicates the complexity of the age trajectory. Setting this value to three models the age trajectories up to cubic relationships in the polynomila.</li>
-                    <li><b>Number of terms</b>: cNORM tries to find a model that is both well fitting and parsimonious. You might want to change this manually to find other suiting solutions. Beware of high values (e.g. > 10) since these entail the risk of overfitting.</li>
+                    <li><b>Degree of age</b>: Indicates the complexity of the age trajectory. Setting this value to three models the age trajectories up to cubic relationships.</li>
+                    <li><b>Number of terms</b>: cNORM tries to find a model that is both well fitting and parsimonious. You might want to change this manually to find other suiting solutions. Beware of high values since these entail the risk of overfitting.</li>
                   </ul>
               </li>
               <li>Specify the level of the grouping variable to generate norm table.</li>
@@ -67,15 +68,15 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
           }
           
           if (!is.null(weights)) {
-            model <- cNORM::bestModel(data, terms = terms, k = k, t = t, weights = weights, plot = FALSE)
+            model <- bestModel(data, terms = terms, k = k, t = t, weights = weights, plot = FALSE)
           } else {
-            model <- cNORM::bestModel(data, terms = terms, k = k, t = t, plot = FALSE)
+            model <- bestModel(data, terms = terms, k = k, t = t, plot = FALSE)
           }
         } else {
           if (!is.null(weights)) {
-            model <- cNORM::bestModel(data, k = k, t = t, weights = weights, plot = FALSE)
+            model <- bestModel(data, k = k, t = t, weights = weights, plot = FALSE)
           } else {
-            model <- cNORM::bestModel(data, k = k, t = t, plot = FALSE)
+            model <- bestModel(data, k = k, t = t, plot = FALSE)
           }
         }
         
@@ -245,12 +246,12 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
       descend <- self$options$descend
       
       if(!is.null(self$options$weights)){
-        dataComplete <- cNORM::rankByGroup(dataComplete, raw=dataComplete$raw, group=dataComplete$group, weights = dataComplete$weights, scale = scale, descend = descend)
+        dataComplete <- rankByGroup(dataComplete, raw=dataComplete$raw, group=dataComplete$group, weights = dataComplete$weights, scale = scale, descend = descend)
       }else{
-        dataComplete <- cNORM::rankByGroup(dataComplete, raw=dataComplete$raw, group=dataComplete$group, scale = scale, descend = descend)
+        dataComplete <- rankByGroup(dataComplete, raw=dataComplete$raw, group=dataComplete$group, scale = scale, descend = descend)
       }
       
-      dataComplete <- cNORM::computePowers(dataComplete, k=k, t=t)
+      dataComplete <- computePowers(dataComplete, k=k, t=t)
       attr(dataComplete, "k") <- k
       attr(dataComplete, "t") <- t
       
@@ -307,7 +308,7 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
           
           # Use tryCatch to safely generate the raw table
           rawTableResult <- tryCatch({
-            tab <- cNORM::rawTable(normAge, model, minNorm = minNorm, maxNorm = maxNorm, minRaw = minRaw, maxRaw = maxRaw, step = as.numeric(self$options$stepping))
+            tab <- rawTable(normAge, model, minNorm = minNorm, maxNorm = maxNorm, minRaw = minRaw, maxRaw = maxRaw, step = as.numeric(self$options$stepping))
             list(success = TRUE, table = tab)
           }, error = function(e) {
             list(success = FALSE, message = paste0("Error generating norm table: ", e$message))
@@ -348,7 +349,7 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
       private$.manifestNorms <- dataComplete$normValue
       private$.manifestPerc <- dataComplete$percentile * 100
       
-      dataComplete$predictedNorm <- cNORM::predictNorm(dataComplete$raw, dataComplete$group, model, minNorm=minNorm, maxNorm=maxNorm)
+      dataComplete$predictedNorm <- predictNorm(dataComplete$raw, dataComplete$group, model, minNorm=minNorm, maxNorm=maxNorm)
       dataComplete$predictedPercentile <- pnorm((dataComplete$predictedNorm-m1)/sd1) * 100
       
       private$.predictedNorms <- dataComplete$predictedNorm
@@ -421,13 +422,13 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
       if(self$options$selectionType=="automaticSelection") {
         if(!is.null(self$options$weights)) {
           model <- tryCatch({
-            cNORM::bestModel(data, k = k, t = t, weights = data$weights, plot = FALSE)
+            bestModel(data, k = k, t = t, weights = data$weights, plot = FALSE)
           }, error = function(e) {
             NULL
           })
         } else {
           model <- tryCatch({
-            cNORM::bestModel(data, k = k, t = t, plot = FALSE)
+            bestModel(data, k = k, t = t, plot = FALSE)
           }, error = function(e) {
             NULL
           })
@@ -448,13 +449,13 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         
         if(!is.null(self$options$weights)) {
           model <- tryCatch({
-            cNORM::bestModel(data, terms = terms, k = k, t = t, weights = data$weights, plot = FALSE)
+            bestModel(data, terms = terms, k = k, t = t, weights = data$weights, plot = FALSE)
           }, error = function(e) {
             NULL
           })
         } else {
           model <- tryCatch({
-            cNORM::bestModel(data, terms = terms, k = k, t = t, plot = FALSE)
+            bestModel(data, terms = terms, k = k, t = t, plot = FALSE)
           }, error = function(e) {
             NULL
           })
@@ -582,7 +583,7 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
       
       # Calculate fitted percentiles
       for (i in seq_along(AGEP)) {
-        percentile.fitted[i, ] <- cNORM::predictRaw(T, AGEP[i], model$coefficients, 
+        percentile.fitted[i, ] <- predictRaw(T, AGEP[i], model$coefficients, 
                                                     minRaw = min(data$raw, na.rm = TRUE), 
                                                     maxRaw = max(data$raw, na.rm = TRUE))
       }

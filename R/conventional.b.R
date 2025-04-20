@@ -26,12 +26,12 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 <body>
                 <div class='instructions'>
                 <p>The module estimates norm scores (= location, L) for raw scores within single groups and 
-                compiles norm tables. It is based on the Rankit procedure and inverse normal transformation. In order to smooth 
+                compiles norm tables. In order to smooth 
                 the norm score data and to close the missings, the functional relationship between raw score 
                 and norm score is modeled via polynomial regression up to power 5, using the cNORM package 
-                (W. Lenhard, Lenhard & Gary, 2018).</p>
-                <p>Please specify the raw score variable, the ranking order, the method and the type of norm score scale.</p>
-                <p>Further information on the procedure is available via <a href=\"https://www.psychometrica.de/cNorm_jamovi_en.html\" target=\"_blank\">Psychometrica</a>.</p>
+                (A. Lenhard, Lenhard & Gary, 2024; v.3.4.0).</p>
+                <p>Please specify the raw score variable, the ranking order, and the type of norm score scale.</p>
+                <p>Further information on the procedure is available via the <a href=\"https://www.psychometrica.de/cNorm_jamovi_en.html\" target=\"_blank\">cNORMj tutorial</a>.</p>
                 </div>
                 </body>
                 </html>")  
@@ -39,7 +39,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
     
     .safeModelFit = function(data, terms = NULL, k = 5, weights = NULL) {
       tryCatch({
-        data <- cNORM::computePowers(data, k=k)
+        data <- computePowers(data, k=k)
         
         if (!is.null(terms)) {
           if(terms <= 0 || terms > k) {
@@ -51,15 +51,15 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
           }
           
           if (!is.null(weights)) {
-            model <- cNORM::bestModel(data, terms = terms, weights = weights, plot = FALSE)
+            model <- bestModel(data, terms = terms, weights = weights, plot = FALSE)
           } else {
-            model <- cNORM::bestModel(data, terms = terms, plot = FALSE)
+            model <- bestModel(data, terms = terms, plot = FALSE)
           }
         } else {
           if (!is.null(weights)) {
-            model <- cNORM::bestModel(data, weights = weights, plot = FALSE)
+            model <- bestModel(data, weights = weights, plot = FALSE)
           } else {
-            model <- cNORM::bestModel(data, plot = FALSE)
+            model <- bestModel(data, plot = FALSE)
           }
         }
         
@@ -196,9 +196,9 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
       descend <- self$options$descend
       
       if(!is.null(self$options$weights)){
-        dataComplete <- cNORM::rankByGroup(dataComplete, raw=dataComplete$raw, group=FALSE, scale = scale, descend = descend, weights = dataComplete$weights)
+        dataComplete <- rankByGroup(dataComplete, raw=dataComplete$raw, group=FALSE, scale = scale, descend = descend, weights = dataComplete$weights)
       }else{
-        dataComplete <- cNORM::rankByGroup(dataComplete, raw=dataComplete$raw, group=FALSE, scale = scale, descend = descend)
+        dataComplete <- rankByGroup(dataComplete, raw=dataComplete$raw, group=FALSE, scale = scale, descend = descend)
       }
       
       tab1 <- data.frame(raw = dataComplete$raw, norm=dataComplete$normValue, percentile=dataComplete$percentile*100)
@@ -221,7 +221,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
           foot <- paste0(" The range of raw scores was automatically retrieved from the dataset.")
         
         
-        dataComplete <- cNORM::computePowers(dataComplete, k=5)
+        dataComplete <- computePowers(dataComplete, k=5)
         
         # Use safe model fitting function
         modelResult <- private$.safeModelFit(
@@ -241,7 +241,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         
         model <- modelResult$model
         
-        tab <- cNORM::rawTable(0, model, minNorm = minNorm, maxNorm = maxNorm, minRaw = minRaw, maxRaw = maxRaw, step = as.numeric(self$options$stepping))
+        tab <- rawTable(0, model, minNorm = minNorm, maxNorm = maxNorm, minRaw = minRaw, maxRaw = maxRaw, step = as.numeric(self$options$stepping))
         tab$type <- rep(1)
         
         if(is.null(model)){
@@ -287,7 +287,7 @@ conventionalClass <- if (requireNamespace('jmvcore')) R6::R6Class(
       private$.manifestPerc <- dataComplete$percentile * 100
       
       if(regression){
-        dataComplete$predictedNorm <- cNORM::predictNorm(dataComplete$raw, 0, model, minNorm=minNorm, maxNorm=maxNorm)
+        dataComplete$predictedNorm <- predictNorm(dataComplete$raw, 0, model, minNorm=minNorm, maxNorm=maxNorm)
         dataComplete$predictedPercentile <- pnorm((dataComplete$predictedNorm-m1)/sd1) * 100
         
         private$.predictedNorms <- dataComplete$predictedNorm

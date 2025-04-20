@@ -12,10 +12,10 @@ type: R
 description: >-
   Conventional and regression-based continuous norming methods for psychometric,
   biometric and medical test construction. Percentiles and norm scores are
-  estimated via inverse normal transformation and modeled via Taylor
-  polynomials. The continuous method reduces the necessary sample size, closes
-  gaps between and within the norm groups and decreases error variance in the
-  norm data.
+  estimated via inverse normal transformation and modeled via Taylor polynomials
+  (distribution free) or beta binomial distributions (parametric fitting).  The
+  continuous method reduces the necessary sample size, closes gaps between and
+  within the norm groups and decreases error variance in the norm data.
 analyses:
   - title: Single Group
     name: conventional
