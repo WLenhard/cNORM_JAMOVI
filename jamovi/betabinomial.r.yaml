@@ -1,0 +1,65 @@
+---
+name: betabinomial
+title: Continuous Norming (Beta Binomial)
+jrs: '1.1'
+
+items:
+    - name: instructions
+      title: Instructions
+      type: Html
+      visible: True
+      
+    - name: plot
+      type: Image
+      width: 600
+      height: 400
+      visible: True
+      renderFun: .plot
+    
+    - name: norms
+      title: Norm Score Table
+      type: Table
+      rows: 1
+      visible: True
+      columns:
+        - name: Raw
+          type: number
+        - name: Norm
+          type: number
+        - name: Percentile
+          type: number
+          format: zto,pvalue
+          
+    - name: modelTab
+      title: Model Summary
+      visible: True
+      type: Preformatted
+      
+    - name: savePredicted
+      title: Fitted Norm Scores
+      type: Output
+      varTitle: BetaBinFittedNorm
+      varDescription: Beta-binomial fitted norm score
+      measureType: continuous
+      clearWith:
+        - raw
+        - explanatory
+        - weights
+        - alpha
+        - beta
+        - itemnumber
+        
+    - name: savePredictedPerc
+      title: Fitted Percentile Scores
+      type: Output
+      varTitle: BetaBinFittedPercentile
+      varDescription: Beta-binomial fitted percentile score
+      measureType: continuous
+      clearWith:
+        - raw
+        - explanatory
+        - weights
+        - alpha
+        - beta
+        - itemnumber
+...

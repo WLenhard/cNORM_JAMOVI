@@ -22,11 +22,16 @@ analyses:
     ns: cNORMj
     menuGroup: cNORMj
     menuTitle: Single Group
-  - title: Continuous Norming
+  - title: Continuous Norming (Distribution Free)
     name: continuous
     ns: cNORMj
     menuGroup: cNORMj
-    menuTitle: Continuous Norming
+    menuTitle: Continuous Norming (Distribution Free)
+  - title: Continuous Norming (Beta Binomial)
+    name: betabinomial
+    ns: cNORMj
+    menuGroup: cNORMj
+    menuTitle: Continuous Norming (Beta Binomial)
 datasets:
   - name: Sentence comprehension
     path: elfe.csv

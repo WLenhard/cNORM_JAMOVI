@@ -207,7 +207,7 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 options=options,
                 name="",
-                title="Continuous Norming")
+                title="Continuous Norming (Distribution Free)")
             self$add(jmvcore::Html$new(
                 options=options,
                 name="instructions",
@@ -349,12 +349,12 @@ continuousBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 weightsSupport = 'none')
         }))
 
-#' Continuous Norming
+#' Continuous Norming (Distribution Free)
 #'
 #' 
 #' @param data the data as a data frame
 #' @param raw the raw score variable in the data
-#' @param group the grouping variable in the data
+#' @param group the explanatory variable in the data, e. g. age group
 #' @param weights on optional weighting variable, specifying the weights of
 #'   the single cases
 #' @param scale \code{'T'}, \code{'IQ'}, 'z', 'Wechsler subtest scale (m = 10,

@@ -1,6 +1,6 @@
 ---
 name:  continuous
-title: Continuous Norming
+title: Continuous Norming (Distribution Free)
 menuGroup: cNORMj
 version: '3.0.0'
 jas: '1.2'
@@ -22,14 +22,14 @@ options:
           R: the raw score variable in the data
 
     - name: group
-      title: Grouping variable (discrete)
+      title: Group variable
       type: Variable
       suggested:
         - continuous
       permitted:
         - numeric
       description:
-          R: the grouping variable in the data
+          R: the explanatory variable in the data, e. g. age group
 
     - name: weights
       title: Weights (optional)

@@ -116,10 +116,11 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             <div class='instructions'>
             <p>The module estimates continuous norm scores by modeling the functional relationship between raw scores (raw), 
             norm scores (L) and the grouping variable (A; e. g. age, schooling duration ...) using the cNORM package 
-            (W. Lenhard, Lenhard & Gary, 2018). The modeling procedure minimizes the error variance contained in the norm scores.   
-            It requires smaller samples sizes compared to conventional norming, closes gaps within and between the norm tables and 
-            smoothes sampling errors.</p>
-            <p>Select a model with a low number of terms while preserving a high R<sup>2</sup> of the model. Avoid intersecting 
+            (A. Lenhard, Lenhard & Gary, 2024; v.3.4.0). The modeling procedure minimizes the error variance contained in the norm 
+            scores. It requires smaller samples sizes compared to conventional norming, closes gaps within and between the norm 
+            tables and smoothes sampling errors. The approach is distibution free and does not rely on assumptions on the nature 
+            of the data.</p>
+            <p>The functions tries to determine a closely fitting, yet consistent model. Avoid intersecting 
             percentile curves. Please proceed as follows:</p>
             <ol>
               <li>Select your <b>raw score</b> variable</li>
@@ -128,8 +129,8 @@ continuousClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                   <ul>
                     <li><b>Invert ranking order</b>: Please tick, e. g. if higher values depict lower performance as it is the case in error rates, reaction times ...</li>
                     <li><b>Degree of location</b>: To model the distribution of raw scores per group, it is advisable to set this value to 5 (indicating modelling up to power 5 in the polynomials)</li>
-                    <li><b>Degree of age</b>: Indicates the complexity of the age trajectory. Setting this value to three models the age trajectories up to cubic relationships in the polynomila.</li>
-                    <li><b>Number of terms</b>: cNORM tries to find a model that is both well fitting and parsimonious. You might want to change this manually to find other suiting solutions. Beware of high values (e.g. > 10) since these entail the risk of overfitting.</li>
+                    <li><b>Degree of age</b>: Indicates the complexity of the age trajectory. Setting this value to three models the age trajectories up to cubic relationships.</li>
+                    <li><b>Number of terms</b>: cNORM tries to find a model that is both well fitting and parsimonious. You might want to change this manually to find other suiting solutions. Beware of high values since these entail the risk of overfitting.</li>
                   </ul>
               </li>
               <li>Specify the level of the grouping variable to generate norm table.</li>

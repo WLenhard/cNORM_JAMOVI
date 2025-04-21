@@ -1,0 +1,105 @@
+---
+name:  betabinomial
+title: Continuous Norming (Beta Binomial)
+menuGroup: cNORMj
+version: '3.0.0'
+jas: '1.2'
+
+options:
+    - name: data
+      type: Data
+      description:
+          R: the data as a data frame
+
+    - name: raw
+      title: Raw Score Variable
+      type: Variable
+      suggested:
+        - continuous
+      permitted:
+        - numeric
+      description:
+          R: the raw score variable in the data
+
+    - name: explanatory
+      title: Explanatory variable
+      type: Variable
+      suggested:
+        - continuous
+      permitted:
+        - numeric
+      description:
+          R: the explanatory variable in the data, e. g. age
+
+    - name: weights
+      title: Weights (optional)
+      type: Variable
+      suggested:
+        - continuous
+      permitted:
+        - numeric
+      description:
+          R: an optional weighting variable, specifying the weights of the single cases
+          
+    - name: scale
+      title: Type of Norm Scale
+      type: List
+      options:
+        - T
+        - IQ
+        - z
+      default: T
+      description:
+          R: >
+            `'T'`, `'IQ'`, 'z'
+
+    - name: alpha
+      title: Degree of alpha parameter
+      type: List
+      options:
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+        - "5"
+        - "6"
+      default: "3"
+
+    - name: beta
+      title: Degree of beta parameter
+      type: List
+      options:
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+        - "5"
+        - "6"
+      default: "3"
+
+    - name: itemnumber
+      title: Number of Items in Test
+      type: String
+      description:
+          R: the total number of items in the test
+
+    - name: model
+      title: Model summary
+      type: Bool
+      default: true        
+      
+    - name: normAge
+      title: Norm Score Table
+      type: String
+      description:
+          R: a number specifying the explanatory variable value for the norm score table
+
+    - name: savePredicted
+      title: Fitted Norm Scores
+      type: Output
+      
+    - name: savePredictedPerc
+      title: Fitted Percentile Scores
+      type: Output   
+      
+...
