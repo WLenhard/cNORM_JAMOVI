@@ -1,7 +1,11 @@
 # cNORMj - Continuous Norming for Jamovi
 
 ## Overview
-cNORMj provides conventional and regression-based continuous norming methods for psychometric test development in Jamovi. It is based on the [cNORM package for R](https://cran.r-project.org/package=cNORM) (Lenhard, Lenhard & Gary, 2018).
+cNORMj provides conventional and regression-based continuous norming methods for 
+psychometric test development, biometrics and references scores in medical 
+research in Jamovi. It is based on the 
+[cNORM package for R](https://cran.r-project.org/package=cNORM) 
+(Lenhard, Lenhard & Gary, 2018).
 
 The continuous norming method produces norm scores by modeling the functional relationship between:
 - Raw scores
