@@ -99,7 +99,8 @@
 NULL
 
 
-#' Launcher for the graphical user interface of cNORM
+#' Launcher for the graphical user interface of cNORM for distribution free
+#' continuous norming
 #'
 #' @param launch.browser Default TRUE; automatically open browser for GUI
 #'
@@ -110,21 +111,78 @@ NULL
 #' # Launch graphical user interface
 #' cNORM.GUI()
 #' }
-cNORM.GUI <- function(launch.browser=TRUE){
-  packageList <- c("shiny", "shinycssloaders", "foreign", "readxl", "markdown")
+cNORM.GUI <- function(launch.browser = TRUE) {
+  packageList <- c("shiny", "shinycssloaders", "foreign", "readxl", "markdown", "rmarkdown")
 
-  if (!requireNamespace(packageList, quietly = TRUE)) {
-    cat("Additional packages are needed to start the user interface. Would you like to try to install them now?")
+  # Check which packages are missing
+  missing <- packageList[!sapply(packageList, requireNamespace, quietly = TRUE)]
+
+  if (length(missing) > 0) {
+    cat("Additional packages are needed to start the user interface:\n")
+    cat(paste("-", missing, collapse = "\n"), "\n")
+    cat("\nWould you like to try to install them now?\n")
     installChoice <- menu(c("yes", "no"))
-    if(installChoice == 1){
-      utils::install.packages(packageList)
+
+    if (installChoice == 1) {
+      utils::install.packages(missing)
     } else {
-      stop("Packages are missing. Unable to start the GUI")
+      stop("Required packages are missing. Unable to start the GUI")
     }
   }
 
-  shiny::runApp(system.file('shiny', package='cNORM'),
-                launch.browser=TRUE)
+  appDir <- system.file("shiny", "app1", package = "cNORM")
+  shiny::runApp(appDir,
+                display.mode = "normal",
+                launch.browser = launch.browser)
+}
+
+#' Launch the cNORM Parametric Modeling Shiny Application
+#'
+#' @param launch.browser Logical, whether to launch browser automatically (default: TRUE)
+#' @export
+cNORM.GUI2 <- function(launch.browser = TRUE) {
+
+  # Required packages for the parametric modeling GUI
+  packageList <- c("shiny", "shinycssloaders", "DT", "ggplot2",
+                   "foreign", "readxl", "haven")
+
+  # Check which packages are missing
+  missing <- packageList[!sapply(packageList, requireNamespace, quietly = TRUE)]
+
+  if (length(missing) > 0) {
+    cat("Additional packages are needed to start the parametric modeling interface:\n")
+    cat(paste("-", missing, collapse = "\n"), "\n")
+    cat("\nWould you like to install them now?\n")
+    installChoice <- utils::menu(c("Yes", "No"))
+
+    if (installChoice == 1) {
+      cat("\nInstalling packages...\n")
+      utils::install.packages(missing)
+
+      # Verify installation succeeded
+      still_missing <- missing[!sapply(missing, requireNamespace, quietly = TRUE)]
+      if (length(still_missing) > 0) {
+        stop("Failed to install: ", paste(still_missing, collapse = ", "),
+             "\nPlease install manually and try again.")
+      }
+      cat("Installation complete!\n\n")
+    } else {
+      stop("Required packages are missing. Unable to start the GUI.")
+    }
+  }
+
+  # Locate the app directory
+  appDir <- system.file("shiny", "app2", package = "cNORM")
+
+  if (appDir == "") {
+    stop("Could not find app directory. Try re-installing `cNORM`.", call. = FALSE)
+  }
+
+  # Launch the app
+  message("Launching cNORM Parametric Modeling GUI...")
+  shiny::runApp(appDir,
+                display.mode = "normal",
+                launch.browser = launch.browser)
 }
 
 #' Continuous Norming
@@ -388,9 +446,13 @@ cnorm <- function(raw = NULL,
     stop("Please provide a numerical vector for the raw scores and either a vector for grouping and/or age of the same length. If you use an age vector only, please specify the width of the window.")
   }
 
-  model <- bestModel(data, R2=R2, terms=terms, weights = data$weights, plot = plot, extensive = extensive, subsampling = subsampling)
+  model <- bestModel(data, R2=R2, terms=terms, weights = data$weights, plot = FALSE, extensive = extensive, subsampling = subsampling)
   result <- list(data = data, model = model)
   class(result) <- "cnorm"
+
+  if(plot){
+    plotPercentiles(result)
+  }
   return(result)
 }
 

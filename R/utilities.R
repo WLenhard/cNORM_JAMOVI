@@ -430,7 +430,7 @@ buildCnormObject <- function(data, model){
   return(result)
 }
 
-#' Prepare design matrix for LASSO regression
+#' Prepare design matrix for regression
 #'
 #' @description
 #' This function prepares the design matrix, including powers and interaction terms of location and age.
@@ -454,44 +454,76 @@ buildCnormObject <- function(data, model){
 #'
 #' @noRd
 prepare_matrix <- function(location, age, k = 5, t = 3) {
-  # Ensure location and age are numeric vectors of the same length
-  if (!is.numeric(location) || !is.numeric(age) || length(location) != length(age)) {
+
+  if (!is.numeric(location) || !is.numeric(age) || length(location) != length(age))
     stop("location and age must be numeric vectors of the same length")
-  }
 
-  # Ensure k and t are positive integers
-  if (!is.numeric(k) || !is.numeric(t) || k < 0 || t < 0 || k != round(k) || t != round(t)) {
-    stop("k and t must be positive integers and may not exceed 8")
-  }
+  if (!is.numeric(k) || !is.numeric(t) || k < 0 || t < 0 ||
+      k != round(k) || t != round(t))
+    stop("k and t must be non-negative integers")
 
-  if(k>8||t>8)
+  if (k > 8 || t > 8)
     warning("k and t should not exceed 8")
 
   n <- length(location)
 
-  # Create matrix for powers and interaction terms
-  interaction_matrix <- matrix(NA, nrow = n, ncol = (k + 1)*(t+1) - 1)
-  colnames <- rep("", (k + 1)*(t+1) - 1)
-  col_index <- 1
-  for (i in 0:k) {
-    for (j in 0:t) {
-      if(i==0 && j == 0) next
+  # Precompute all powers once — n × (k+1) and n × (t+1)
+  loc_pow <- outer(location, 0:k, `^`)
+  age_pow <- outer(age,      0:t, `^`)
 
-      interaction_matrix[, col_index] <- location^i * age^j
+  # All (i, j) pairs excluding (0, 0)
+  idx <- expand.grid(i = 0:k, j = 0:t)
+  idx <- idx[!(idx$i == 0L & idx$j == 0L), ]
 
-      if(i>0&&j>0)
-        colnames[col_index] <- paste0("L", i, "A", j)
-      else if(i>0)
-        colnames[col_index] <- paste0("L", i)
-      else
-        colnames[col_index] <- paste0("A", j)
+  # FIX: wrap in matrix() — mapply simplifies to a vector when n = 1,
+  # which has no colnames dimension
+  mat <- matrix(
+    mapply(function(i, j) loc_pow[, i + 1L] * age_pow[, j + 1L],
+           idx$i, idx$j),
+    nrow = n
+  )
 
-      col_index <- col_index + 1
-    }
-  }
-  colnames(interaction_matrix) <- colnames
-  attr(interaction_matrix, "k") <- k
-  attr(interaction_matrix, "t") <- t
+  colnames(mat) <- ifelse(
+    idx$i > 0L & idx$j > 0L, paste0("L", idx$i, "A", idx$j),
+    ifelse(idx$i > 0L,        paste0("L", idx$i),
+           paste0("A", idx$j))
+  )
 
-  return(interaction_matrix)
+  attr(mat, "k") <- k
+  attr(mat, "t") <- t
+
+  mat
 }
+
+# Check if object is of class cnorm
+#' @keywords internal
+isTaylor <- function(model) {
+  return(inherits(model, "cnorm")||inherits(model, "cnormTemp"))
+}
+
+# Check if model is of class cnormBetaBinomial or cnormBetaBinomial2
+#' @keywords internal
+isBeta <- function(model) {
+  return(inherits(model, "cnormBetaBinomial2")||inherits(model, "cnormBetaBinomial"))
+}
+
+# Check if model is of class cnormShash
+#' @keywords internal
+isSHASH <- function(model) {
+  return(inherits(model, "cnormShash")||inherits(model, "cnormShaSh"))
+}
+
+# Check if model is parametric (SHASH or BetaBinomial)
+#' @keywords internal
+isParametric <- function(model) {
+  return(isSHASH(model)||isBeta(model))
+}
+
+# filter incomplete cases
+#' @keywords internal
+filter_complete <- function(...) {
+  v <- list(...)
+  keep <- Reduce(`&`, lapply(v, is.finite))
+  lapply(v, `[`, keep)
+}
+

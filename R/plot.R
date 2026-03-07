@@ -6,7 +6,6 @@
 #' regression line.
 #' @param model The regression model from the 'cnorm' function
 #' @param group Should the fit be displayed by group?
-#' @param raw Vector of the observed raw data
 #' @param type Type of display: 0 = plot manifest against fitted values, 1 = plot
 #' manifest against difference values
 #' @examples
@@ -16,13 +15,13 @@
 #' @import ggplot2
 #' @export
 #' @family plot
-plotRaw <- function(model, group = FALSE, raw = NULL, type = 0) {
+plotRaw <- function(model, group = FALSE, type = 0) {
 
-  if(inherits(model, "cnormBetaBinomial2")||inherits(model, "cnormBetaBinomial")){
-    stop("This function is not applicable for beta-binomial models.")
+  if(isParametric(model)) {
+    stop("This function is not applicable for parametric models.")
   }
 
-  if(!inherits(model, "cnorm")){
+  if(!isTaylor(model)) {
     stop("Please provide a cnorm object.")
   }
 
@@ -129,8 +128,8 @@ plotRaw <- function(model, group = FALSE, raw = NULL, type = 0) {
 #' @family plot
 plotNorm <- function(model, age = NULL, score = NULL, width = NULL, weights = NULL, group = FALSE, minNorm = NULL, maxNorm = NULL, type = 0) {
 
-
-  if(inherits(model, "cnorm")) {
+  is_taylor <- isTaylor(model)
+  if(is_taylor) {
     data <- model$data
     model <- model$model
 
@@ -159,9 +158,9 @@ plotNorm <- function(model, age = NULL, score = NULL, width = NULL, weights = NU
       }
     }
 
-  } else if(inherits(model, "cnormBetaBinomial") || inherits(model, "cnormBetaBinomial2")) {
+  } else if(isParametric(model)) {
     if(is.null(age) || is.null(score)) {
-      stop("Please provide age and score vectors for beta-binomial models and the width for the sliding window.")
+      stop("Please provide age and score vectors for beta-binomial or shash models and the width for the sliding window.")
     }
 
     d <- data.frame(age = age, score = score)
@@ -200,8 +199,8 @@ plotNorm <- function(model, age = NULL, score = NULL, width = NULL, weights = NU
   r <- round(cor(d$fitted, d$normValue, use = "pairwise.complete.obs"), digits = 4)
 
   if (type == 0) {
-    if(inherits(model, "cnorm")) {
-      title <- if(group != "" && !is.null(group)) paste("Observed vs. Fitted Norm Scores by", group) else "Observed vs. Fitted Norm Scores"
+    if(isTaylor(model)) {
+      title <- if (isTRUE(group) || (is.character(group) && nzchar(group))) paste("Observed vs. Fitted Norm Scores by", group) else "Observed vs. Fitted Norm Scores"
     }else{
       title <- if(is.numeric(group)) paste("Observed vs. Fitted Norm Scores by group") else "Observed vs. Fitted Norm Scores"
     }
@@ -216,7 +215,7 @@ plotNorm <- function(model, age = NULL, score = NULL, width = NULL, weights = NU
         y = "Fitted Scores"
       )
   } else {
-    if(inherits(model, "cnorm")) {
+    if(is_taylor) {
       title <- if(group != "" && !is.null(group)) paste("Observed Norm Scores vs. Difference Scores by", group) else "Observed Norm Scores vs. Difference Scores"
     }else{
       title <- if(is.numeric(group)) paste("Observed Norm Scores vs. Difference Scores by group") else "Observed Norm Scores vs. Difference Scores"
@@ -233,7 +232,7 @@ plotNorm <- function(model, age = NULL, score = NULL, width = NULL, weights = NU
       )
   }
 
-  if(group) {
+  if (isTRUE(group) || (is.character(group) && nzchar(group))) {
     p <- p + facet_wrap(~ group)
   }
 
@@ -306,18 +305,17 @@ plotNormCurves <- function(model,
                            minRaw = NULL,
                            maxRaw = NULL) {
 
-  if(inherits(model, "cnorm")){
+  if(isTaylor(model)){
     model <- model$model
   }
+  parametric <- isParametric(model)
 
-  is_beta_binomial <- inherits(model, "cnormBetaBinomial2")
-
-  if(!is_beta_binomial && !model$useAge){
+  if(!isParametric(model) && !model$useAge){
     stop("Age or group variable explicitly set to FALSE in dataset. No plotting available.")
   }
 
   # Get scale information
-  if(is_beta_binomial) {
+  if(parametric) {
     scaleMean <- attr(model$result, "scaleMean")
     scaleSD <- attr(model$result, "scaleSD")
   } else {
@@ -330,38 +328,37 @@ plotNormCurves <- function(model,
   }
 
   if (is.null(minAge)) {
-    minAge <- if(is_beta_binomial) attr(model$result, "age_mean") - 2 * attr(model$result, "age_sd") else model$minA1
+    minAge <- if(parametric) attr(model$result, "age_mean") - 2 * attr(model$result, "age_sd") else model$minA1
   }
 
   if (is.null(maxAge)) {
-    maxAge <- if(is_beta_binomial) attr(model$result, "age_mean") + 2 * attr(model$result, "age_sd") else model$maxA1
+    maxAge <- if(parametric) attr(model$result, "age_mean") + 2 * attr(model$result, "age_sd") else model$maxA1
   }
 
   if (is.null(minRaw)) {
-    minRaw <- if(is_beta_binomial) 0 else model$minRaw
+    minRaw <- if(parametric) 0 else model$minRaw
   }
 
   if (is.null(maxRaw)) {
-    maxRaw <- if(is_beta_binomial) attr(model$result, "max") else model$maxRaw
+    maxRaw <- if(parametric) attr(model$result, "max") else model$maxRaw
   }
 
-  valueList <- data.frame(n = factor(), raw = double(), age = double())
-
-  for (norm in normList) {
-    if(is_beta_binomial) {
+  frame_list <- lapply(normList, function(norm) {
+    if (parametric) {
       ages <- seq(minAge, maxAge, by = step)
-      raws <- sapply(ages, function(age) {
-        pred <- predictCoefficients2(model, age, attr(model$result, "max"))
-        qbeta(pnorm((norm - scaleMean) / scaleSD), pred$a, pred$b) * attr(model$result, "max")
+      raws <- sapply(ages, function(a) {
+        pred <- predictCoefficients2(model, a, attr(model$result, "max"))
+        qbeta(pnorm((norm - scaleMean) / scaleSD), pred$a, pred$b) *
+          attr(model$result, "max")
       })
-      currentDataFrame <- data.frame(n = norm, raw = raws, age = ages)
+      data.frame(n = norm, raw = raws, age = ages)
     } else {
       normCurve <- getNormCurve(norm, model, minAge = minAge, maxAge = maxAge,
                                 step = step, minRaw = minRaw, maxRaw = maxRaw)
-      currentDataFrame <- data.frame(n = norm, raw = normCurve$raw, age = normCurve$age)
+      data.frame(n = norm, raw = normCurve$raw, age = normCurve$age)
     }
-    valueList <- rbind(valueList, currentDataFrame)
-  }
+  })
+  valueList <- do.call(rbind, frame_list)
 
   # Create rainbow color palette
   n_colors <- length(unique(valueList$n))
@@ -369,7 +366,7 @@ plotNormCurves <- function(model,
 
   # Create ggplot
   p <- ggplot(valueList, aes(x = .data$age, y = .data$raw, color = factor(.data$n))) +
-    geom_line(size = 1) +
+    geom_line(linewidth = 1) +
     scale_color_manual(name = "Norm Score",
                        values = color_palette,
                        labels = paste("Norm", normList)) +
@@ -399,8 +396,7 @@ plotNormCurves <- function(model,
 #' The function plots the norm curves based on the regression model against
 #' the actual percentiles from the raw data. As in 'plotNormCurves',
 #' please check for inconsistent curves, especially intersections.
-#' Violations of this assumption are a strong
-#' indication for problems
+#' Violations of this assumption are a strong indication for problems
 #' in modeling the relationship between raw and norm scores.
 #' In general, extrapolation (point 1 and 2) can carefully be done to a
 #' certain degree outside the original sample, but it should in general
@@ -446,17 +442,13 @@ plotPercentiles <- function(model,
                             scale = NULL,
                             title = NULL,
                             subtitle = NULL,
-                            points = F) {
+                            points = FALSE) {
 
-  is_beta_binomial <- inherits(model, "cnormBetaBinomial2")||inherits(model, "cnormBetaBinomial")
-  if(is_beta_binomial){
-    stop("This function is not applicable for beta-binomial models. Please use 'plot(model.binomial, age, raw)' instead.")
+  if(isParametric(model)) {
+    stop("This function is not applicable for parametric models (Beta Binomial or Sinh-Arcsinh). Please use 'plot(model, age, raw)' instead.")
   }
 
-  if(inherits(model, "cnorm")){
-    data <- model$data
-    m <- model$model
-  }else if(inherits(model, "cnormTemp")){
+  if(isTaylor(model)){
     data <- model$data
     m <- model$model
   }else{
@@ -552,21 +544,26 @@ plotPercentiles <- function(model,
   rownames(percentile.actual) <- AGEP
 
   # build finer grained grouping variable for prediction and fit predicted percentiles
-  share <- seq(from = m$minA1, to = m$maxA1, length.out = 100)
+  share <- seq(from = minAge, to = maxAge, length.out = 100)
   AGEP <- c(AGEP, share)
   percentile.fitted <- data.frame(matrix(NA,
                                          nrow = length(AGEP),
                                          ncol = length(T)
   ))
 
-  for(i in 1:length(AGEP)){
-    percentile.fitted[i, ] <- predictRaw(T, AGEP[[i]], m$coefficients, minRaw = minRaw, maxRaw = maxRaw)
-  }
+  norm_rep <- rep(T,    times = length(AGEP))   # T1,T2,...,Tk, T1,T2,...,Tk, ...
+  age_rep  <- rep(AGEP, each  = length(T))       # A1,A1,...,A1, A2,A2,...,A2, ...
 
+  preds <- predictRaw(norm_rep, age_rep, m$coefficients,
+                      minRaw = minRaw, maxRaw = maxRaw)
+
+  percentile.fitted <- as.data.frame(
+    matrix(preds, nrow = length(AGEP), ncol = length(T), byrow = TRUE)
+  )
   percentile.fitted$group <- AGEP
   percentile.fitted <- percentile.fitted[!duplicated(percentile.fitted$group), ]
-  colnames(percentile.fitted) <- c(NAMESP, c(group))
-  rownames(percentile.fitted) <- percentile.fitted$group
+  colnames(percentile.fitted)  <- c(NAMESP, group)
+  rownames(percentile.fitted)  <- percentile.fitted$group
 
   # Merge actual and predicted scores and plot them show lines
   # for predicted scores and dots for actual scores
@@ -595,34 +592,45 @@ plotPercentiles <- function(model,
   plot_data_predicted <- plot_data[plot_data$type == "Predicted", ]
   plot_data_observed <- plot_data[plot_data$type == "Observed", ]
 
-  # Create the ggplot
-  p <- ggplot(plot_data, aes(x = .data$group, y = .data$value, color = .data$percentile)) +
-    geom_line(data = plot_data_predicted, size = .75) +
-    geom_point(data = plot_data_observed, na.rm = TRUE, size = 2.5) +
-    labs(title = title,
-         subtitle = subtitle,
-         x = paste0("Explanatory Variable (", group, ")"),
-         y = paste0("Raw Score (", raw, ")")) +
-    theme_minimal() +
-    theme(legend.position = c(0.99, 0.01),
-          legend.justification = c(1, 0),
-          legend.background = element_rect(fill = "white", color = "black"),
-          legend.key.width = unit(1.5, "cm")) +
-    scale_color_manual(values = setNames(COL1, NAMES),
-                       name = NULL) +
-    guides(color = guide_legend(override.aes = list(linetype = "solid", shape = NA)))
+  # Create the ggplot - ALIGNED ORDER: Points first, then lines
+  p <- ggplot()
 
-  # Add raw scores if points is TRUE
+  # Add raw scores FIRST if points is TRUE (matches plot.cnormShash)
   if (points) {
     if(is.null(age)){
       p <- p + geom_point(data = data, aes(x = .data[[group]], y = .data[[raw]]),
-                        color = "black", alpha = 0.2, size = .6)
+                          color = "black", alpha = 0.2, size = 0.6)  # Matched size
     }else{
       p <- p + geom_point(data = data, aes(x = .data$age, y = .data[[raw]]),
-                          color = "black", alpha = 0.2, size = .6)
+                          color = "black", alpha = 0.2, size = 0.6)  # Matched size
     }
   }
 
+  # Then add percentile lines and observed points
+  p <- p +
+    geom_line(data = plot_data_predicted,
+              aes(x = .data$group, y = .data$value, color = .data$percentile),
+              linewidth = 0.6) +  # Matched linewidth
+    geom_point(data = plot_data_observed,
+               aes(x = .data$group, y = .data$value, color = .data$percentile),
+               na.rm = TRUE,
+               size = 2,
+               shape = 18) +
+    labs(title = title,
+         subtitle = subtitle,
+         x = paste0("Explanatory Variable (", group, ")"),
+         y = paste0("Raw Score (", raw, ")"),
+         color = "Percentile") +  # Added legend title
+    scale_color_manual(
+      values = setNames(COL1, NAMES),
+      labels = paste0(percentiles * 100, "%")  # Matched label format
+    ) +
+    guides(color = guide_legend(override.aes = list(
+      linetype = rep("solid", length(NAMES)),
+      shape = rep(18, length(NAMES))
+    )))  # Matched legend override
+
+  # Apply consistent theme
   p <- p + theme_minimal() +
     theme(
       plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
@@ -637,10 +645,8 @@ plotPercentiles <- function(model,
       panel.grid.major = element_line(color = "gray90"),
       panel.grid.minor = element_line(color = "gray95")
     )
-
-
   print(p)
-  return(p)
+  invisible(p)
 }
 
 
@@ -651,7 +657,8 @@ plotPercentiles <- function(model,
 #' It supports both traditional continuous norming models and beta-binomial models.
 #' The function allows for customization of the plot range and groups to be displayed.
 #'
-#' @param model The model from the bestModel function, a cnorm object, or a cnormBetaBinomial or cnormBetaBinomial2 object.
+#' @param model The model from the bestModel function, a cnorm object, a cnormBetaBinomial, a cnormBetaBinomial2 or
+#'    cnormShash object.
 #' @param minRaw Lower bound of the raw score. If NULL, it's automatically determined based on the model type.
 #' @param maxRaw Upper bound of the raw score. If NULL, it's automatically determined based on the model type.
 #' @param minNorm Lower bound of the norm score. If NULL, it's automatically determined based on the model type.
@@ -694,11 +701,12 @@ plotDensity <- function(model,
                         maxNorm = NULL,
                         group = NULL) {
 
-  if(inherits(model, "cnorm")){
+  if(isTaylor(model)){
     model <- model$model
   }
 
-  is_beta_binomial <- inherits(model, "cnormBetaBinomial")||inherits(model, "cnormBetaBinomial2")
+  is_beta_binomial <- isBeta(model)
+  is_shash <- isSHASH(model)
 
   if (is.null(minNorm)) {
     minNorm <- if(is_beta_binomial) -3 else model$minL1
@@ -709,17 +717,20 @@ plotDensity <- function(model,
   }
 
   if (is.null(minRaw)) {
-    minRaw <- if(is_beta_binomial) 0 else model$minRaw
+    minRaw <- if (is_beta_binomial || is_shash) 0 else model$minRaw
+  }
+  if (is.null(maxRaw)) {
+    maxRaw <- if (is_beta_binomial || is_shash) attr(model$result, "max") else model$maxRaw
   }
 
-  if (is.null(maxRaw)) {
-    maxRaw <- if(is_beta_binomial) attr(model$result, "max") else model$maxRaw
-  }
+  title <- if (is_beta_binomial) "Density Functions (Beta-Binomial)"
+  else if (is_shash) "Density Functions (SHASH)"
+  else "Density Functions (Taylor Polynomial)"
 
 
 
   if (is.null(group)) {
-    if(is_beta_binomial) {
+    if(is_beta_binomial||is_shash) {
       age_min <- attr(model$result, "ageMin")
       age_max <- attr(model$result, "ageMax")
       group <- round(seq(from = age_min, to = age_max, length.out = 4), digits = 3)
@@ -735,6 +746,12 @@ plotDensity <- function(model,
   matrix_list <- lapply(group, function(g) {
     if(is_beta_binomial) {
       norm <- normTable.betabinomial(model, g, attr(model$result, "max"))[[1]]
+      norm$group <- rep(g, length.out = nrow(norm))
+      colnames(norm)[colnames(norm) == "x"] <- "raw"
+      colnames(norm)[colnames(norm) == "norm"] <- "norm1"
+      colnames(norm)[colnames(norm) == "z"] <- "norm"
+    } else if(is_shash) {
+      norm <- normTable.shash(model, g, attr(model$result, "max"))[[1]]
       norm$group <- rep(g, length.out = nrow(norm))
       colnames(norm)[colnames(norm) == "x"] <- "raw"
       colnames(norm)[colnames(norm) == "norm"] <- "norm1"
@@ -766,7 +783,7 @@ plotDensity <- function(model,
 
   matrix <- matrix[complete.cases(matrix), ]
   p <- ggplot(matrix, aes(x = .data$raw, y = .data$density, color = factor(group))) +
-    geom_line(size = 1, na.rm = TRUE) +
+    geom_line(linewidth = 1, na.rm = TRUE) +
     scale_color_viridis_d(name = "Group",
                           labels = paste("Group", group),
                           option = "plasma") +
@@ -820,12 +837,11 @@ plotPercentileSeries <- function(model, start = 1, end = NULL, group = NULL,
                                  percentiles = c(0.025, 0.1, 0.25, 0.5, 0.75, 0.9, 0.975),
                                  filename = NULL) {
 
-  is_beta_binomial <- inherits(model, "cnormBetaBinomial2")||inherits(model, "cnormBetaBinomial")
-  if(is_beta_binomial){
-    stop("This function is not applicable for beta-binomial models. Please use the plotDensity function instead.")
+  if(isParametric(model)) {
+    stop("This function is not applicable for parametric models (Beta Binomial or Sinh-Arcsinh). Please use the plotDensity function instead.")
   }
 
-  if(inherits(model, "cnorm")){
+  if(isTaylor(model)){
     d <- model$data
     model <- model$model
   }else{
@@ -911,7 +927,7 @@ plotPercentileSeries <- function(model, start = 1, end = NULL, group = NULL,
     if (!is.null(filename)) {
       ggsave(
         filename = paste0(filename, start, ".png"),
-        plot = l[[length(l) + 1]],  # Assuming 'chart' is your ggplot object
+        plot = l[[length(l)]],  # Assuming 'chart' is your ggplot object
         device = "png",
         width = 10,  # Specify width in inches
         height = 7,  # Specify height in inches
@@ -980,11 +996,11 @@ plotPercentileSeries <- function(model, start = 1, end = NULL, group = NULL,
 #' @family plot
 plotSubset <- function(model, type = 0) {
 
-  if(inherits(model, "cnormBetaBinomial2") || inherits(model, "cnormBetaBinomial")){
-    stop("This function is not applicable for beta-binomial models.")
+  if(isParametric(model)){
+    stop("This function is not applicable for parametric models (Beta Binomial or Sinh-Arcsinh).")
   }
 
-  if(inherits(model, "cnorm")){
+  if(isTaylor(model)){
     model <- model$model
   }
 
@@ -1041,7 +1057,7 @@ plotSubset <- function(model, type = 0) {
   # Define plot based on type
   if (type == 1) {
     p <- p +
-      geom_line(aes(x = .data$adjr2, y = .data$cp, color = "Model in Ascending Order"), size = .75) +
+      geom_line(aes(x = .data$adjr2, y = .data$cp, color = "Model in Ascending Order"), linewidth = .75) +
       geom_point(aes(x = .data$adjr2, y = .data$cp, shape = .data$filled), size = 2.5, color = "#1f77b4") +
       scale_y_log10() +
       labs(title = "Information Function: Mallows's Cp",
@@ -1051,7 +1067,7 @@ plotSubset <- function(model, type = 0) {
       scale_shape_manual(values = c(1, 16))
   } else if (type == 2) {
     p <- p +
-      geom_line(aes(x = .data$adjr2, y = .data$bic, color = "Model in Ascending Order"), size = .75) +
+      geom_line(aes(x = .data$adjr2, y = .data$bic, color = "Model in Ascending Order"), linewidth = .75) +
       geom_point(aes(x = .data$adjr2, y = .data$bic, shape = .data$filled), size = 2.5, color = "#1f77b4") +
       labs(title = "Information Function: BIC",
            x = expression(paste("Adjusted ", R^2)),
@@ -1060,7 +1076,7 @@ plotSubset <- function(model, type = 0) {
       scale_shape_manual(values = c(1, 16))
   } else if (type == 3) {
     p <- p +
-      geom_line(aes(x = .data$nr, y = .data$RMSE, color = "Model in Ascending Order"), size = .75) +
+      geom_line(aes(x = .data$nr, y = .data$RMSE, color = "Model in Ascending Order"), linewidth = .75) +
       geom_point(aes(x = .data$nr, y = .data$RMSE, shape = .data$filled), size = 2.5, color = "#1f77b4") +
       labs(title = "Information Function: RMSE",
            x = "Number of Predictors",
@@ -1069,7 +1085,7 @@ plotSubset <- function(model, type = 0) {
       scale_shape_manual(values = c(1, 16))
   } else if (type == 4) {
     p <- p +
-      geom_line(aes(x = .data$nr, y = .data$RSS, color = "Model in Ascending Order"), size = .75) +
+      geom_line(aes(x = .data$nr, y = .data$RSS, color = "Model in Ascending Order"), linewidth = .75) +
       geom_point(aes(x = .data$nr, y = .data$RSS, shape = .data$filled), size = 2.5, color = "#1f77b4") +
       labs(title = "Information Function: RSS",
            x = "Number of Predictors",
@@ -1078,7 +1094,7 @@ plotSubset <- function(model, type = 0) {
       scale_shape_manual(values = c(1, 16))
   } else if (type == 5) {
     p <- p +
-      geom_line(aes(x = .data$nr, y = .data$F, color = "Model in Ascending Order"), na.rm = TRUE, size = .75) +
+      geom_line(aes(x = .data$nr, y = .data$F, color = "Model in Ascending Order"), na.rm = TRUE, linewidth = .75) +
       geom_point(aes(x = .data$nr, y = .data$F, shape = .data$filled), na.rm = TRUE, size = 2.5, color = "#1f77b4") +
       labs(title = "Information Function: F-test Statistics",
            x = "Number of Predictors",
@@ -1087,23 +1103,27 @@ plotSubset <- function(model, type = 0) {
       scale_shape_manual(values = c(1, 16))
   } else if (type == 6) {
     p <- p +
-      geom_line(aes(x = .data$nr, y = .data$p, color = "Model in Ascending Order"), na.rm = TRUE, size = .75) +
+      geom_line(aes(x = .data$nr, y = .data$p, color = "Model in Ascending Order"), na.rm = TRUE, linewidth = .75) +
       geom_point(aes(x = .data$nr, y = .data$p, shape = .data$filled), na.rm = TRUE, size = 2.5, color = "#1f77b4") +
       ylim(-0.005, 0.11) +
       labs(title = "Information Function: p-values",
            x = "Number of Predictors",
            y = expression(paste("p-values for Tests on ", R^2, " adj. of Consecutive Models"))) +
-      geom_hline(aes(yintercept = 0.05, color = "p = .05"), linetype = "dashed", size = 1) +
+      geom_hline(aes(yintercept = 0.05, color = "p = .05"), linetype = "dashed", linewidth = 1) +
       scale_color_manual(values = custom_colors) +
       scale_shape_manual(values = c(1, 16))
   } else {
     p <- p +
-      geom_line(aes(x = .data$nr, y = .data$adjr2, color = "Model in Ascending Order"), na.rm = TRUE, size = .75) +
+      geom_line(aes(x = .data$nr, y = .data$adjr2, color = "Model in Ascending Order"), na.rm = TRUE, linewidth = .75) +
       geom_point(aes(x = .data$nr, y = .data$adjr2, shape = .data$filled), na.rm = TRUE, size = 2.5, color = "#1f77b4") +
       labs(title = expression(paste("Information Function: Adjusted ", R^2)),
            x = "Number of Predictors",
            y = expression(paste("Adjusted ", R^2))) +
-      geom_hline(aes(yintercept = cutoff, color = "R2 = .05"), linetype = "dashed", size = 1, color = "#d62728") +
+      geom_hline(
+        yintercept = cutoff,
+        linetype = "dashed",
+        linewidth = .8
+      ) +
       scale_color_manual(values = custom_colors) +
       scale_shape_manual(values = c(1, 16))
   }
@@ -1165,13 +1185,10 @@ plotDerivative <- function(model,
                            stepNorm = NULL,
                            order = 1) {
 
-  if(inherits(model, "cnorm")){
+  if(isTaylor(model)){
     model <- model$model
-  }
-
-  is_beta_binomial <- inherits(model, "cnormBetaBinomial2")||inherits(model, "cnormBetaBinomial")
-  if(is_beta_binomial){
-    stop("This function is not applicable for beta-binomial models. Please use the plotDensity function instead.")
+  }else if(isParametric(model)){
+    stop("This function is not applicable for parametric models (Beta Binomial or Sinh-Arcsinh). Please use the plotDensity function instead.")
   }
 
   if (!model$useAge){
@@ -1220,8 +1237,8 @@ plotDerivative <- function(model,
   dev2 <- expand.grid(X = rowS, Y = colS)
   dev2$Z <- mapply(function(norm, age) predictRaw(norm, age, coeff), dev2$X, dev2$Y)
 
-  desc <- paste0(order, switch(order, "st", "nd", "rd", "th"), " Order Derivative")
-
+  ordinal <- if (order <= 3) c("st", "nd", "rd")[order] else "th"
+  desc <- paste0(order, ordinal, " Order Derivative")
   custom_palette <- c("#FF0000", "#FF4000", "#FF8000", "#FFBF00", "#FFFF00",
                       "#80FF00", "#00FF00", "#00FF80", "#00FFFF",
                       "#0080FF", "#0000FF", "#4B0082", "#8B00FF")
@@ -1264,32 +1281,24 @@ plotDerivative <- function(model,
 #' @param ... additional parameters for the specific plotting function
 #'
 #' @export
-plotCnorm <- function(x, y, ...){
-  if(!inherits(x, "cnorm")||!is.character(y)){
-    message("Please provide a cnorm object as parameter x and the type of plot as a string for parameter y, which can be 'raw', 'norm', 'curves', 'percentiles', 'series', 'subset', or 'derivative'.")
-    return()
+plotCnorm <- function(x, y, ...) {
+  if (!isTaylor(x)) {
+    message("Please provide a cnorm object as x.")
+    return(invisible(NULL))
   }
-
-  if(y == "raw" || y == 1){
-    plotRaw(x, ...)
-  }else if(y == "norm" || y == 2){
-    plotNorm(x, ...)
-  }else if(y == "curves" || y == 3){
-    plotNormCurves(x, ...)
-  }else if(y == "percentiles" || y == 4){
-    plotPercentiles(x, ...)
-  }else if(y == "density" || y == 5){
-    plotDensity(x, ...)
-  }else if(y == "series" || y == 6){
-    plotPercentileSeries(x, ...)
-  }else if(y == "subset" || y == 7){
-    plotSubset(x, ...)
-  }else if(y == "derivative" || y == 8){
-    plotDerivative(x, ...)
-  }else{
-    plotPercentiles(x, ...)
-    message("Please provide the type of plot as a string for parameter y, which can be 'raw', 'norm', 'curves', 'percentiles', 'series', 'subset', 'derivative' or the according index.")
+  if (!is.character(y) && !is.numeric(y)) {
+    message("y must be a plot-type string or integer index.")
+    return(invisible(NULL))
   }
+  if      (y == "raw"         || y == 1) plotRaw(x, ...)
+  else if (y == "norm"        || y == 2) plotNorm(x, ...)
+  else if (y == "curves"      || y == 3) plotNormCurves(x, ...)
+  else if (y == "percentiles" || y == 4) plotPercentiles(x, ...)
+  else if (y == "density"     || y == 5) plotDensity(x, ...)
+  else if (y == "series"      || y == 6) plotPercentileSeries(x, ...)
+  else if (y == "subset"      || y == 7) plotSubset(x, ...)
+  else if (y == "derivative"  || y == 8) plotDerivative(x, ...)
+  else plotPercentiles(x, ...)
 }
 
 #' Compare Two Norm Models Visually
@@ -1297,11 +1306,11 @@ plotCnorm <- function(x, y, ...){
 #' This function creates a visualization comparing two norm models by displaying
 #' their percentile curves. The first model is shown with solid lines, the second
 #' with dashed lines. If age and score vectors are provided, manifest percentiles
-#' are displayed as dots. The function works with both regular cnorm models and
-#' beta-binomial models and allows comparison between different model types.
+#' are displayed as dots. The function works with regular cnorm models, beta-binomial
+#' models, and shash models, allowing comparison between different model types.
 #'
-#' @param model1 First model object (distribution free or beta-binomial)
-#' @param model2 Second model object (distribution free or beta-binomial)
+#' @param model1 First model object (distribution free, beta-binomial, or shash)
+#' @param model2 Second model object (distribution free, beta-binomial, or shash)
 #' @param age Optional vector with manifest age or group values
 #' @param score Optional vector with manifest raw score values
 #' @param weights Optional vector with manifest weights
@@ -1316,7 +1325,13 @@ plotCnorm <- function(x, y, ...){
 #' # Compare different types of models
 #' model1 <- cnorm(group = elfe$group, raw = elfe$raw)
 #' model2 <- cnorm.betabinomial(elfe$group, elfe$raw)
-#' compare(model1, model2, age = elfe$group, score = elfe$raw)
+#' model3 <- cnorm.shash(elfe$group, elfe$raw)
+#'
+#' # Compare traditional cnorm with shash
+#' compare(model1, model3, age = elfe$group, score = elfe$raw)
+#'
+#' # Compare beta-binomial with shash
+#' compare(model2, model3, age = elfe$group, score = elfe$raw)
 #' }
 #'
 #' @export
@@ -1329,16 +1344,16 @@ compare <- function(model1, model2,
                     title = NULL,
                     subtitle = NULL) {
 
-  # retrieve score from model if score is null and of of the
+  # retrieve score from model if score is null and one of the
   # models is a cnorm object
-  if(is.null(score) && inherits(model1, "cnorm")){
+  if(is.null(score) && isTaylor(model1)){
     score <- model1$data[[attributes(model1$data)$raw]]
     age <- model1$data[[attributes(model1$data)$age]]
   }
 
-  if(is.null(score) && inherits(model2, "cnorm")){
-    score <- model1$data[[attributes(model1$data)$raw]]
-    age <- model1$data[[attributes(model1$data)$age]]
+  if(is.null(score) && isTaylor(model2)){
+    score <- model2$data[[attributes(model2$data)$raw]]
+    age <- model2$data[[attributes(model2$data)$age]]
   }
 
   # Function to get predictions for beta-binomial models
@@ -1354,6 +1369,24 @@ compare <- function(model1, model2,
       pred_matrix[,i] <- qbeta(percentiles[i],
                                shape1 = preds$a,
                                shape2 = preds$b) * attr(model$result, "max")
+    }
+
+    pred_data <- data.frame(age = pred_ages, pred_matrix)
+    names(pred_data)[-1] <- paste0("P", percentiles * 100)
+    return(pred_data)
+  }
+
+  # Function to get predictions for shash models
+  get_shash_predictions <- function(model, pred_ages) {
+    preds <- predictCoefficients_shash(model, pred_ages)
+
+    pred_matrix <- matrix(NA, nrow = length(pred_ages), ncol = length(percentiles))
+    for(i in seq_along(percentiles)) {
+      pred_matrix[,i] <- qshash(percentiles[i],
+                                mu = preds$mu,
+                                sigma = preds$sigma,
+                                epsilon = preds$epsilon,
+                                delta = preds$delta)
     }
 
     pred_data <- data.frame(age = pred_ages, pred_matrix)
@@ -1378,8 +1411,8 @@ compare <- function(model1, model2,
 
   # Determine age range
   get_age_range <- function(model) {
-    if(inherits(model, c("cnormBetaBinomial", "cnormBetaBinomial2"))) {
-      return(c(model$ageMin, model$ageMax))
+    if(isParametric(model)) {
+      return(c(attr(model$result, "ageMin"), attr(model$result, "ageMax")))
     } else {
       m <- model$model
       return(c(m$minA1, m$maxA1))
@@ -1396,14 +1429,18 @@ compare <- function(model1, model2,
                    length.out = 100)
 
   # Get predictions for both models
-  plot_data1 <- if(inherits(model1, c("cnormBetaBinomial", "cnormBetaBinomial2"))) {
+  plot_data1 <- if(isBeta(model1)) {
     get_bb_predictions(model1, pred_ages)
+  } else if(isSHASH(model1)) {
+    get_shash_predictions(model1, pred_ages)
   } else {
     get_cnorm_predictions(model1, pred_ages)
   }
 
-  plot_data2 <- if(inherits(model2, c("cnormBetaBinomial", "cnormBetaBinomial2"))) {
+  plot_data2 <- if(isBeta(model2)) {
     get_bb_predictions(model2, pred_ages)
+  } else if(isSHASH(model2)) {
+    get_shash_predictions(model2, pred_ages)
   } else {
     get_cnorm_predictions(model2, pred_ages)
   }
@@ -1453,17 +1490,17 @@ compare <- function(model1, model2,
   }
 
   if (is.null(subtitle)) {
-    subtitle <- "First model: solid lines, Second model: dashed lines"
+    subtitle <- "Model 1: solid lines, Model 2: dashed lines"
   }
 
   # Create plot
   p <- ggplot() +
     geom_line(data = plot_data_long[plot_data_long$model == "Model 1",],
               aes(x = .data$age, y = .data$value, color = .data$percentile),
-              linetype = "solid", size = 0.6) +
+              linetype = "solid", linewidth = 0.6) +
     geom_line(data = plot_data_long[plot_data_long$model == "Model 2",],
               aes(x = .data$age, y = .data$value, color = .data$percentile),
-              linetype = "dashed", size = 0.6) +
+              linetype = "dashed", linewidth = 0.6) +
     scale_color_manual(values = rainbow(length(percentiles)),
                        labels = paste0(percentiles * 100, "%")) +
     labs(title = title,
@@ -1485,6 +1522,43 @@ compare <- function(model1, model2,
       panel.grid.major = element_line(color = "gray90"),
       panel.grid.minor = element_line(color = "gray95")
     )
+
+  # Information criteria
+  if(isTaylor(model1)) {
+    ideal.model <- model1$model$ideal.model
+    rss <- model1$model$subsets$rss[ideal.model]
+    n <- nrow(model1$data)
+
+    sigma2 <- rss / (nrow(model1$data) - ideal.model - 1)  # residual variance
+    loglik <- -0.5 * n * (log(2 * pi) + log(sigma2) + 1)
+
+    AIC1 <- -2 * loglik + 2 * ideal.model
+    BIC1 <- model1$model$subsets$bic[ideal.model]
+  } else{
+    n_obs <- attr(model1$result, "N")
+    n_params <- length(model1$result$par)
+    log_likelihood <- -model1$result$value
+    AIC1 <- 2 * n_params - 2 * log_likelihood
+    BIC1 <- n_params * log(n_obs) - 2 * log_likelihood
+  }
+
+  if(isTaylor(model2)) {
+    ideal.model <- model2$model$ideal.model
+    rss <- model2$model$subsets$rss[ideal.model]
+    n <- nrow(model2$data)
+
+    sigma2 <- rss / (nrow(model2$data) - ideal.model - 1)  # residual variance
+    loglik <- -0.5 * n * (log(2 * pi) + log(sigma2) + 1)
+
+    AIC2 <- -2 * loglik + 2 * ideal.model
+    BIC2 <- model2$model$subsets$bic[ideal.model]
+  } else{
+    n_obs <- attr(model2$result, "N")
+    n_params <- length(model2$result$par)
+    log_likelihood <- -model2$result$value
+    AIC2 <- 2 * n_params - 2 * log_likelihood
+    BIC2 <- n_params * log(n_obs) - 2 * log_likelihood
+  }
 
   if (!is.null(score) & !is.null(age)) {
     # Prepare data for manifest percentiles and fit statistics
@@ -1545,24 +1619,24 @@ compare <- function(model1, model2,
     data$normValue <- 10*(data$normValue - attributes(data)$scaleMean) / attributes(data)$scaleSD
 
     # Get predictions for both models
-    if(inherits(model1, "cnorm")){
+    if(isTaylor(model1)){
       data$fitted1 <- predictNorm(data$score, data$age, model1,
                                   minNorm = model1$model$minL1,
                                   maxNorm = model1$model$maxL1)
       data$fitted1 <- 10*(data$fitted1 - attributes(model1$data)$scaleMean) / attributes(model1$data)$scaleSD
-    }else{
+    }else if(isParametric(model1)) {
       data$fitted1 <- predict(model1, data$age, data$score)
       scaleMean <- attr(model1$result, "scaleMean")
       scaleSD <- attr(model1$result, "scaleSD")
       data$fitted1 <- 10*(data$fitted1 - scaleMean) / scaleSD
     }
 
-    if(inherits(model2, "cnorm")){
+    if(isTaylor(model2)){
       data$fitted2 <- predictNorm(data$score, data$age, model2,
                                   minNorm = model2$model$minL1,
                                   maxNorm = model2$model$maxL1)
       data$fitted2 <- 10*(data$fitted2 - attributes(model2$data)$scaleMean) / attributes(model2$data)$scaleSD
-    }else{
+    }else if(isParametric(model2)) {
       data$fitted2 <- predict(model2, data$age, data$score)
       scaleMean <- attr(model2$result, "scaleMean")
       scaleSD <- attr(model2$result, "scaleSD")
@@ -1582,15 +1656,18 @@ compare <- function(model1, model2,
     MAD1 <- mean(abs(data$fitted1 - data$normValue), na.rm = TRUE)
     MAD2 <- mean(abs(data$fitted2 - data$normValue), na.rm = TRUE)
 
+
     # Create and print summary table
     fit_table <- data.frame(
-      Metric = c("R2", "Bias", "RMSE", "MAD"),
-      Model1 = c(R2a, bias1, RMSE1, MAD1),
-      Model2 = c(R2b, bias2, RMSE2, MAD2),
+      Metric = c("R2", "Bias", "RMSE", "MAD", "AIC", "BIC"),
+      Model1 = c(R2a, bias1, RMSE1, MAD1, AIC1, BIC1),
+      Model2 = c(R2b, bias2, RMSE2, MAD2, AIC2, BIC2),
       Difference = c(R2b - R2a,
                      bias2 - bias1,
                      RMSE2 - RMSE1,
-                     MAD2 - MAD1)
+                     MAD2 - MAD1,
+                     AIC2 - AIC1,
+                     BIC2 - BIC1)
     )
 
     # Round values
@@ -1602,6 +1679,22 @@ compare <- function(model1, model2,
     cat("\nNote: Difference = Model2 - Model1\n")
     cat("      Fit indices are based on the manifest and fitted norm scores of both models.\n")
     cat("      Scale metrics are T scores (scaleSD = 10)\n")
+    cat("      AIC and BIC should only be used when comparing models of the same type.\n")
+  }else{
+    # Create and print summary table
+    fit_table <- data.frame(
+      Metric = c("AIC", "BIC"),
+      Model1 = c(AIC1, BIC1),
+      Model2 = c(AIC2, BIC2),
+      Difference = c(AIC2 - AIC1,
+                     BIC2 - BIC1)
+    )
+
+    cat("\nModel Comparison Summary:\n")
+    cat("------------------------\n")
+    print(format(fit_table, justify = "right"), row.names = FALSE)
+    cat("\nNote: Difference = Model2 - Model1\n")
+    cat("      AIC and BIC should only be used when comparing models of the same type.\n")
   }
 
   return(p)

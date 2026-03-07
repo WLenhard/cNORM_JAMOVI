@@ -28,12 +28,12 @@ getNormCurve <-
              minRaw = NULL,
              maxRaw = NULL) {
 
-    if(!inherits(model, "cnorm")&&!inherits(model, "cnormModel")){
-      stop("Please provide a cnorm object.")
+    if(isTaylor(model)){
+      model <- model$model
     }
 
-    if(inherits(model, "cnorm")){
-      model <- model$model
+    if(!inherits(model, "cnorm")&&!inherits(model, "cnormModel")){
+      stop("Please provide a cnorm object.")
     }
 
     if (is.null(minAge)) {
@@ -206,9 +206,11 @@ normTable <- function(A,
                       reliability = NULL,
                       pretty = T) {
 
-  if(inherits(model, "cnormBetaBinomial")||inherits(model, "cnormBetaBinomial2")){
+  if(isBeta(model)){
     return(normTable.betabinomial(model, A, CI = CI, reliability = reliability))
-  }else if(inherits(model, "cnorm")){
+  }else if(isSHASH(model)){
+    return(normTable.shash(model, A, minRaw, maxRaw, step, CI = CI, reliability = reliability))
+  } else if(isTaylor(model)){
     model <- model$model
   }else if(!inherits(model, "cnormModel")){
     stop("Please provide a cnorm object.")
@@ -397,7 +399,7 @@ rawTable <- function(A,
                      reliability = NULL,
                      pretty = TRUE) {
 
-  if(inherits(model, "cnorm")||inherits(model, "cnormTemp")){
+  if(isTaylor(model)){
     model <- model$model
   }else if(!inherits(model, "cnormModel")){
     stop("Please provide a cnorm object.")
@@ -556,7 +558,7 @@ derivationTable <-
              step = 0.1) {
 
 
-    if(inherits(model, "cnorm")){
+    if(isTaylor(model)){
       model <- model$model
     }else if(!inherits(model, "cnormModel")){
       stop("Please provide a cnorm object.")
@@ -620,7 +622,7 @@ predictNorm <-
              maxNorm = NULL, force = FALSE,
              silent = FALSE) {
 
-    if(!inherits(model, "cnormModel")&&!inherits(model, "cnorm")&&!inherits(model, "cnormLasso")){
+    if(!inherits(model, "cnormModel")&&!inherits(model, "cnorm")){
       stop("Please provide a cnorm object.")
     }
 
@@ -644,7 +646,7 @@ predictNorm <-
       return(NULL)
     }
 
-    if(inherits(model, "cnorm")){
+    if(isTaylor(model)){
       if(is.null(minNorm)){
         minNorm <- attributes(model$data)$scaleMean - (attributes(model$data)$scaleSD * 2.5)
       }

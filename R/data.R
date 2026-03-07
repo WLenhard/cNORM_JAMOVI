@@ -95,9 +95,9 @@
 #' @docType data
 #' @keywords datasets
 #' @concept Body Mass Index growth curves weight height
-#' @source \url{https://www.cdc.gov/nchs/nhanes/index.htm}
+#' @source \url{https://www.cdc.gov/nchs/nhanes/}
 #' @references CDC (2012). National Health and Nutrition Examination Survey: Questionnaires, Datasets and Related
-#' Documentation. available \url{https://www.cdc.gov/nchs/nhanes/index.htm} (date of retrieval: 25/08/2018)
+#' Documentation. available \url{https://www.cdc.gov/nchs/nhanes/} (date of retrieval: 25/08/2018)
 #' @name CDC
 #' @format A data frame with 45035 rows and 7 columns
 "CDC"

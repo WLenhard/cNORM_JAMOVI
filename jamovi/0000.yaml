@@ -1,13 +1,13 @@
 ---
 title: Continuous Norming
 name: cNORMj
-version: 3.0.0
+version: 3.0.1
 jms: '1.0'
 authors:
   - Wolfgang Lenhard
   - Alexandra Lenhard
 maintainer: Wolfgang Lenhard <wolfgang.lenhard@uni-wuerzburg.de>
-date: '2025-04-19'
+date: '2026-03-07'
 type: R
 description: >-
   Conventional and regression-based continuous norming methods for psychometric,
@@ -22,16 +22,19 @@ analyses:
     ns: cNORMj
     menuGroup: cNORMj
     menuTitle: Single Group
+    category: analyses
   - title: Continuous Norming (Distribution Free)
     name: continuous
     ns: cNORMj
     menuGroup: cNORMj
     menuTitle: Continuous Norming (Distribution Free)
+    category: analyses
   - title: Continuous Norming (Beta Binomial)
     name: betabinomial
     ns: cNORMj
     menuGroup: cNORMj
     menuTitle: Continuous Norming (Beta Binomial)
+    category: analyses
 datasets:
   - name: Sentence comprehension
     path: elfe.csv

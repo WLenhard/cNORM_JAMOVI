@@ -16,7 +16,7 @@ calcPolyInL <- function(raw, age, model) {
 
 
 #' Internal function for retrieving regression function coefficients at specific
-#' age (optimized)
+#' age
 #'
 #' The function is an inline for searching zeros in the inverse regression
 #' function. It collapses the regression function at a specific age and
