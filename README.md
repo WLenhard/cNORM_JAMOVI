@@ -23,14 +23,12 @@ This approach:
 ### Single Group
 For norming within a single group (e.g., all participants of the same age/grade).
 
-### Continuous Norming (Distribution Free)
-For creating continuous norms across multiple groups or ages using Taylor 
-polynomials. This is the most flexible approach, suitable if no further 
-information on the type of distribution is available.
-
-### Continuous Norming (Beta Binomial)
-Models beta binomial distribution parameters via polynomial regression. The
-approach fit ideally for 1PL IRT based test (AKA Rasch).
+### Continuous Norming
+For creating continuous norms across multiple groups or ages. It includes
+distribution free modelling (Taylor polynomials) and parametric modelling with
+the beta binomial (e. g. 1PL IRT scales), Conway-Maxwell-Poisson (purely 
+speeded tests, count information) and SinH ArcsinH (Shash; most flexible
+parametric models).
 
 ## Key References
 - Lenhard, A., Lenhard, W., Sebastian, S. & Segerer, R. (2018). A continuous solution to the norming problem. Assessment, 25, 112-125. doi:10.1177/1073191116656437
