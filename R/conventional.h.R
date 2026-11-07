@@ -9,15 +9,20 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
             raw = NULL,
             weights = NULL,
             scale = "T",
-            k = TRUE,
-            terms = "4",
             descend = FALSE,
+            k = TRUE,
+            kPower = "5",
+            selectionType = "automaticSelection",
+            terms = 4,
             plotting = "Norm Score",
-            range = 3,
             model = TRUE,
+            range = 3,
             minRaw = 0,
             maxRaw = 0,
-            stepping = 1, ...) {
+            stepping = 1,
+            includeCI = FALSE,
+            ciLevel = 0.9,
+            reliability = 0.9, ...) {
 
             super$initialize(
                 package="cNORMj",
@@ -49,24 +54,38 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                     "Wechsler",
                     "PISA"),
                 default="T")
+            private$..descend <- jmvcore::OptionBool$new(
+                "descend",
+                descend,
+                default=FALSE)
             private$..k <- jmvcore::OptionBool$new(
                 "k",
                 k,
                 default=TRUE)
-            private$..terms <- jmvcore::OptionList$new(
-                "terms",
-                terms,
+            private$..kPower <- jmvcore::OptionList$new(
+                "kPower",
+                kPower,
                 options=list(
                     "1",
                     "2",
                     "3",
                     "4",
-                    "5"),
-                default="4")
-            private$..descend <- jmvcore::OptionBool$new(
-                "descend",
-                descend,
-                default=FALSE)
+                    "5",
+                    "6"),
+                default="5")
+            private$..selectionType <- jmvcore::OptionList$new(
+                "selectionType",
+                selectionType,
+                options=list(
+                    "automaticSelection",
+                    "manualSelection"),
+                default="automaticSelection")
+            private$..terms <- jmvcore::OptionInteger$new(
+                "terms",
+                terms,
+                min=1,
+                max=6,
+                default=4)
             private$..plotting <- jmvcore::OptionList$new(
                 "plotting",
                 plotting,
@@ -74,14 +93,16 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                     "Norm Score",
                     "Percentile"),
                 default="Norm Score")
-            private$..range <- jmvcore::OptionNumber$new(
-                "range",
-                range,
-                default=3)
             private$..model <- jmvcore::OptionBool$new(
                 "model",
                 model,
                 default=TRUE)
+            private$..range <- jmvcore::OptionNumber$new(
+                "range",
+                range,
+                min=0.5,
+                max=6,
+                default=3)
             private$..minRaw <- jmvcore::OptionNumber$new(
                 "minRaw",
                 minRaw,
@@ -93,7 +114,24 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
             private$..stepping <- jmvcore::OptionNumber$new(
                 "stepping",
                 stepping,
+                min=0.01,
                 default=1)
+            private$..includeCI <- jmvcore::OptionBool$new(
+                "includeCI",
+                includeCI,
+                default=FALSE)
+            private$..ciLevel <- jmvcore::OptionNumber$new(
+                "ciLevel",
+                ciLevel,
+                min=0.5,
+                max=0.999,
+                default=0.9)
+            private$..reliability <- jmvcore::OptionNumber$new(
+                "reliability",
+                reliability,
+                min=0.01,
+                max=0.999,
+                default=0.9)
             private$..saveManifest <- jmvcore::OptionOutput$new(
                 "saveManifest")
             private$..saveManifestPerc <- jmvcore::OptionOutput$new(
@@ -106,15 +144,20 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
             self$.addOption(private$..raw)
             self$.addOption(private$..weights)
             self$.addOption(private$..scale)
-            self$.addOption(private$..k)
-            self$.addOption(private$..terms)
             self$.addOption(private$..descend)
+            self$.addOption(private$..k)
+            self$.addOption(private$..kPower)
+            self$.addOption(private$..selectionType)
+            self$.addOption(private$..terms)
             self$.addOption(private$..plotting)
-            self$.addOption(private$..range)
             self$.addOption(private$..model)
+            self$.addOption(private$..range)
             self$.addOption(private$..minRaw)
             self$.addOption(private$..maxRaw)
             self$.addOption(private$..stepping)
+            self$.addOption(private$..includeCI)
+            self$.addOption(private$..ciLevel)
+            self$.addOption(private$..reliability)
             self$.addOption(private$..saveManifest)
             self$.addOption(private$..saveManifestPerc)
             self$.addOption(private$..savePredicted)
@@ -124,15 +167,20 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
         raw = function() private$..raw$value,
         weights = function() private$..weights$value,
         scale = function() private$..scale$value,
-        k = function() private$..k$value,
-        terms = function() private$..terms$value,
         descend = function() private$..descend$value,
+        k = function() private$..k$value,
+        kPower = function() private$..kPower$value,
+        selectionType = function() private$..selectionType$value,
+        terms = function() private$..terms$value,
         plotting = function() private$..plotting$value,
-        range = function() private$..range$value,
         model = function() private$..model$value,
+        range = function() private$..range$value,
         minRaw = function() private$..minRaw$value,
         maxRaw = function() private$..maxRaw$value,
         stepping = function() private$..stepping$value,
+        includeCI = function() private$..includeCI$value,
+        ciLevel = function() private$..ciLevel$value,
+        reliability = function() private$..reliability$value,
         saveManifest = function() private$..saveManifest$value,
         saveManifestPerc = function() private$..saveManifestPerc$value,
         savePredicted = function() private$..savePredicted$value,
@@ -141,15 +189,20 @@ conventionalOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
         ..raw = NA,
         ..weights = NA,
         ..scale = NA,
-        ..k = NA,
-        ..terms = NA,
         ..descend = NA,
+        ..k = NA,
+        ..kPower = NA,
+        ..selectionType = NA,
+        ..terms = NA,
         ..plotting = NA,
-        ..range = NA,
         ..model = NA,
+        ..range = NA,
         ..minRaw = NA,
         ..maxRaw = NA,
         ..stepping = NA,
+        ..includeCI = NA,
+        ..ciLevel = NA,
+        ..reliability = NA,
         ..saveManifest = NA,
         ..saveManifestPerc = NA,
         ..savePredicted = NA,
@@ -162,8 +215,9 @@ conventionalResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
     active = list(
         instructions = function() private$.items[["instructions"]],
         plot = function() private$.items[["plot"]],
+        modelFit = function() private$.items[["modelFit"]],
+        modelCoef = function() private$.items[["modelCoef"]],
         norms = function() private$.items[["norms"]],
-        modelTab = function() private$.items[["modelTab"]],
         saveManifest = function() private$.items[["saveManifest"]],
         saveManifestPerc = function() private$.items[["saveManifestPerc"]],
         savePredicted = function() private$.items[["savePredicted"]],
@@ -174,72 +228,169 @@ conventionalResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
             super$initialize(
                 options=options,
                 name="",
-                title="Single Group")
+                title="Single Group Norming")
             self$add(jmvcore::Html$new(
                 options=options,
                 name="instructions",
                 title="Instructions",
-                refs="assessment",
+                refs=list(
+                    "cNORM",
+                    "assessment"),
                 visible=TRUE))
             self$add(jmvcore::Image$new(
                 options=options,
                 name="plot",
+                title="Norm Score Conversion",
                 refs="cNORM",
                 width=600,
-                height=400,
+                height=450,
                 visible=TRUE,
-                renderFun=".plot"))
+                renderFun=".plot",
+                clearWith=list(
+                    "raw",
+                    "weights",
+                    "scale",
+                    "descend",
+                    "k",
+                    "kPower",
+                    "selectionType",
+                    "terms",
+                    "plotting",
+                    "range",
+                    "minRaw",
+                    "maxRaw",
+                    "stepping",
+                    "includeCI",
+                    "ciLevel",
+                    "reliability")))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="modelFit",
+                title="Model Fit",
+                visible="(model && k)",
+                rows=1,
+                refs=list(
+                    "plos",
+                    "epm"),
+                clearWith=list(
+                    "raw",
+                    "weights",
+                    "scale",
+                    "descend",
+                    "k",
+                    "kPower",
+                    "selectionType",
+                    "terms"),
+                columns=list(
+                    list(
+                        `name`="nobs", 
+                        `title`="N", 
+                        `type`="integer"),
+                    list(
+                        `name`="terms", 
+                        `title`="Terms", 
+                        `type`="integer"),
+                    list(
+                        `name`="rmse", 
+                        `title`="RMSE", 
+                        `type`="number"),
+                    list(
+                        `name`="r2adj", 
+                        `title`="Adj. R\u00B2", 
+                        `type`="number"),
+                    list(
+                        `name`="bic", 
+                        `title`="BIC", 
+                        `type`="number"))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="modelCoef",
+                title="Regression Coefficients",
+                visible="(model && k)",
+                rows=0,
+                refs=list(
+                    "plos",
+                    "epm"),
+                clearWith=list(
+                    "raw",
+                    "weights",
+                    "scale",
+                    "descend",
+                    "k",
+                    "kPower",
+                    "selectionType",
+                    "terms"),
+                columns=list(
+                    list(
+                        `name`="term", 
+                        `title`="Term", 
+                        `type`="text"),
+                    list(
+                        `name`="estimate", 
+                        `title`="Estimate", 
+                        `type`="number"))))
             self$add(jmvcore::Table$new(
                 options=options,
                 name="norms",
-                title="Norm score table",
+                title="Norm Score Table",
                 refs="epm",
                 visible=TRUE,
-                rows=1,
+                rows=0,
+                clearWith=list(
+                    "raw",
+                    "weights",
+                    "scale",
+                    "descend",
+                    "k",
+                    "kPower",
+                    "selectionType",
+                    "terms",
+                    "range",
+                    "minRaw",
+                    "maxRaw",
+                    "stepping",
+                    "includeCI",
+                    "ciLevel",
+                    "reliability"),
                 columns=list(
                     list(
                         `name`="Raw", 
+                        `title`="Raw Score", 
                         `type`="number"),
                     list(
                         `name`="Norm", 
+                        `title`="Norm Score", 
                         `type`="number"),
                     list(
                         `name`="Percentile", 
+                        `title`="Percentile", 
+                        `type`="number"),
+                    list(
+                        `name`="lowerCI", 
+                        `title`="Lower CI (Norm)", 
                         `type`="number", 
-                        `format`="zto,pvalue"))))
-            self$add(jmvcore::Table$new(
-                options=options,
-                name="modelTab",
-                title="Model Summary",
-                visible=TRUE,
-                rows=1,
-                refs="plos",
-                columns=list(
+                        `visible`="(includeCI)"),
                     list(
-                        `name`="Variable", 
-                        `title`="", 
-                        `type`="text"),
+                        `name`="upperCI", 
+                        `title`="Upper CI (Norm)", 
+                        `type`="number", 
+                        `visible`="(includeCI)"),
                     list(
-                        `name`="Weight", 
-                        `type`="number"),
+                        `name`="lowerCI_PR", 
+                        `title`="Lower CI (PR)", 
+                        `type`="number", 
+                        `visible`="(includeCI)"),
                     list(
-                        `name`="Terms", 
-                        `type`="integer"),
-                    list(
-                        `name`="RMSE", 
-                        `type`="number"),
-                    list(
-                        `name`="R2adj", 
-                        `type`="number"),
-                    list(
-                        `name`="BIC", 
-                        `type`="number"))))
+                        `name`="upperCI_PR", 
+                        `title`="Upper CI (PR)", 
+                        `type`="number", 
+                        `visible`="(includeCI)"))))
             self$add(jmvcore::Output$new(
                 options=options,
                 name="saveManifest",
                 title="Manifest Norm Scores",
                 varTitle="ManifestNorm",
-                varDescription="Manifest norm score",
+                varDescription="Manifest norm score (Single Group)",
                 measureType="continuous",
                 clearWith=list(
                     "raw",
@@ -251,7 +402,7 @@ conventionalResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                 name="saveManifestPerc",
                 title="Manifest Percentile Scores",
                 varTitle="ManifestPercentile",
-                varDescription="Manifest percentile score",
+                varDescription="Manifest percentile score (Single Group)",
                 measureType="continuous",
                 clearWith=list(
                     "raw",
@@ -263,29 +414,35 @@ conventionalResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Clas
                 name="savePredicted",
                 title="Fitted Norm Scores",
                 varTitle="FittedNorm",
-                varDescription="Fitted norm score",
+                varDescription="Fitted norm score (Single Group)",
                 measureType="continuous",
                 clearWith=list(
                     "raw",
                     "weights",
                     "scale",
-                    "k",
                     "descend",
-                    "terms")))
+                    "k",
+                    "kPower",
+                    "selectionType",
+                    "terms",
+                    "range")))
             self$add(jmvcore::Output$new(
                 options=options,
                 name="savePredictedPerc",
                 title="Fitted Percentile Scores",
                 varTitle="FittedPercentile",
-                varDescription="Fitted percentile score",
+                varDescription="Fitted percentile score (Single Group)",
                 measureType="continuous",
                 clearWith=list(
                     "raw",
                     "weights",
                     "scale",
-                    "k",
                     "descend",
-                    "terms")))}))
+                    "k",
+                    "kPower",
+                    "selectionType",
+                    "terms",
+                    "range")))}))
 
 conventionalBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
     "conventionalBase",
@@ -295,7 +452,7 @@ conventionalBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 package = "cNORMj",
                 name = "conventional",
-                version = c(3,0,0),
+                version = c(3,7,0),
                 options = options,
                 results = conventionalResults$new(options=options),
                 data = data,
@@ -305,33 +462,39 @@ conventionalBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 pause = NULL,
                 completeWhenFilled = FALSE,
                 requiresMissings = FALSE,
-                weightsSupport = 'none')
+                weightsSupport = 'full')
         }))
 
-#' Single Group
+#' Single Group Norming
 #'
 #' 
 #' @param data the data as a data frame
 #' @param raw a string specifying the raw score variable in \code{data}
-#' @param weights on optional weighting variable, specifying the weights of
-#'   the single cases
-#' @param scale \code{'T'}, \code{'IQ'}, 'z', 'Wechsler subtest scale (m = 10,
-#'   sd = 3)', or 'PISA (m = 500, sd = 100)'`
-#' @param k .
-#' @param terms .
+#' @param weights an optional weighting variable specifying the weights of the
+#'   single cases
+#' @param scale \code{'T'}, \code{'IQ'}, \code{'z'}, \code{'Wechsler'} (m =
+#'   10, sd = 3), or \code{'PISA'} (m = 500, sd = 100)
 #' @param descend .
+#' @param k .
+#' @param kPower .
+#' @param selectionType .
+#' @param terms .
 #' @param plotting .
-#' @param range .
 #' @param model .
+#' @param range .
 #' @param minRaw .
 #' @param maxRaw .
 #' @param stepping .
+#' @param includeCI .
+#' @param ciLevel .
+#' @param reliability .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$instructions} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$plot} \tab \tab \tab \tab \tab an image \cr
+#'   \code{results$modelFit} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$modelCoef} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$norms} \tab \tab \tab \tab \tab a table \cr
-#'   \code{results$modelTab} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$saveManifest} \tab \tab \tab \tab \tab an output \cr
 #'   \code{results$saveManifestPerc} \tab \tab \tab \tab \tab an output \cr
 #'   \code{results$savePredicted} \tab \tab \tab \tab \tab an output \cr
@@ -340,9 +503,9 @@ conventionalBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'
 #' Tables can be converted to data frames with \code{asDF} or \code{\link{as.data.frame}}. For example:
 #'
-#' \code{results$norms$asDF}
+#' \code{results$modelFit$asDF}
 #'
-#' \code{as.data.frame(results$norms)}
+#' \code{as.data.frame(results$modelFit)}
 #'
 #' @export
 conventional <- function(
@@ -350,15 +513,20 @@ conventional <- function(
     raw,
     weights,
     scale = "T",
-    k = TRUE,
-    terms = "4",
     descend = FALSE,
+    k = TRUE,
+    kPower = "5",
+    selectionType = "automaticSelection",
+    terms = 4,
     plotting = "Norm Score",
-    range = 3,
     model = TRUE,
+    range = 3,
     minRaw = 0,
     maxRaw = 0,
-    stepping = 1) {
+    stepping = 1,
+    includeCI = FALSE,
+    ciLevel = 0.9,
+    reliability = 0.9) {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
         stop("conventional requires jmvcore to be installed (restart may be required)")
@@ -376,15 +544,20 @@ conventional <- function(
         raw = raw,
         weights = weights,
         scale = scale,
-        k = k,
-        terms = terms,
         descend = descend,
+        k = k,
+        kPower = kPower,
+        selectionType = selectionType,
+        terms = terms,
         plotting = plotting,
-        range = range,
         model = model,
+        range = range,
         minRaw = minRaw,
         maxRaw = maxRaw,
-        stepping = stepping)
+        stepping = stepping,
+        includeCI = includeCI,
+        ciLevel = ciLevel,
+        reliability = reliability)
 
     analysis <- conventionalClass$new(
         options = options,

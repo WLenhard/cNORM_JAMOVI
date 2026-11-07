@@ -1,9 +1,10 @@
 ---
-name:  conventional
-title: Single Group
+name: conventional
+title: Single Group Norming
 menuGroup: cNORMj
-version: '3.0.0'
+version: '3.7.0'
 jas: '1.2'
+weightsSupport: full
 
 options:
     - name: data
@@ -12,12 +13,12 @@ options:
           R: the data as a data frame
 
     - name: raw
-      title: Raw Score Variable
+      title: Raw score variable
       type: Variable
       suggested:
         - continuous
       permitted:
-        - numeric      
+        - numeric
       description:
           R: a string specifying the raw score variable in `data`
 
@@ -29,10 +30,10 @@ options:
       permitted:
         - numeric
       description:
-          R: on optional weighting variable, specifying the weights of the single cases
-          
+          R: an optional weighting variable specifying the weights of the single cases
+
     - name: scale
-      title: Type of norm scale
+      title: Norm scale
       type: List
       options:
         - T
@@ -43,15 +44,20 @@ options:
       default: T
       description:
           R: >
-            `'T'`, `'IQ'`, 'z', 'Wechsler subtest scale (m = 10, sd = 3)', or 'PISA (m = 500, sd = 100)'`
+            `'T'`, `'IQ'`, `'z'`, `'Wechsler'` (m = 10, sd = 3), or `'PISA'` (m = 500, sd = 100)
+
+    - name: descend
+      title: Invert ranking order (descending)
+      type: Bool
+      default: false
 
     - name: k
-      title: Use regression
+      title: Smooth with polynomial regression
       type: Bool
       default: true
-      
-    - name: terms
-      title: Number of terms
+
+    - name: kPower
+      title: Degree of location (k)
       type: List
       options:
         - '1'
@@ -59,13 +65,26 @@ options:
         - '3'
         - '4'
         - '5'
-      default: '4'
+        - '6'
+      default: '5'
 
-    - name: descend
-      title: Invert ranking order
-      type: Bool
-      default: false
-      
+    - name: selectionType
+      title: Term selection
+      type: List
+      options:
+        - name: automaticSelection
+          title: Automatic
+        - name: manualSelection
+          title: Manual
+      default: automaticSelection
+
+    - name: terms
+      title: Number of terms
+      type: Integer
+      min: 1
+      max: 6
+      default: 4
+
     - name: plotting
       title: Result plot
       type: List
@@ -74,45 +93,66 @@ options:
         - Percentile
       default: Norm Score
 
-    - name: range
-      title: +/- SD norm table range
-      type: Number
-      default: 3      
-      
     - name: model
       title: Model summary
       type: Bool
       default: true
-      
+
+    - name: range
+      title: Norm table range (± SD)
+      type: Number
+      min: 0.5
+      max: 6.0
+      default: 3.0
+
     - name: minRaw
       title: Minimum raw score
       type: Number
       default: 0
-      
+
     - name: maxRaw
       title: Maximum raw score
       type: Number
       default: 0
-      
+
     - name: stepping
-      title: Stepping
+      title: Step size
       type: Number
+      min: 0.01
       default: 1
 
+    - name: includeCI
+      title: Include confidence intervals
+      type: Bool
+      default: false
+
+    - name: ciLevel
+      title: Confidence level
+      type: Number
+      min: 0.50
+      max: 0.999
+      default: 0.90
+
+    - name: reliability
+      title: Reliability coefficient
+      type: Number
+      min: 0.01
+      max: 0.999
+      default: 0.90
+
     - name: saveManifest
-      title: Manifest Norm Scores
+      title: Manifest norm scores
       type: Output
-      
+
     - name: saveManifestPerc
-      title: Manifest Percentile Scores
+      title: Manifest percentile scores
       type: Output
-      
+
     - name: savePredicted
-      title: Fitted Norm Scores
+      title: Fitted norm scores
       type: Output
-      
+
     - name: savePredictedPerc
-      title: Fitted Percentile Scores
-      type: Output   
-      
+      title: Fitted percentile scores
+      type: Output
 ...

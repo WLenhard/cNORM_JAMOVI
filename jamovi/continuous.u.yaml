@@ -1,4 +1,4 @@
-title: Continuous Norming (Distribution Free)
+title: Continuous Norming
 name: continuous
 jus: '3.0'
 stage: 0
@@ -16,7 +16,7 @@ children:
             maxItemCount: 1
             isTarget: true
       - type: TargetLayoutBox
-        label: Grouping Variable
+        label: Explanatory / Grouping Variable (e.g., age)
         children:
           - type: VariablesListBox
             name: group
@@ -29,8 +29,15 @@ children:
             name: weights
             maxItemCount: 1
             isTarget: true
+  - type: LayoutBox
+    margin: large
+    children:
+      - type: ComboBox
+        name: method
+      - type: ComboBox
+        name: scale
   - type: CollapseBox
-    label: Parameters
+    label: Model Parameters
     margin: normal
     collapsed: true
     children:
@@ -39,50 +46,94 @@ children:
         margin: large
         children:
           - type: Label
-            label: Data Preparation
+            label: Distribution-Free (Taylor Polynomials)
             fitToGrid: true
-            cell:
-              column: 0
-              row: 0
             children:
               - type: CheckBox
                 name: descend
-              - type: ComboBox
-                name: scale
-          - type: Label
-            label: Regression Function
-            fitToGrid: true
-            cell:
-              column: 0
-              row: 1
-            children:
+                enable: (method:taylor)
               - type: ComboBox
                 name: k
+                enable: (method:taylor)
               - type: ComboBox
                 name: t
-          - type: Label
-            label: Number of Terms
-            fitToGrid: true
-            cell:
-              column: 0
-              row: 2
-            children:
-              - name: selectionType_automatic
-                type: RadioButton
+                enable: (method:taylor)
+              - type: RadioButton
+                name: selectionType_automatic
                 optionName: selectionType
                 optionPart: automaticSelection
+                enable: (method:taylor)
               - type: RadioButton
                 name: selectionType_manual
                 optionName: selectionType
                 optionPart: manualSelection
-                label: Manual
+                label: Manual number of terms
+                enable: (method:taylor)
                 children:
                   - type: TextBox
                     name: terms
                     format: number
-                    enable: '(selectionType:manualSelection)'
+                    enable: (method:taylor && selectionType:manualSelection)
+          - type: Label
+            label: Beta-Binomial Parameters
+            fitToGrid: true
+            children:
+              - type: ComboBox
+                name: alpha
+                enable: (method:betabinomial)
+              - type: ComboBox
+                name: beta
+                enable: (method:betabinomial)
+              - type: TextBox
+                name: itemnumber
+                format: number
+                enable: (method:betabinomial)
+          - type: Label
+            label: Sinh-Arcsinh (SHASH) Parameters
+            fitToGrid: true
+            children:
+              - type: ComboBox
+                name: muDegree
+                enable: (method:shash)
+              - type: ComboBox
+                name: sigmaDegree
+                enable: (method:shash)
+              - type: ComboBox
+                name: epsilonDegree
+                enable: (method:shash)
+              - type: ComboBox
+                name: deltaDegree
+                enable: (method:shash && !fixDelta)
+              - type: CheckBox
+                name: fixDelta
+                enable: (method:shash)
+              - type: TextBox
+                name: deltaValue
+                format: number
+                enable: (method:shash && fixDelta)
+          - type: Label
+            label: Conway-Maxwell-Poisson (CMP) Parameters
+            fitToGrid: true
+            children:
+              - type: ComboBox
+                name: cmpMuDegree
+                enable: (method:cmp)
+              - type: ComboBox
+                name: cmpNuDegree
+                enable: (method:cmp && !cmpFixNu)
+              - type: CheckBox
+                name: cmpFixNu
+                enable: (method:cmp)
+              - type: TextBox
+                name: cmpNuValue
+                format: number
+                enable: (method:cmp && cmpFixNu)
+              - type: TextBox
+                name: cmpMaxScore
+                format: number
+                enable: (method:cmp)
   - type: CollapseBox
-    label: Output
+    label: Output & Norm Table
     margin: normal
     collapsed: true
     children:
@@ -94,9 +145,6 @@ children:
           - type: Label
             label: Norm Score Table
             fitToGrid: true
-            cell:
-              column: 0
-              row: 3
             children:
               - type: TextBox
                 name: normAge
@@ -113,6 +161,21 @@ children:
               - type: TextBox
                 name: stepping
                 format: number
+                enable: (!method:betabinomial)
+          - type: Label
+            label: Confidence Intervals
+            fitToGrid: true
+            children:
+              - type: CheckBox
+                name: includeCI
+              - type: TextBox
+                name: ciLevel
+                format: number
+                enable: (includeCI)
+              - type: TextBox
+                name: reliability
+                format: number
+                enable: (includeCI)
   - type: CollapseBox
     label: Save
     margin: normal
@@ -123,11 +186,11 @@ children:
         children:
           - type: Output
             name: saveManifest
+            enable: (method:taylor)
           - type: Output
             name: saveManifestPerc
+            enable: (method:taylor)
           - type: Output
             name: savePredicted
           - type: Output
             name: savePredictedPerc
-          
-...

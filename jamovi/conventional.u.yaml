@@ -1,4 +1,4 @@
-title: Single Group
+title: Single Group Norming
 name: conventional
 jus: '3.0'
 stage: 0
@@ -46,7 +46,7 @@ children:
                   - type: ComboBox
                     name: scale
           - type: Label
-            label: Method Parameters
+            label: Regression Smoothing
             fitToGrid: true
             cell:
               column: 0
@@ -58,8 +58,24 @@ children:
                   - type: CheckBox
                     name: k
                   - type: ComboBox
-                    name: terms
+                    name: kPower
                     enable: (k)
+                  - type: RadioButton
+                    name: selectionType_automatic
+                    optionName: selectionType
+                    optionPart: automaticSelection
+                    enable: (k)
+                  - type: RadioButton
+                    name: selectionType_manual
+                    optionName: selectionType
+                    optionPart: manualSelection
+                    label: Manual number of terms
+                    enable: (k)
+                    children:
+                      - type: TextBox
+                        name: terms
+                        format: number
+                        enable: (k && selectionType:manualSelection)
   - type: CollapseBox
     label: Output
     margin: normal
@@ -69,22 +85,26 @@ children:
         margin: small
         children:
           - type: Label
-            label: Results
+            label: Display
             fitToGrid: true
             cell:
               column: 0
-              row: 3
+              row: 0
             children:
-              - type: ComboBox
-                name: plotting
-              - type: CheckBox
-                name: model
+              - type: LayoutBox
+                margin: large
+                children:
+                  - type: ComboBox
+                    name: plotting
+                  - type: CheckBox
+                    name: model
+                    enable: (k)
           - type: Label
             label: Norm Score Table
             fitToGrid: true
             cell:
               column: 0
-              row: 4
+              row: 1
             children:
               - type: LayoutBox
                 margin: large
@@ -95,12 +115,35 @@ children:
                   - type: TextBox
                     name: minRaw
                     format: number
+                    enable: (k)
                   - type: TextBox
                     name: maxRaw
                     format: number
+                    enable: (k)
                   - type: TextBox
                     name: stepping
                     format: number
+                    enable: (k)
+          - type: Label
+            label: Confidence Intervals
+            fitToGrid: true
+            cell:
+              column: 0
+              row: 2
+            children:
+              - type: LayoutBox
+                margin: large
+                children:
+                  - type: CheckBox
+                    name: includeCI
+                  - type: TextBox
+                    name: ciLevel
+                    format: number
+                    enable: (includeCI)
+                  - type: TextBox
+                    name: reliability
+                    format: number
+                    enable: (includeCI)
   - type: CollapseBox
     label: Save
     margin: normal
@@ -115,5 +158,7 @@ children:
             name: saveManifestPerc
           - type: Output
             name: savePredicted
+            enable: (k)
           - type: Output
             name: savePredictedPerc
+            enable: (k)

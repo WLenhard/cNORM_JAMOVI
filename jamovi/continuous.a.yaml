@@ -1,9 +1,10 @@
 ---
-name:  continuous
-title: Continuous Norming (Distribution Free)
+name: continuous
+title: Continuous Norming
 menuGroup: cNORMj
-version: '3.0.0'
+version: '3.7.0'
 jas: '1.2'
+weightsSupport: full
 
 options:
     - name: data
@@ -12,7 +13,7 @@ options:
           R: the data as a data frame
 
     - name: raw
-      title: Raw Score Variable
+      title: Raw score variable
       type: Variable
       suggested:
         - continuous
@@ -22,14 +23,14 @@ options:
           R: the raw score variable in the data
 
     - name: group
-      title: Group variable
+      title: Explanatory / grouping variable (e.g., age)
       type: Variable
       suggested:
         - continuous
       permitted:
         - numeric
       description:
-          R: the explanatory variable in the data, e. g. age group
+          R: the explanatory or age/grouping variable in the data
 
     - name: weights
       title: Weights (optional)
@@ -39,10 +40,24 @@ options:
       permitted:
         - numeric
       description:
-          R: on optional weighting variable, specifying the weights of the single cases
-          
+          R: an optional weighting variable specifying the weights of the single cases
+
+    - name: method
+      title: Modeling method
+      type: List
+      options:
+        - name: taylor
+          title: Distribution-Free (Taylor Polynomials)
+        - name: betabinomial
+          title: Beta-Binomial (Item Counts / IRT)
+        - name: shash
+          title: Sinh-Arcsinh (SHASH — Continuous)
+        - name: cmp
+          title: Conway-Maxwell-Poisson (CMP — Speeded / Counts)
+      default: taylor
+
     - name: scale
-      title: Type of Norm Scale
+      title: Norm scale
       type: List
       options:
         - T
@@ -53,98 +68,256 @@ options:
       default: T
       description:
           R: >
-            `'T'`, `'IQ'`, 'z', 'Wechsler subtest scale (m = 10, sd = 3)', or 'PISA (m = 500, sd = 100)'`
+            `'T'`, `'IQ'`, `'z'`, `'Wechsler'` (m = 10, sd = 3), or `'PISA'` (m = 500, sd = 100)
 
-    - name: k
-      title: Degree of location
-      type: List
-      options:
-        - "1"
-        - "2"
-        - "3"
-        - "4"
-        - "5"
-        - "6"
-      default: "5"
-
-    - name: t
-      title: Degree of age
-      type: List
-      options:
-        - "1"
-        - "2"
-        - "3"
-        - "4"
-        - "5"
-        - "6"
-      default: "3"
-      
-    - name: selectionType
-      title: Selection type
-      type: List
-      options:
-      - name: automaticSelection
-        title: Automatic
-      - name: manualSelection
-        title: Manual
-
-    - name: terms
-      title: Terms
-      type: Number
-      description:
-          R: a number of terms in the regression function
-      default: 4
-
+    # --- Taylor Polynomials Options ---
     - name: descend
-      title: Invert ranking order
+      title: Invert ranking order (descending)
       type: Bool
       default: false
 
+    - name: k
+      title: Degree of location (k)
+      type: List
+      options:
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+        - '6'
+      default: '5'
+
+    - name: t
+      title: Degree of explanatory variable (t)
+      type: List
+      options:
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+        - '6'
+      default: '3'
+
+    - name: selectionType
+      title: Term selection
+      type: List
+      options:
+        - name: automaticSelection
+          title: Automatic
+        - name: manualSelection
+          title: Manual
+      default: automaticSelection
+
+    - name: terms
+      title: Number of terms
+      type: Integer
+      min: 1
+      max: 48
+      default: 4
+
+    # --- Beta-Binomial Options ---
+    - name: alpha
+      title: Degree of α (alpha)
+      type: List
+      options:
+        - '0'
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+      default: '3'
+
+    - name: beta
+      title: Degree of β (beta)
+      type: List
+      options:
+        - '0'
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+      default: '3'
+
+    - name: itemnumber
+      title: Number of items in test (0 = max observed)
+      type: Integer
+      min: 0
+      default: 0
+
+    # --- SHASH Options ---
+    - name: muDegree
+      title: Degree of μ (location)
+      type: List
+      options:
+        - '0'
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+      default: '3'
+
+    - name: sigmaDegree
+      title: Degree of σ (scale)
+      type: List
+      options:
+        - '0'
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+      default: '2'
+
+    - name: epsilonDegree
+      title: Degree of ε (skewness)
+      type: List
+      options:
+        - '0'
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+      default: '2'
+
+    - name: deltaDegree
+      title: Degree of δ (tail weight)
+      type: List
+      options:
+        - '0'
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+      default: '1'
+
+    - name: fixDelta
+      title: Fix tail weight δ to constant
+      type: Bool
+      default: false
+
+    - name: deltaValue
+      title: Fixed δ value
+      type: Number
+      min: 0.1
+      max: 10.0
+      default: 1.0
+
+    # --- CMP Options ---
+    - name: cmpMuDegree
+      title: Degree of μ (location)
+      type: List
+      options:
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+      default: '3'
+
+    - name: cmpNuDegree
+      title: Degree of ν (dispersion)
+      type: List
+      options:
+        - '0'
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+      default: '2'
+
+    - name: cmpFixNu
+      title: Fix dispersion ν (e.g., 1 = Poisson)
+      type: Bool
+      default: false
+
+    - name: cmpNuValue
+      title: Fixed ν value
+      type: Number
+      min: 0.05
+      max: 20.0
+      default: 1.0
+
+    - name: cmpMaxScore
+      title: Maximum score ceiling (0 = untruncated)
+      type: Integer
+      min: 0
+      default: 0
+
+    # --- Output & Norm Table Options ---
     - name: model
       title: Model summary
       type: Bool
-      default: true        
-      
+      default: true
+
     - name: normAge
-      title: Value for norm score table
+      title: Value for norm score table (e.g., age)
       type: String
-      description:
-          R: a number specifying the age for the norm score table
+      default: ''
 
     - name: range
-      title: Norm table range (+/- SD)
+      title: Norm score range (± SD)
       type: Number
-      default: 3
+      min: 0.5
+      max: 6.0
+      default: 3.0
 
     - name: minRaw
       title: Minimum raw score
       type: Number
       default: 0
-      
+
     - name: maxRaw
-      title: Maximum raw score
+      title: Maximum raw score (0 = auto)
       type: Number
-      default: 0      
+      default: 0
 
     - name: stepping
-      title: Stepping
+      title: Step size
       type: Number
-      default: 1      
-      
+      min: 0.01
+      default: 1
+
+    - name: includeCI
+      title: Include confidence intervals
+      type: Bool
+      default: false
+
+    - name: ciLevel
+      title: Confidence level
+      type: Number
+      min: 0.50
+      max: 0.999
+      default: 0.90
+
+    - name: reliability
+      title: Reliability coefficient
+      type: Number
+      min: 0.01
+      max: 0.999
+      default: 0.90
+
+    # --- Save Outputs ---
     - name: saveManifest
-      title: Manifest Norm Scores
+      title: Manifest norm scores
       type: Output
-      
+
     - name: saveManifestPerc
-      title: Manifest Percentile Scores
+      title: Manifest percentile scores
       type: Output
-      
+
     - name: savePredicted
-      title: Fitted Norm Scores
+      title: Fitted norm scores
       type: Output
-      
+
     - name: savePredictedPerc
-      title: Fitted Percentile Scores
-      type: Output   
-      
-...      
+      title: Fitted percentile scores
+      type: Output
+...

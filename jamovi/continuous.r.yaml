@@ -1,64 +1,238 @@
 ---
-name:  continuous
-title: Continuous Norming (Distribution Free)
-jrs:   '1.1'
+name: continuous
+title: Continuous Norming
+jrs: '1.1'
 
 items:
-#    - name:  text
-#      title: Norm table for single group
-#      type:  Preformatted
-
     - name: instructions
       title: Instructions
-      refs: assessment
+      refs:
+        - cNORM
+        - assessment
       type: Html
-      visible: True
-      
+      visible: true
+
     - name: plot
+      title: Percentile Curves
       refs: cNORM
-      #title: Percentile Plot
       type: Image
-      width:  600
-      height: 400
-      visible: True
+      width: 650
+      height: 450
+      visible: true
       renderFun: .plot
-    
-    - name:  norms
-      refs: epm
-      title: Norm score table
+      clearWith:
+        - raw
+        - group
+        - weights
+        - method
+        - scale
+        - descend
+        - k
+        - t
+        - selectionType
+        - terms
+        - alpha
+        - beta
+        - itemnumber
+        - muDegree
+        - sigmaDegree
+        - epsilonDegree
+        - deltaDegree
+        - fixDelta
+        - deltaValue
+        - cmpMuDegree
+        - cmpNuDegree
+        - cmpFixNu
+        - cmpNuValue
+        - cmpMaxScore
+
+    - name: modelFit
+      title: Model Fit
+      visible: (model)
       type: Table
-      rows:  1
-      visible: True
+      rows: 1
+      refs:
+        - plos
+        - epm
+        - psych
+      clearWith:
+        - raw
+        - group
+        - weights
+        - method
+        - scale
+        - descend
+        - k
+        - t
+        - selectionType
+        - terms
+        - alpha
+        - beta
+        - itemnumber
+        - muDegree
+        - sigmaDegree
+        - epsilonDegree
+        - deltaDegree
+        - fixDelta
+        - deltaValue
+        - cmpMuDegree
+        - cmpNuDegree
+        - cmpFixNu
+        - cmpNuValue
+        - cmpMaxScore
       columns:
-        - name: Raw
+        - name: methodName
+          title: Method
+          type: text
+        - name: nobs
+          title: N
+          type: integer
+        - name: npar
+          title: Parameters / Terms
+          type: integer
+        - name: logLik
+          title: Log-likelihood
           type: number
-        - name: Norm
+          visible: (!method:taylor)
+        - name: aic
+          title: AIC
           type: number
-        - name: Percentile
+          visible: (!method:taylor)
+        - name: bic
+          title: BIC
+          type: number
+        - name: r2
+          title: R² / Adj. R²
+          type: number
+        - name: rmse
+          title: RMSE
+          type: number
+        - name: bias
+          title: Bias
+          type: number
+          visible: (!method:taylor)
+
+    - name: modelCoef
+      title: Parameter Estimates
+      visible: (model)
+      type: Table
+      rows: 0
+      refs:
+        - plos
+        - epm
+        - psych
+      clearWith:
+        - raw
+        - group
+        - weights
+        - method
+        - scale
+        - descend
+        - k
+        - t
+        - selectionType
+        - terms
+        - alpha
+        - beta
+        - itemnumber
+        - muDegree
+        - sigmaDegree
+        - epsilonDegree
+        - deltaDegree
+        - fixDelta
+        - deltaValue
+        - cmpMuDegree
+        - cmpNuDegree
+        - cmpFixNu
+        - cmpNuValue
+        - cmpMaxScore
+      columns:
+        - name: term
+          title: Term
+          type: text
+        - name: est
+          title: Estimate
+          type: number
+        - name: se
+          title: SE
+          type: number
+          visible: (!method:taylor)
+        - name: z
+          title: z
+          type: number
+          visible: (!method:taylor)
+        - name: p
+          title: p
           type: number
           format: zto,pvalue
-          
-    - name:  modelTab
-      title: Model Summary
-      visible: True
+          visible: (!method:taylor)
+
+    - name: norms
+      title: Norm Score Table
+      refs: epm
       type: Table
-      rows:  1
-      refs: plos
+      rows: 0
+      visible: true
+      clearWith:
+        - raw
+        - group
+        - weights
+        - method
+        - scale
+        - descend
+        - k
+        - t
+        - selectionType
+        - terms
+        - alpha
+        - beta
+        - itemnumber
+        - muDegree
+        - sigmaDegree
+        - epsilonDegree
+        - deltaDegree
+        - fixDelta
+        - deltaValue
+        - cmpMuDegree
+        - cmpNuDegree
+        - cmpFixNu
+        - cmpNuValue
+        - cmpMaxScore
+        - normAge
+        - range
+        - minRaw
+        - maxRaw
+        - stepping
+        - includeCI
+        - ciLevel
+        - reliability
       columns:
-        - name: Variable
-          title: ''
-          type: text
-        - name: Weight
+        - name: Raw
+          title: Raw Score
           type: number
-        - name: Terms
-          type: integer
-        - name: RMSE
+        - name: Norm
+          title: Norm Score
           type: number
-        - name: R2adj
-          type: number          
-        - name: BIC
+        - name: Percentile
+          title: Percentile
           type: number
-      
+        - name: lowerCI
+          title: Lower CI (Norm)
+          type: number
+          visible: (includeCI)
+        - name: upperCI
+          title: Upper CI (Norm)
+          type: number
+          visible: (includeCI)
+        - name: lowerCI_PR
+          title: Lower CI (PR)
+          type: number
+          visible: (includeCI)
+        - name: upperCI_PR
+          title: Upper CI (PR)
+          type: number
+          visible: (includeCI)
+
     - name: saveManifest
       title: Manifest Norm Scores
       type: Output
@@ -67,11 +241,11 @@ items:
       measureType: continuous
       clearWith:
         - raw
+        - group
         - weights
+        - method
         - scale
         - descend
-        - group
-        - t        
 
     - name: saveManifestPerc
       title: Manifest Percentile Scores
@@ -81,42 +255,75 @@ items:
       measureType: continuous
       clearWith:
         - raw
+        - group
         - weights
+        - method
         - scale
         - descend
-        - group
-        - t
-        
+
     - name: savePredicted
       title: Fitted Norm Scores
       type: Output
       varTitle: FittedNorm
-      varDescription: Fitted norm score
+      varDescription: Fitted continuous norm score
       measureType: continuous
       clearWith:
         - raw
-        - weights
-        - scale
-        - k
-        - descend
-        - terms
         - group
+        - weights
+        - method
+        - scale
+        - descend
+        - k
         - t
-        
+        - selectionType
+        - terms
+        - alpha
+        - beta
+        - itemnumber
+        - muDegree
+        - sigmaDegree
+        - epsilonDegree
+        - deltaDegree
+        - fixDelta
+        - deltaValue
+        - cmpMuDegree
+        - cmpNuDegree
+        - cmpFixNu
+        - cmpNuValue
+        - cmpMaxScore
+        - range
+
     - name: savePredictedPerc
       title: Fitted Percentile Scores
       type: Output
       varTitle: FittedPercentile
-      varDescription: Fitted percentile score
+      varDescription: Fitted continuous percentile score
       measureType: continuous
       clearWith:
         - raw
-        - weights
-        - scale
-        - k
-        - descend
-        - terms
         - group
-        - t        
-
+        - weights
+        - method
+        - scale
+        - descend
+        - k
+        - t
+        - selectionType
+        - terms
+        - alpha
+        - beta
+        - itemnumber
+        - muDegree
+        - sigmaDegree
+        - epsilonDegree
+        - deltaDegree
+        - fixDelta
+        - deltaValue
+        - cmpMuDegree
+        - cmpNuDegree
+        - cmpFixNu
+        - cmpNuValue
+        - cmpMaxScore
+        - range
 ...

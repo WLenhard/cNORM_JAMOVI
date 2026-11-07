@@ -1,192 +1,3 @@
-#' Sinh-Arcsinh (shash) Distribution
-#'
-#' Density, distribution function, quantile function and random generation
-#' for the Sinh-Arcsinh distribution with location parameter \code{mu},
-#' scale parameter \code{sigma}, skewness parameter \code{epsilon}, and
-#' tail weight parameter \code{delta}.
-#'
-#' @name shash
-#' @aliases dshash pshash qshash rshash
-#'
-#' @param x,q vector of quantiles
-#' @param p vector of probabilities
-#' @param n number of observations. If \code{length(n) > 1}, the length is
-#'   taken to be the number required.
-#' @param mu location parameter (default: 0)
-#' @param sigma scale parameter (must be > 0, default: 1)
-#' @param epsilon skewness parameter (default: 0, symmetric distribution)
-#' @param delta tail weight parameter (must be > 0, default: 1 for normal-like tails)
-#' @param log,log.p logical; if TRUE, probabilities p are given as log(p)
-#' @param lower.tail logical; if TRUE (default), probabilities are P[X <= x]
-#'   otherwise, P[X > x]
-#'
-#' @details
-#' The Sinh-Arcsinh distribution (Jones & Pewsey, 2009) is defined by the transformation:
-#' \deqn{X = \mu + \sigma \cdot \sinh\left(\frac{\text{asinh}(Z) - \epsilon}{\delta}\right)}
-#' where \eqn{Z \sim N(0,1)} is a standard normal variable.
-#'
-#' The four parameters control:
-#' \itemize{
-#'   \item \code{mu}: Location (similar to mean)
-#'   \item \code{sigma}: Scale (similar to standard deviation)
-#'   \item \code{epsilon}: Skewness (\code{epsilon = 0} gives symmetry)
-#'   \item \code{delta}: Tail weight (\code{delta = 1} gives normal-like tails,
-#'         \code{delta > 1} gives heavier tails, \code{delta < 1} gives lighter tails)
-#' }
-#'
-#' @return
-#' \code{dshash} gives the density, \code{pshash} gives the distribution
-#' function, \code{qshash} gives the quantile function, and \code{rshash}
-#' generates random deviates.
-#'
-#' The length of the result is determined by \code{n} for \code{rshash}, and
-#' is the maximum of the lengths of the numerical arguments for the other functions.
-#'
-#' @references
-#' Jones, M. C., & Pewsey, A. (2009). Sinh-arcsinh distributions.
-#' \emph{Biometrika}, 96(4), 761-780. \doi{10.1093/biomet/asp053}
-#'
-#' @seealso
-#' \link[stats]{Normal} for the normal distribution.
-#'
-#' @examples
-#' # Generate random samples
-#' x <- rshash(1000, mu = 0, sigma = 1, epsilon = 0.5, delta = 1.2)
-#'
-#' # Density
-#' plot(density(x))
-#' curve(dshash(x, mu = 0, sigma = 1, epsilon = 0.5, delta = 1.2),
-#'       add = TRUE, col = "red")
-#'
-#' # Cumulative probability
-#' pshash(0, mu = 0, sigma = 1, epsilon = 0.5, delta = 1.2)
-#'
-#' # Quantiles
-#' qshash(c(0.025, 0.5, 0.975), mu = 0, sigma = 1, epsilon = 0.5, delta = 1.2)
-#'
-#' # Compare with normal distribution (epsilon = 0, delta = 1)
-#' par(mfrow = c(2, 2))
-#' x_vals <- seq(-4, 4, length.out = 200)
-#' plot(x_vals, dshash(x_vals), type = "l", main = "Symmetric (like normal)")
-#' plot(x_vals, dshash(x_vals, epsilon = 1), type = "l", main = "Right skewed")
-#' plot(x_vals, dshash(x_vals, delta = 2), type = "l", main = "Heavy tails")
-#' plot(x_vals, dshash(x_vals, delta = 0.5), type = "l", main = "Light tails")
-#'
-#' @export
-#' @rdname shash
-dshash <- function(x, mu = 0, sigma = 1, epsilon = 0, delta = 1, log = FALSE) {
-  z <- (x - mu) / sigma
-  z_sq <- z * z
-
-  # Pre-compute asinh(z) once
-  asinh_z <- log(z + sqrt(z_sq + 1))
-  arg <- delta * asinh_z + epsilon
-
-  # Compute sinh and cosh more efficiently
-  exp_arg <- exp(arg)
-  exp_neg_arg <- 1 / exp_arg
-  sinh_z <- (exp_arg - exp_neg_arg) * 0.5
-  cosh_z <- (exp_arg + exp_neg_arg) * 0.5
-
-  logdens <- log(delta) - log(sigma) - 0.918938533204673 -  # log(sqrt(2*pi))
-    0.5 * log1p(z_sq) - 0.5 * sinh_z * sinh_z + log(cosh_z)
-
-  if (log) return(logdens) else return(exp(logdens))
-}
-
-#' @export
-#' @rdname shash
-pshash <- function(q, mu = 0, sigma = 1, epsilon = 0, delta = 1,
-                   lower.tail = TRUE, log.p = FALSE) {
-  z <- (q - mu) / sigma
-  u <- sinh(delta * asinh(z) + epsilon)
-
-  p <- pnorm(u, lower.tail = lower.tail, log.p = log.p)
-  return(p)
-}
-
-#' @export
-#' @rdname shash
-qshash <- function(p, mu = 0, sigma = 1, epsilon = 0, delta = 1,
-                   lower.tail = TRUE, log.p = FALSE) {
-  if (log.p) p <- exp(p)
-  if (!lower.tail) p <- 1 - p
-
-  u <- qnorm(p)
-  z <- sinh((asinh(u) - epsilon) / delta)
-  x <- mu + sigma * z
-
-  return(x)
-}
-
-#' @export
-#' @rdname shash
-rshash <- function(n, mu = 0, sigma = 1, epsilon = 0, delta = 1) {
-  u <- rnorm(n)
-  z <- sinh((asinh(u) - epsilon) / delta)
-  x <- mu + sigma * z
-
-  return(x)
-}
-
-#' Calculate the negative log-likelihood for a shash regression model
-#'
-#' This function computes the negative log-likelihood for a Sinh-Arcsinh regression model
-#' where the location, scale, and skewness parameters are modeled as functions of predictors.
-#'
-#' @param params A numeric vector containing all model parameters
-#' @param X_mu Design matrix for location parameter
-#' @param X_sigma Design matrix for scale parameter
-#' @param X_epsilon Design matrix for skewness parameter
-#' @param X_delta Design matrix for tails
-#' @param fixed_delta If not NULL, the delta parameter is fixed to this value
-#' @param y Response vector
-#' @param weights Observation weights
-#'
-#' @return The negative log-likelihood of the model
-#'
-#' @keywords internal
-log_likelihood_shash <- function(params, X_mu, X_sigma, X_epsilon, X_delta = NULL,
-                                 y, weights = NULL, fixed_delta = NULL) {
-  n_mu <- ncol(X_mu)
-  n_sigma <- ncol(X_sigma)
-  n_epsilon <- ncol(X_epsilon)
-  n_delta <- if (!is.null(X_delta)) ncol(X_delta) else 0
-
-  # Extract coefficients
-  mu_coef <- params[seq_len(n_mu)]
-  sigma_idx <- n_mu + seq_len(n_sigma)
-  sigma_coef <- params[sigma_idx]
-  epsilon_idx <- n_mu + n_sigma + seq_len(n_epsilon)
-  epsilon_coef <- params[epsilon_idx]
-
-  # Compute parameters with efficient matrix operations
-  mu <- drop(X_mu %*% mu_coef)
-  log_sigma <- pmin.int(pmax.int(drop(X_sigma %*% sigma_coef), -10), 10)
-  sigma <- exp(log_sigma)
-  epsilon <- pmin.int(pmax.int(drop(X_epsilon %*% epsilon_coef), -10), 10)
-
-  if (!is.null(X_delta)) {
-    delta_idx <- n_mu + n_sigma + n_epsilon + seq_len(n_delta)
-    delta_coef <- params[delta_idx]
-    log_delta <- pmin.int(pmax.int(drop(X_delta %*% delta_coef), -2), 2)
-    delta <- exp(log_delta)
-  } else {
-    delta <- rep.int(fixed_delta, length(y))
-  }
-
-  if (is.null(weights)) {
-    weights <- 1  # Will broadcast in multiplication
-  }
-
-  log_densities <- dshash(y, mu, sigma, epsilon, delta, log = TRUE)
-  loglik <- sum(weights * log_densities)
-
-  if (!is.finite(loglik)) return(1e10)
-
-  return(-loglik)
-}
-
 #' Fit a Sinh-Arcsinh (shash) Regression Model for Continuous Norming
 #'
 #' This function fits a Sinh-Arcsinh (shash; Jones & Pewsey, 2009) regression model for continuous norm
@@ -196,12 +7,12 @@ log_likelihood_shash <- function(params, X_mu, X_sigma, X_epsilon, X_delta = NUL
 #' and varying degrees of individual differences across age groups. In a simulation study (Lenhard et
 #' al, 2019), the shash model demonstrated superior performance compared to other parametric approaches
 #' from the Box Cox family of functions. In contrast to Box Cox, Sinh-Arcsinh can model distributions
-#' including zero and negativ values.
+#' including zero and negative values.
 #'
 #'
 #' @param age A numeric vector of predictor values (typically age, but can be any continuous predictor).
 #' @param score A numeric vector of response values (raw test scores). Must be the same length as age.
-#'   The value range is unresticted and it can include zeros and negative values.
+#'   The value range is unrestricted and it can include zeros and negative values.
 #' @param weights An optional numeric vector of weights for each observation.
 #'   Useful for incorporating sampling weights. If NULL (default), all observations are weighted equally.
 #' @param mu_degree Integer specifying the degree of the polynomial for modeling the location parameter mu(age).
@@ -220,22 +31,23 @@ log_likelihood_shash <- function(params, X_mu, X_sigma, X_epsilon, X_delta = NUL
 #' @param epsilon_degree Integer specifying the degree of the polynomial for modeling the skewness parameter epsilon(age).
 #'   Default is 2. This controls how the asymmetry of the distribution changes with age.
 #'
-#' @param delta_degree Integer specifying the plynomial for modelling the tail weight parameter delte(age). Default is 1.
-#'   The tail weight can be fixed as well in case of numerical instability. In that case, set 'delta_degree' to NULL and
-#'   specify a value for delta instead. Recommendation: Keep delta_degree low to avoid overfitting.
+#' @param delta_degree Integer specifying the degree of the polynomial for modeling the tail weight parameter delta(age).
+#'   Default is 1. The tail weight can be fixed as well in case of numerical instability. In that case, set
+#'   \code{delta_degree} to NULL and specify a value for \code{delta} instead. Recommendation: Keep
+#'   \code{delta_degree} low to avoid overfitting.
 #'
 #' @param delta Fixed tail weight parameter (must be > 0). Default is 1. This parameter controls the
-#'   heaviness of the distribution tails and is kept constant across all ages in this implementation.
-#'   It is only used, if 'delta_degree' is set to NULL. Common values:
+#'   heaviness of the distribution tails and is kept constant across all ages when \code{delta_degree}
+#'   is set to NULL. Common values:
 #'   \itemize{
 #'     \item delta = 1: Normal-like tail behavior (baseline)
-#'     \item delta > 1: Heavier tails, higher kurtosis (more extreme scores than normal distribution)
-#'     \item delta < 1: Lighter tails, lower kurtosis (fewer extreme scores than normal distribution)
+#'     \item delta < 1: Heavier tails, higher kurtosis (more extreme scores than normal distribution)
+#'     \item delta > 1: Lighter tails, lower kurtosis (fewer extreme scores than normal distribution)
 #'   }
 #'
 #' @param control An optional list of control parameters passed to the \code{optim} function for
-#'   maximum likelihood estimation. If NULL, sensible defaults are chosen automatically based on
-#'   the model complexity. Common parameters to adjust:
+#'   maximum likelihood estimation. Any parameters not specified are filled with sensible defaults
+#'   based on the model complexity. Common parameters to adjust:
 #'   \itemize{
 #'     \item \code{factr}: Controls precision of optimization (default: 1e-8)
 #'     \item \code{maxit}: Maximum number of iterations (default: n_parameters * 200)
@@ -261,18 +73,20 @@ log_likelihood_shash <- function(params, X_mu, X_sigma, X_epsilon, X_delta = NUL
 #'   \item{sigma_est}{Numeric vector of estimated coefficients for the scale parameter log(sigma(age)).
 #'     Note: These are coefficients for log(sigma) to ensure sigma > 0.}
 #'   \item{epsilon_est}{Numeric vector of estimated coefficients for the skewness parameter epsilon(age).}
-#'   \item{delta}{The fixed tail weight parameter value used in fitting.}
-#'   \item{delta_est}{Numeric vector of estimated coefficients for the tail weight parameter delta(age) -
-#'      in case, a degree has been set.}
+#'   \item{delta}{The fixed tail weight parameter value used in fitting (relevant if \code{delta_degree} is NULL).}
+#'   \item{delta_est}{Numeric vector of estimated coefficients for log(delta(age)) -
+#'      in case a degree has been set, otherwise NULL.}
 #'   \item{se}{Numeric vector of standard errors for all estimated coefficients (if Hessian computation succeeds).}
 #'   \item{mu_degree, sigma_degree, epsilon_degree}{The polynomial degrees used for each parameter.}
+#'   \item{delta_degree}{The polynomial degree used for delta, or NULL if delta was fixed.}
 #'   \item{result}{Complete output from the \code{optim} function, including convergence information,
 #'     log-likelihood value, and other optimization details.}
 #'
 #' @details
 #' This implementation uses the Jones & Pewsey (2009) parameterization of the Sinh-Arcsinh distribution.
-#' Parameters are estimated using maximum likelihood via the L-BFGS-B algorithm. In case, optimization
-#' fails, try reducing model complexity by reducing polynomial degrees or fixing the delta parameter.
+#' Parameters are estimated using maximum likelihood via the L-BFGS-B algorithm with analytic
+#' gradients. In case optimization fails, try reducing model complexity by reducing polynomial
+#' degrees or fixing the delta parameter.
 #'
 #' \subsection{The Sinh-Arcsinh Distribution}{
 #' The shash distribution is defined by the transformation:
@@ -309,8 +123,8 @@ log_likelihood_shash <- function(params, X_mu, X_sigma, X_epsilon, X_delta = NUL
 #'     Predictions outside the observed age range should be made cautiously.
 #'   \item If convergence fails, try: (1) reducing polynomial degrees, (2) adjusting the delta parameter,
 #'     (3) providing custom control parameters, or (4) checking for data quality issues.
-#'   \item The tail weight parameter delta is fixed across ages by default. For applications
-#'     where tail behavior changes substantially with age, consider setting the delta_degree paramerer to 1 or 2.
+#'   \item If parameters end up at their box constraints, the reported standard errors and
+#'     Wald tests for these parameters are not valid; a warning is issued in this case.
 #' }
 #'
 #' @seealso
@@ -330,8 +144,8 @@ log_likelihood_shash <- function(params, X_mu, X_sigma, X_epsilon, X_delta = NUL
 #'   mu_degree = 4,         # Complex mean trajectory
 #'   sigma_degree = 3,      # Changing variability pattern
 #'   epsilon_degree = 2,    # Skewness shifts
-#'   delta_degree = NULL, # set to NULL to activate fixed delta
-#'   delta = 1.3            # Slightly heavy tails
+#'   delta_degree = NULL,   # set to NULL to activate fixed delta
+#'   delta = 0.8            # Slightly heavy tails
 #' )
 #'
 #' # With sampling weights
@@ -373,37 +187,53 @@ cnorm.shash <- function(age,
                         control = NULL,
                         scale = "T",
                         plot = TRUE) {
-
   # Input validation
   if (length(age) != length(score)) {
     stop("Length of 'age' and 'score' must be the same.")
   }
 
-  if(!is.null(weights) && length(age) != length(weights)) {
+  if (!is.null(weights) && length(age) != length(weights)) {
     stop("Length of 'weights' must match length of 'age' and 'score'.")
   }
-
-  # Prepare vectors
-  vectors_to_check <- list(age = age, score = score)
-  if(!is.null(weights)) {
-    vectors_to_check$weights <- weights
-  }
-
-  # Check if filtering needed
-  needs_filtering <- any(sapply(vectors_to_check, function(x) any(!is.finite(x))))
-
-  if(needs_filtering) {
-    message("Vector(s) contained non-finite values (NA, NaN, Inf). These cases will be removed.")
-    tmp <- do.call(filter_complete, c(vectors_to_check, verbose = FALSE))
-    age <- tmp[[1]]
-    score <- tmp[[2]]
-    if(!is.null(weights)) weights <- tmp[[3]]
-  }
-
 
   # ensure positivity of delta
   if (delta <= 0) {
     stop("Delta parameter must be positive.")
+  }
+
+  # validate 'scale' early with explicit errors. Accepts integer vectors as well.
+  if (is.numeric(scale) && length(scale) == 2) {
+    scaleM <- scale[1]
+    scaleSD <- scale[2]
+  } else if (is.character(scale) && length(scale) == 1) {
+    scaleM <- switch(scale,
+                     "T" = 50,
+                     "IQ" = 100,
+                     "z" = 0,
+                     stop("Unknown scale '", scale,
+                          "'. Use 'T', 'IQ', 'z', or a numeric vector c(M, SD)."))
+    scaleSD <- switch(scale, "T" = 10, "IQ" = 15, "z" = 1)
+  } else {
+    stop("'scale' must be 'T', 'IQ', 'z', or a numeric vector c(M, SD).")
+  }
+
+  # Prepare vectors
+  vectors_to_check <- list(age = age, score = score)
+  if (!is.null(weights)) {
+    vectors_to_check$weights <- weights
+  }
+
+  # Check if filtering needed
+  needs_filtering <- any(sapply(vectors_to_check, function(x)
+    any(!is.finite(x))))
+
+  if (needs_filtering) {
+    message("Vector(s) contained non-finite values (NA, NaN, Inf). These cases will be removed.")
+    tmp <- do.call(filter_complete, c(vectors_to_check, verbose = FALSE))
+    age <- tmp[[1]]
+    score <- tmp[[2]]
+    if (!is.null(weights))
+      weights <- tmp[[3]]
   }
 
   # Standardize age
@@ -428,28 +258,32 @@ cnorm.shash <- function(age,
   initial_sigma <- sd(score)
   initial_epsilon <- 0  # Start with symmetric distribution
 
+  # Guard against degenerate input (zero/undefined variance)
+  if (!is.finite(initial_sigma) || initial_sigma <= 0) {
+    stop("'score' has zero or undefined variance. The model cannot be fitted.")
+  }
+
   # Initial parameter vectors
   initial_params <- c(
-    c(initial_mu, rep(0, mu_degree)),           # mu parameters
-    c(log(initial_sigma), rep(0, sigma_degree)), # sigma parameters
+    c(initial_mu, rep(0, mu_degree)),
+    # mu parameters
+    c(log(initial_sigma), rep(0, sigma_degree)),
+    # sigma parameters
     c(initial_epsilon, rep(0, epsilon_degree))   # epsilon parameters
   )
 
   if (use_varying_delta) {
-    initial_params <- c(initial_params,
-                        c(log(delta), rep(0, delta_degree))) # delta parameters
+    initial_params <- c(initial_params, c(log(delta), rep(0, delta_degree))) # delta parameters
   }
 
-
-  # Control parameters
-  if (is.null(control)) {
-    n_param <- length(initial_params)
-    control <- list(
-      factr = 1e-8,
-      maxit = n_param * 200,
-      lmm = min(n_param, 20)
-    )
-  }
+  n_param <- length(initial_params)
+  control_defaults <- list(factr = 1e-8,
+                           maxit = n_param * 200,
+                           lmm = min(n_param, 20))
+  control <- if (is.null(control))
+    control_defaults
+  else
+    utils::modifyList(control_defaults, control)
 
   # Parameter bounds
   n_params <- length(initial_params)
@@ -464,29 +298,33 @@ cnorm.shash <- function(age,
 
   # Bounds for epsilon parameters
   epsilon_start <- sigma_end + 1
-  epsilon_end   <- epsilon_start + ncol(X_epsilon) - 1   # correct: stays within epsilon range
+  epsilon_end   <- epsilon_start + ncol(X_epsilon) - 1
   lower_bounds[epsilon_start:epsilon_end] <- -10
   upper_bounds[epsilon_start:epsilon_end] <- 10
 
   if (use_varying_delta) {
-    delta_start <- epsilon_end + 1                      # now correctly points at delta params
+    delta_start <- epsilon_end + 1
     delta_end   <- delta_start + ncol(X_delta) - 1
     lower_bounds[delta_start:delta_end] <- -2
     upper_bounds[delta_start:delta_end] <- 2
   }
 
-  # Optimization
+  # Optimization (with analytic gradient)
   result <- tryCatch({
     optim(
       initial_params,
       log_likelihood_shash,
+      gr = gradient_shash,
       X_mu = X_mu,
       X_sigma = X_sigma,
       X_epsilon = X_epsilon,
       X_delta = X_delta,
       y = score,
       weights = weights,
-      fixed_delta = if(!use_varying_delta) delta else NULL,
+      fixed_delta = if (!use_varying_delta)
+        delta
+      else
+        NULL,
       method = "L-BFGS-B",
       lower = lower_bounds,
       upper = upper_bounds,
@@ -496,24 +334,35 @@ cnorm.shash <- function(age,
   }, error = function(e) {
     message("First optimization attempt failed. Trying with different parameters...")
 
-    # Try with different initial values
+    # Try with different, more robust initial values
     initial_params[1] <- median(score)
-    initial_params[ncol(X_mu) + 1] <- log(mad(score))
 
-    # More relaxed control
-    control$factr <- control$factr * 10
-    control$maxit <- control$maxit * 2
+    # mad(score) can be 0 with strong floor/ceiling effects
+    # (> 50% identical scores); fall back to sd in that case.
+    s_robust <- mad(score)
+    if (!is.finite(s_robust) || s_robust <= 0)
+      s_robust <- sd(score)
+    initial_params[ncol(X_mu) + 1] <- log(s_robust)
+
+    # guard against missing list entries when mutating a
+    # user-supplied control list (NULL * 10 == numeric(0)).
+    control$factr <- if (is.null(control$factr)) 1e-7 else control$factr * 10
+    control$maxit <- if (is.null(control$maxit)) 1000 else control$maxit * 2
 
     optim(
       initial_params,
       log_likelihood_shash,
+      gr = gradient_shash,
       X_mu = X_mu,
       X_sigma = X_sigma,
       X_epsilon = X_epsilon,
       X_delta = X_delta,
       y = score,
       weights = weights,
-      fixed_delta = if(!use_varying_delta) delta else NULL,
+      fixed_delta = if (!use_varying_delta)
+        delta
+      else
+        NULL,
       method = "L-BFGS-B",
       lower = lower_bounds,
       upper = upper_bounds,
@@ -524,8 +373,24 @@ cnorm.shash <- function(age,
 
   # Check convergence
   if (result$convergence != 0) {
-    warning("Optimization did not converge (code: ", result$convergence,
-            "). Consider adjusting control parameters or degrees of the polynomials. Check percentile curves for plausibility.")
+    warning(
+      "Optimization did not converge (code: ",
+      result$convergence,
+      "). Consider adjusting control parameters or degrees of the polynomials. Check percentile curves for plausibility."
+    )
+  }
+
+  # Warn when parameters sit at their box constraints; SEs and Wald
+  # tests are invalid there.
+  at_bound <- is.finite(lower_bounds) &
+    (result$par <= lower_bounds + 1e-6 | result$par >= upper_bounds - 1e-6)
+  if (any(at_bound)) {
+    warning(
+      "Parameter(s) at index ",
+      paste(which(at_bound), collapse = ", "),
+      " reached their bounds. Standard errors and Wald tests for these ",
+      "parameters are not valid. Consider reducing model complexity."
+    )
   }
 
   # Extract parameter estimates
@@ -544,31 +409,20 @@ cnorm.shash <- function(age,
     delta_est <- NULL
   }
 
-  # Calculate standard errors
+  # Guarded SE computation. solve() on an indefinite Hessian could otherwise
+  # either error or silently produced NaN via sqrt of negative diagonals.
   se <- tryCatch({
-    sqrt(diag(solve(result$hessian)))
+    h_inv <- solve(result$hessian)
+    d <- diag(h_inv)
+    if (any(d < 0, na.rm = TRUE)) {
+      warning("Hessian is not positive definite; standard errors are set to NA where invalid.")
+      d[d < 0] <- NA
+    }
+    sqrt(d)
   }, error = function(e) {
     warning("Could not compute standard errors: Hessian matrix issue")
-    rep(NA, length(result$par))
+    rep(NA_real_, length(result$par))
   })
-
-  # Store scale information
-  scaleM <- NA
-  scaleSD <- NA
-
-  if ((typeof(scale) == "double" && length(scale) == 2)) {
-    scaleM <- scale[1]
-    scaleSD <- scale[2]
-  } else if (scale == "IQ") {
-    scaleM <- 100
-    scaleSD <- 15
-  } else if (scale == "z") {
-    scaleM <- 0
-    scaleSD <- 1
-  } else if (scale == "T") {
-    scaleM <- 50
-    scaleSD <- 10
-  }
 
   # Store attributes
   attr(result, "age_mean") <- mean(age)
@@ -608,6 +462,380 @@ cnorm.shash <- function(age,
 
   return(model)
 }
+
+
+
+#' Sinh-Arcsinh (shash) Distribution
+#'
+#' Density, distribution function, quantile function and random generation
+#' for the Sinh-Arcsinh distribution with location parameter \code{mu},
+#' scale parameter \code{sigma}, skewness parameter \code{epsilon}, and
+#' tail weight parameter \code{delta}.
+#'
+#' @name shash
+#' @aliases dshash pshash qshash rshash
+#'
+#' @param x,q vector of quantiles
+#' @param p vector of probabilities
+#' @param n number of observations. If \code{length(n) > 1}, the length is
+#'   taken to be the number required.
+#' @param mu location parameter (default: 0)
+#' @param sigma scale parameter (must be > 0, default: 1)
+#' @param epsilon skewness parameter (default: 0, symmetric distribution)
+#' @param delta tail weight parameter (must be > 0, default: 1 for normal-like
+#'   tails; \code{delta < 1} gives heavier tails, \code{delta > 1} gives
+#'   lighter tails)
+#' @param log,log.p logical; if TRUE, probabilities p are given as log(p)
+#' @param lower.tail logical; if TRUE (default), probabilities are P[X <= x]
+#'   otherwise, P[X > x]
+#'
+#' @details
+#' The Sinh-Arcsinh distribution (Jones & Pewsey, 2009) is defined by the transformation:
+#' \deqn{X = \mu + \sigma \cdot \sinh\left(\frac{\text{asinh}(Z) - \epsilon}{\delta}\right)}
+#' where \eqn{Z \sim N(0,1)} is a standard normal variable.
+#'
+#' The four parameters control:
+#' \itemize{
+#'   \item \code{mu}: Location (similar to mean)
+#'   \item \code{sigma}: Scale (similar to standard deviation)
+#'   \item \code{epsilon}: Skewness (\code{epsilon = 0} gives symmetry)
+#'   \item \code{delta}: Tail weight (\code{delta = 1} gives normal-like tails,
+#'         \code{delta < 1} gives heavier tails, \code{delta > 1} gives
+#'         lighter tails)
+#' }
+#'
+#' @return
+#' \code{dshash} gives the density, \code{pshash} gives the distribution
+#' function, \code{qshash} gives the quantile function, and \code{rshash}
+#' generates random deviates.
+#'
+#' The length of the result is determined by \code{n} for \code{rshash}, and
+#' is the maximum of the lengths of the numerical arguments for the other functions.
+#'
+#' @references
+#' Jones, M. C., & Pewsey, A. (2009). Sinh-arcsinh distributions.
+#' \emph{Biometrika}, 96(4), 761-780. \doi{10.1093/biomet/asp053}
+#'
+#' @seealso
+#' \link[stats]{Normal} for the normal distribution.
+#'
+#' @examples
+#' # Generate random samples
+#' x <- rshash(1000, mu = 0, sigma = 1, epsilon = 0.5, delta = 1.2)
+#'
+#' # Density
+#' plot(density(x))
+#' curve(dshash(x, mu = 0, sigma = 1, epsilon = 0.5, delta = 1.2),
+#'       add = TRUE, col = "red")
+#'
+#' # Cumulative probability
+#' pshash(0, mu = 0, sigma = 1, epsilon = 0.5, delta = 1.2)
+#'
+#' # Quantiles
+#' qshash(c(0.025, 0.5, 0.975), mu = 0, sigma = 1, epsilon = 0.5, delta = 1.2)
+#'
+#' # Compare with normal distribution (epsilon = 0, delta = 1)
+#' oldpar <- par(mfrow = c(2, 2))
+#' x_vals <- seq(-4, 4, length.out = 200)
+#' plot(x_vals, dshash(x_vals), type = "l", main = "Symmetric (like normal)")
+#' plot(x_vals, dshash(x_vals, epsilon = 1), type = "l", main = "Right skewed")
+#' plot(x_vals, dshash(x_vals, delta = 0.5), type = "l", main = "Heavy tails")
+#' plot(x_vals, dshash(x_vals, delta = 2), type = "l", main = "Light tails")
+#' par(oldpar)
+#'
+#' @export
+#' @rdname shash
+dshash <- function(x,
+                   mu = 0,
+                   sigma = 1,
+                   epsilon = 0,
+                   delta = 1,
+                   log = FALSE) {
+  z <- (x - mu) / sigma
+
+  # Use builtin asinh() -- the manual log(z + sqrt(z^2 + 1)) suffers
+  # catastrophic cancellation for large negative z and is slower.
+  arg <- delta * asinh(z) + epsilon
+  abs_arg <- pmin.int(abs(arg), 350)
+
+  # log(cosh(a)) = |a| + log1p(exp(-2|a|)) - log(2), stable for all a
+  log_cosh <- abs_arg + log1p(exp(-2 * abs_arg)) - 0.6931471805599453  # log(2)
+
+  # sinh(arg)^2 == sinh(|arg|)^2
+  S <- sinh(abs_arg)
+
+  logdens <- log(delta) - log(sigma) - 0.918938533204673 -  # log(sqrt(2*pi))
+    0.5 * log1p(z * z) - 0.5 * S * S + log_cosh
+
+  # Safety net: any residual numerical NaN from extreme (but valid) inputs
+  # corresponds to density 0. Genuine NaN/NA inputs are propagated.
+  nan_idx <- is.nan(logdens) & !is.nan(x + mu + sigma + epsilon + delta)
+  if (any(nan_idx)) {
+    logdens[nan_idx] <- -Inf
+  }
+
+  if (log)
+    return(logdens)
+  else
+    return(exp(logdens))
+}
+
+#' @export
+#' @rdname shash
+pshash <- function(q,
+                   mu = 0,
+                   sigma = 1,
+                   epsilon = 0,
+                   delta = 1,
+                   lower.tail = TRUE,
+                   log.p = FALSE) {
+  z <- (q - mu) / sigma
+  u <- sinh(delta * asinh(z) + epsilon)
+
+  p <- pnorm(u, lower.tail = lower.tail, log.p = log.p)
+  return(p)
+}
+
+#' @export
+#' @rdname shash
+qshash <- function(p,
+                   mu = 0,
+                   sigma = 1,
+                   epsilon = 0,
+                   delta = 1,
+                   lower.tail = TRUE,
+                   log.p = FALSE) {
+  # Delegate lower.tail/log.p to qnorm() instead of computing
+  # exp(p) and 1 - p manually, which loses precision in the tails.
+  u <- qnorm(p, lower.tail = lower.tail, log.p = log.p)
+  z <- sinh((asinh(u) - epsilon) / delta)
+  x <- mu + sigma * z
+
+  return(x)
+}
+
+#' @export
+#' @rdname shash
+rshash <- function(n,
+                   mu = 0,
+                   sigma = 1,
+                   epsilon = 0,
+                   delta = 1) {
+  u <- rnorm(n)
+  z <- sinh((asinh(u) - epsilon) / delta)
+  x <- mu + sigma * z
+
+  return(x)
+}
+
+#' Calculate the negative log-likelihood for a shash regression model
+#'
+#' This function computes the negative log-likelihood for a Sinh-Arcsinh regression model
+#' where the location, scale, skewness, and (optionally) tail weight parameters
+#' are modeled as functions of predictors.
+#'
+#' @param params A numeric vector containing all model parameters
+#' @param X_mu Design matrix for location parameter
+#' @param X_sigma Design matrix for scale parameter
+#' @param X_epsilon Design matrix for skewness parameter
+#' @param X_delta Design matrix for tail weight parameter (or NULL for fixed delta)
+#' @param fixed_delta If not NULL, the delta parameter is fixed to this value
+#' @param y Response vector
+#' @param weights Observation weights
+#'
+#' @return The negative log-likelihood of the model
+#'
+#' @keywords internal
+log_likelihood_shash <- function(params,
+                                 X_mu,
+                                 X_sigma,
+                                 X_epsilon,
+                                 X_delta = NULL,
+                                 y,
+                                 weights = NULL,
+                                 fixed_delta = NULL) {
+  n_mu <- ncol(X_mu)
+  n_sigma <- ncol(X_sigma)
+  n_epsilon <- ncol(X_epsilon)
+  n_delta <- if (!is.null(X_delta))
+    ncol(X_delta)
+  else
+    0
+
+  # Extract coefficients
+  mu_coef <- params[seq_len(n_mu)]
+  sigma_coef <- params[n_mu + seq_len(n_sigma)]
+  epsilon_coef <- params[n_mu + n_sigma + seq_len(n_epsilon)]
+
+  # Compute parameters with efficient matrix operations
+  mu <- drop(X_mu %*% mu_coef)
+  log_sigma <- pmin.int(pmax.int(drop(X_sigma %*% sigma_coef), -10), 10)
+  sigma <- exp(log_sigma)
+  epsilon <- pmin.int(pmax.int(drop(X_epsilon %*% epsilon_coef), -10), 10)
+
+  if (!is.null(X_delta)) {
+    delta_coef <- params[n_mu + n_sigma + n_epsilon + seq_len(n_delta)]
+    log_delta <- pmin.int(pmax.int(drop(X_delta %*% delta_coef), -2), 2)
+    delta <- exp(log_delta)
+  } else {
+    delta <- fixed_delta
+  }
+
+  if (is.null(weights)) {
+    weights <- 1  # Will broadcast in multiplication
+  }
+
+  log_densities <- dshash(y, mu, sigma, epsilon, delta, log = TRUE)
+  bad <- !is.finite(log_densities)
+  if (any(bad)) {
+    if (anyNA(log_densities))
+      return(1e10)
+    log_densities[bad] <- -1e6
+  }
+
+  loglik <- sum(weights * log_densities)
+
+  if (!is.finite(loglik))
+    return(1e10)
+
+  return(-loglik)
+}
+
+#' Analytic gradient of the negative log-likelihood for a shash regression model
+#'
+#' Computes the exact gradient of \code{\link{log_likelihood_shash}} with
+#' respect to all regression coefficients. Supplying this gradient to
+#' \code{\link[stats]{optim}} (method \code{"L-BFGS-B"}) avoids costly and
+#' noisy finite-difference approximations, typically yielding a speedup
+#' and more reliable convergence.
+#'
+#' @details
+#' With \eqn{z = (y - \mu)/\sigma} and \eqn{A = \delta \, \mathrm{asinh}(z) + \epsilon},
+#' the per-observation log-density is
+#' \deqn{\ell = \log\delta - \log\sigma - \tfrac{1}{2}\log(2\pi)
+#'   - \tfrac{1}{2}\log(1+z^2) - \tfrac{1}{2}\sinh^2(A) + \log\cosh(A).}
+#' The gradient uses the chain rule through the linear predictors:
+#' \deqn{\partial\ell/\partial A = \tanh(A) - \sinh(A)\cosh(A)}
+#' \deqn{\partial\ell/\partial z = -z/(1+z^2) + (\partial\ell/\partial A)\,\delta/\sqrt{1+z^2}}
+#' \deqn{\partial\ell/\partial\mu = -(\partial\ell/\partial z)/\sigma}
+#' \deqn{\partial\ell/\partial\log\sigma = -1 - z\,(\partial\ell/\partial z)}
+#' \deqn{\partial\ell/\partial\epsilon = \partial\ell/\partial A}
+#' \deqn{\partial\ell/\partial\log\delta = 1 + (\partial\ell/\partial A)\,\delta\,\mathrm{asinh}(z)}
+#' Coefficient gradients follow as \eqn{-X^\top (w \cdot \partial\ell/\partial\eta)}
+#' for the negative log-likelihood. Contributions of observations whose linear
+#' predictor is clamped (see \code{log_likelihood_shash}) are zeroed, which is
+#' the exact subgradient of the clamped objective. In extreme regions where
+#' \eqn{\sinh(A)\cosh(A)} would overflow, the gradient magnitude is capped at
+#' a large finite value; these regions coincide with the penalty branch of the
+#' objective, so the capped direction remains correct.
+#'
+#' @inheritParams log_likelihood_shash
+#'
+#' @return Numeric vector: gradient of the negative log-likelihood with
+#'   respect to \code{params}.
+#'
+#' @keywords internal
+gradient_shash <- function(params,
+                           X_mu,
+                           X_sigma,
+                           X_epsilon,
+                           X_delta = NULL,
+                           y,
+                           weights = NULL,
+                           fixed_delta = NULL) {
+  n_mu <- ncol(X_mu)
+  n_sigma <- ncol(X_sigma)
+  n_epsilon <- ncol(X_epsilon)
+  n_delta <- if (!is.null(X_delta))
+    ncol(X_delta)
+  else
+    0
+
+  # Extract coefficients
+  mu_coef <- params[seq_len(n_mu)]
+  sigma_coef <- params[n_mu + seq_len(n_sigma)]
+  epsilon_coef <- params[n_mu + n_sigma + seq_len(n_epsilon)]
+
+  # Linear predictors with clamping identical to log_likelihood_shash;
+  # indicator vectors record where the clamp is inactive (gradient nonzero)
+  mu <- drop(X_mu %*% mu_coef)
+
+  eta_sigma <- drop(X_sigma %*% sigma_coef)
+  sigma_free <- (eta_sigma > -10) & (eta_sigma < 10)
+  sigma <- exp(pmin.int(pmax.int(eta_sigma, -10), 10))
+
+  eta_epsilon <- drop(X_epsilon %*% epsilon_coef)
+  epsilon_free <- (eta_epsilon > -10) & (eta_epsilon < 10)
+  epsilon <- pmin.int(pmax.int(eta_epsilon, -10), 10)
+
+  if (!is.null(X_delta)) {
+    delta_coef <- params[n_mu + n_sigma + n_epsilon + seq_len(n_delta)]
+    eta_delta <- drop(X_delta %*% delta_coef)
+    delta_free <- (eta_delta > -2) & (eta_delta < 2)
+    delta <- exp(pmin.int(pmax.int(eta_delta, -2), 2))
+  } else {
+    delta <- fixed_delta
+  }
+
+  if (is.null(weights)) {
+    weights <- 1
+  }
+
+  # Core quantities
+  z <- (y - mu) / sigma
+  asinh_z <- asinh(z)
+  A <- delta * asinh_z + epsilon
+
+  # Overflow guard: sinh(a)*cosh(a) = 0.5*sinh(2a) overflows for |a| > ~355.
+  # Cap at 350 (product ~ 2.5e303, still finite), then bound the magnitude.
+  A_c <- pmin.int(pmax.int(A, -350), 350)
+  S <- sinh(A_c)
+  C <- cosh(A_c)
+
+  gA <- tanh(A) - S * C
+  gA <- pmin.int(pmax.int(gA, -1e10), 1e10)
+
+  r <- 1 / sqrt(1 + z * z)            # d asinh(z) / dz
+  gz <- -z * r * r + gA * delta * r   # dl/dz
+
+  d_mu   <- -gz / sigma               # dl/dmu
+  d_lsig <- -1 - gz * z               # dl/d(log sigma)
+  d_eps  <- gA                        # dl/depsilon
+
+  # Zero out contributions from numerically failed observations
+  # (consistent with the constant penalty branch of the objective)
+  ok <- is.finite(d_mu) & is.finite(d_lsig) & is.finite(d_eps)
+
+  if (!is.null(X_delta)) {
+    d_ldel <- 1 + gA * delta * asinh_z  # dl/d(log delta)
+    ok <- ok & is.finite(d_ldel)
+    d_ldel[!ok] <- 0
+    d_ldel <- d_ldel * delta_free
+  }
+
+  d_mu[!ok] <- 0
+  d_lsig[!ok] <- 0
+  d_eps[!ok] <- 0
+
+  # Apply clamp subgradients
+  d_lsig <- d_lsig * sigma_free
+  d_eps <- d_eps * epsilon_free
+
+  # Gradient of the NEGATIVE weighted log-likelihood w.r.t. coefficients
+  w <- weights
+  grad <- c(
+    -drop(crossprod(X_mu, w * d_mu)),
+    -drop(crossprod(X_sigma, w * d_lsig)),
+    -drop(crossprod(X_epsilon, w * d_eps)),
+    if (!is.null(X_delta)) -drop(crossprod(X_delta, w * d_ldel)) else NULL
+  )
+
+  # Final safety: L-BFGS-B cannot handle non-finite gradients
+  grad[!is.finite(grad)] <- 0
+
+  return(grad)
+}
+
 
 #' Predict parameters for a shash regression model
 #'
@@ -658,7 +886,7 @@ predictCoefficients_shash <- function(model, ages) {
   return(predicted)
 }
 
-#' Plot SinH-ArcSinH Model with Data and Percentile Lines
+#' Plot Sinh-Arcsinh Model with Data and Percentile Lines
 #'
 #' @param x A fitted model object of class "cnormShash"
 #' @param ... Additional arguments including age, score, weights, percentiles, points
@@ -670,13 +898,39 @@ plot.cnormShash <- function(x, ...) {
   model <- x
   args <- list(...)
 
-  if ("age" %in% names(args)) { age <- args$age } else {if(length(args)>0) age <- args[[1]] else age <- NULL}
-  if ("score" %in% names(args)) { score <- args$score } else {if(length(args)>1) score <- args[[2]] else score <- NULL}
-  if ("weights" %in% names(args)) { weights <- args$weights } else { weights <- NULL }
-  if ("percentiles" %in% names(args)) { percentiles <- args$percentiles } else { percentiles <- c(0.025, 0.1, 0.25, 0.5, 0.75, 0.9, 0.975) }
-  if ("points" %in% names(args)) { points <- args$points } else { points <- TRUE }
+  if ("age" %in% names(args)) {
+    age <- args$age
+  } else {
+    if (length(args) > 0)
+      age <- args[[1]]
+    else
+      age <- NULL
+  }
+  if ("score" %in% names(args)) {
+    score <- args$score
+  } else {
+    if (length(args) > 1)
+      score <- args[[2]]
+    else
+      score <- NULL
+  }
+  if ("weights" %in% names(args)) {
+    weights <- args$weights
+  } else {
+    weights <- NULL
+  }
+  if ("percentiles" %in% names(args)) {
+    percentiles <- args$percentiles
+  } else {
+    percentiles <- c(0.025, 0.1, 0.25, 0.5, 0.75, 0.9, 0.975)
+  }
+  if ("points" %in% names(args)) {
+    points <- args$points
+  } else {
+    points <- TRUE
+  }
 
-  if(is.null(age) || is.null(score))
+  if (is.null(age) || is.null(score))
     stop("Please provide 'age' and 'score' vectors.")
 
   if (!isSHASH(model)) {
@@ -708,8 +962,13 @@ plot.cnormShash <- function(x, ...) {
 
   # Calculate percentile lines using shash quantiles
   percentile_lines <- lapply(percentiles, function(p) {
-    qshash(p, mu = preds$mu, sigma = preds$sigma,
-           epsilon = preds$epsilon, delta = preds$delta)
+    qshash(
+      p,
+      mu = preds$mu,
+      sigma = preds$sigma,
+      epsilon = preds$epsilon,
+      delta = preds$delta
+    )
   })
 
   percentile_data <- do.call(cbind, percentile_lines)
@@ -735,15 +994,16 @@ plot.cnormShash <- function(x, ...) {
     )
 
   # Calculate manifest percentiles
-  if (length(age) / length(unique(age)) > 50 && min(table(data$age)) > 30) {
+  if (length(age) / length(unique(age)) > 50 &&
+      min(table(data$age)) > 30) {
     data$group <- age
   } else {
     data$group <- getGroups(age)
   }
 
   # Limit to max 30 groups for better visibility
-  if(length(unique(data$group))>30){
-    data$group <- getGroups(age, n=30)
+  if (length(unique(data$group)) > 30) {
+    data$group <- getGroups(age, n = 30)
   }
 
   # Get actual percentiles
@@ -800,7 +1060,11 @@ plot.cnormShash <- function(x, ...) {
 
   p <- p +
     theme(
-      plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+      plot.title = element_text(
+        hjust = 0.5,
+        size = 16,
+        face = "bold"
+      ),
       plot.subtitle = element_text(hjust = 0.5, size = 12),
       axis.title = element_text(size = 12, face = "bold"),
       axis.title.x = element_text(margin = margin(t = 10)),
@@ -816,7 +1080,7 @@ plot.cnormShash <- function(x, ...) {
   return(p)
 }
 
-#' Print method for SinH-ArcSinH objects
+#' Print method for Sinh-Arcsinh objects
 #'
 #' @param x A cnormShash object
 #' @param ... Additional arguments
@@ -828,27 +1092,43 @@ print.cnormShash <- function(x, ...) {
   cat("Model Parameters:\n")
   cat("- Location (mu) polynomial degree:", x$mu_degree, "\n")
   cat("- Scale (sigma) polynomial degree:", x$sigma_degree, "\n")
-  cat("- Skewness (epsilon) polynomial degree:", x$epsilon_degree, "\n")
+  cat("- Skewness (epsilon) polynomial degree:",
+      x$epsilon_degree,
+      "\n")
   if (!is.null(x$delta_degree)) {
-    cat("- Tail weight (delta): Polynomial degree", x$delta_degree, "\n\n")
+    cat("- Tail weight (delta): Polynomial degree",
+        x$delta_degree,
+        "\n\n")
   } else {
     cat("- Tail weight (delta): Fixed at", x$delta, "\n\n")
   }
 
   cat("Sample size:", attr(x$result, "N"), "\n")
-  cat("Age range:", attr(x$result, "ageMin"), "to", attr(x$result, "ageMax"), "\n")
-  cat("Score range:", attr(x$result, "min"), "to", attr(x$result, "max"), "\n\n")
+  cat("Age range:",
+      attr(x$result, "ageMin"),
+      "to",
+      attr(x$result, "ageMax"),
+      "\n")
+  cat("Score range:",
+      attr(x$result, "min"),
+      "to",
+      attr(x$result, "max"),
+      "\n\n")
 
   cat("Optimization:\n")
-  cat("- Convergence:", ifelse(x$result$convergence == 0, "Successful", "Failed"), "\n")
+  cat("- Convergence:",
+      ifelse(x$result$convergence == 0, "Successful", "Failed"),
+      "\n")
   cat("- Log-likelihood:", -x$result$value, "\n")
   cat("- AIC:", 2 * length(x$result$par) + 2 * x$result$value, "\n")
 }
 
+
+
 #' Calculate Norm Tables for Sinh-Arcsinh Distribution
 #'
-#' Generates norm tables for specific ages based on a fitted SinH-ArcSinH (shash) regression model.
-#' Computes probabilities, percentiles, z-scores, and norm scores for a specified range of raw scores.
+#' Generates norm tables for specific ages based on a fitted Sinh-Arcsinh (shash) regression model.
+#' Computes interval probabilities, percentiles, z-scores, and norm scores for a specified range of raw scores.
 #' Optionally includes confidence intervals when reliability is provided.
 #'
 #' @param model Fitted shash model object of class "cnormShash"
@@ -861,7 +1141,9 @@ print.cnormShash <- function(x, ...) {
 #'
 #' @return List of data frames (one per age) containing:
 #'   \item{x}{Raw scores}
-#'   \item{Px}{Probability density values}
+#'   \item{Px}{Approximate interval probabilities (density times step width).
+#'     These are consistent with \code{Pcum} but do not necessarily sum to 1
+#'     over the tabulated score range.}
 #'   \item{Pcum}{Cumulative probabilities}
 #'   \item{Percentile}{Percentile ranks (0-100)}
 #'   \item{z}{Standardized z-scores}
@@ -870,9 +1152,9 @@ print.cnormShash <- function(x, ...) {
 #'   \item{lowerCI_PR, upperCI_PR}{CI as percentile ranks (if reliability provided)}
 #'
 #' @details
-#' For continuous shash distributions, probability densities are computed and converted to
-#' cumulative probabilities and percentiles. When reliability is specified, confidence
-#' intervals include correction for regression to the mean.
+#' For continuous shash distributions, densities are converted to interval probabilities
+#' (density times step width) and cumulative probabilities. When reliability is specified,
+#' confidence intervals include correction for regression to the mean.
 #'
 #' @examples
 #' \dontrun{
@@ -893,7 +1175,6 @@ normTable.shash <- function(model,
                             step = 1,
                             CI = .9,
                             reliability = NULL) {
-
   # Input validation
   if (!isSHASH(model)) {
     stop("Wrong object. Please provide object from class 'cnormShash'.")
@@ -907,10 +1188,9 @@ normTable.shash <- function(model,
     end <- attr(model$result, "max")
   }
 
-  if(is.null(step)){
+  if (is.null(step)) {
     step <- 1
   }
-
 
   if (start >= end) {
     stop("Start value must be less than end value.")
@@ -956,21 +1236,30 @@ normTable.shash <- function(model,
     epsilon_k <- predictions$epsilon[k]
     delta_k <- predictions$delta[k]
 
-    # Calculate probability densities
-    Px <- dshash(x, mu = mu_k, sigma = sigma_k, epsilon = epsilon_k, delta = delta_k) * step
-
-    # Normalize to ensure sum to approximately 1
-    Px <- Px / sum(Px)
+    Px <- dshash(
+      x,
+      mu = mu_k,
+      sigma = sigma_k,
+      epsilon = epsilon_k,
+      delta = delta_k
+    ) * step
 
     # Calculate cumulative probabilities using the continuous CDF
-    cum <- pshash(x, mu = mu_k, sigma = sigma_k, epsilon = epsilon_k, delta = delta_k)
+    cum <- pshash(
+      x,
+      mu = mu_k,
+      sigma = sigma_k,
+      epsilon = epsilon_k,
+      delta = delta_k
+    )
 
     # Calculate percentiles
     perc <- cum
 
-    # Convert percentiles to z-scores
-    z <- qnorm(perc)
-    z[!is.finite(z)] <- 0  # Handle edge cases
+    # Clamp extreme cumulative probabilities instead of mapping
+    # non-finite z-scores to 0 (which assigned the MEAN norm score to
+    # floor/ceiling raw scores).
+    z <- qnorm(pmin(pmax(cum, 1e-12), 1 - 1e-12))
 
     # Calculate norm scores
     norm <- rep(NA, length(z))
@@ -1013,9 +1302,9 @@ normTable.shash <- function(model,
   return(result)
 }
 
-#' Summarize a SinH-ArcSinH Continuous Norming Model
+#' Summarize a Sinh-Arcsinh Continuous Norming Model
 #'
-#' This function provides a summary of a fitted SinH-ArcSinH (shash) continuous norming model,
+#' This function provides a summary of a fitted Sinh-Arcsinh (shash) continuous norming model,
 #' including model fit statistics, convergence information, and parameter estimates.
 #'
 #' @param object An object of class "cnormShash", typically the result of a call to
@@ -1056,9 +1345,30 @@ normTable.shash <- function(model,
 summary.cnormShash <- function(object, ...) {
   args <- list(...)
 
-  if ("age" %in% names(args)) { age <- args$age } else {if(length(args)>0) age <- args[[1]] else age <- NULL}
-  if ("score" %in% names(args)) { score <- args$score } else {if(length(args)>1) score <- args[[2]] else score <- NULL}
-  if ("weights" %in% names(args)) { weights <- args$weights } else {if(length(args)>2) weights <- args[[3]] else weights <- NULL}
+  if ("age" %in% names(args)) {
+    age <- args$age
+  } else {
+    if (length(args) > 0)
+      age <- args[[1]]
+    else
+      age <- NULL
+  }
+  if ("score" %in% names(args)) {
+    score <- args$score
+  } else {
+    if (length(args) > 1)
+      score <- args[[2]]
+    else
+      score <- NULL
+  }
+  if ("weights" %in% names(args)) {
+    weights <- args$weights
+  } else {
+    if (length(args) > 2)
+      weights <- args[[3]]
+    else
+      weights <- NULL
+  }
 
   diag <- diagnostics.shash(object, age, score, weights)
 
@@ -1091,7 +1401,7 @@ summary.cnormShash <- function(object, ...) {
   cat("Convergence:\n")
   cat("  Converged:", diag$converged, "\n")
   cat("  Function evaluations:", diag$n_evaluations, "\n")
-  cat("  Max gradient:", round(diag$max_gradient, 6), "\n")
+  cat("  Max Hessian eigenvalue:", round(diag$max_gradient, 6), "\n")
   cat("  Message:", diag$message, "\n")
   cat("\n")
 
@@ -1103,7 +1413,7 @@ summary.cnormShash <- function(object, ...) {
     `z value` = diag$mu_z_values,
     `Pr(>|z|)` = diag$mu_p_values
   )
-  rownames(mu_table) <- paste0("mu_", 0:(length(diag$mu_estimates)-1))
+  rownames(mu_table) <- paste0("mu_", 0:(length(diag$mu_estimates) - 1))
   print(mu_table, digits = 4)
   cat("\n")
 
@@ -1114,7 +1424,8 @@ summary.cnormShash <- function(object, ...) {
     `z value` = diag$sigma_z_values,
     `Pr(>|z|)` = diag$sigma_p_values
   )
-  rownames(sigma_table) <- paste0("log(sigma)_", 0:(length(diag$sigma_estimates)-1))
+  rownames(sigma_table) <- paste0("log(sigma)_", 0:(length(diag$sigma_estimates) -
+                                                      1))
   print(sigma_table, digits = 4)
   cat("\n")
 
@@ -1125,7 +1436,8 @@ summary.cnormShash <- function(object, ...) {
     `z value` = diag$epsilon_z_values,
     `Pr(>|z|)` = diag$epsilon_p_values
   )
-  rownames(epsilon_table) <- paste0("epsilon_", 0:(length(diag$epsilon_estimates)-1))
+  rownames(epsilon_table) <- paste0("epsilon_", 0:(length(diag$epsilon_estimates) -
+                                                     1))
   print(epsilon_table, digits = 4)
 
   if (!is.null(diag$delta_estimates)) {
@@ -1137,14 +1449,15 @@ summary.cnormShash <- function(object, ...) {
       `z value` = diag$delta_z_values,
       `Pr(>|z|)` = diag$delta_p_values
     )
-    rownames(delta_table) <- paste0("log(delta)_", 0:(length(diag$delta_estimates)-1))
+    rownames(delta_table) <- paste0("log(delta)_", 0:(length(diag$delta_estimates) -
+                                                        1))
     print(delta_table, digits = 4)
   }
 
   invisible(diag)
 }
 
-#' Diagnostic Statistics for SiHh-ArcSinH Continuous Norming Model
+#' Diagnostic Statistics for Sinh-Arcsinh Continuous Norming Model
 #'
 #' This function computes detailed diagnostic statistics for a fitted shash model,
 #' including fit statistics, parameter estimates, and convergence information.
@@ -1156,9 +1469,11 @@ summary.cnormShash <- function(object, ...) {
 #'
 #' @return A list containing comprehensive diagnostic information
 #'
-#' @keywords internal
-diagnostics.shash <- function(object, age = NULL, score = NULL, weights = NULL) {
-
+#' @export
+diagnostics.shash <- function(object,
+                              age = NULL,
+                              score = NULL,
+                              weights = NULL) {
   if (!isSHASH(object)) {
     stop("Wrong object. Please provide object from class 'cnormShash'.")
   }
@@ -1171,18 +1486,20 @@ diagnostics.shash <- function(object, age = NULL, score = NULL, weights = NULL) 
   BIC <- n_params * log(n_obs) - 2 * log_likelihood
 
   # Parameter estimates and standard errors
-  # Parameter estimates and standard errors
   mu_estimates <- object$mu_est
   sigma_estimates <- object$sigma_est
   epsilon_estimates <- object$epsilon_est
-  delta_estimates <- object$delta_est  # ADD this line
+  delta_estimates <- object$delta_est
 
   se <- object$se
   if (is.null(se) || any(is.na(se))) {
     mu_se <- rep(NA, length(mu_estimates))
     sigma_se <- rep(NA, length(sigma_estimates))
     epsilon_se <- rep(NA, length(epsilon_estimates))
-    delta_se <- if (!is.null(delta_estimates)) rep(NA, length(delta_estimates)) else NULL  # ADD this line
+    delta_se <- if (!is.null(delta_estimates))
+      rep(NA, length(delta_estimates))
+    else
+      NULL
   } else {
     n_mu <- length(mu_estimates)
     n_sigma <- length(sigma_estimates)
@@ -1201,16 +1518,24 @@ diagnostics.shash <- function(object, age = NULL, score = NULL, weights = NULL) 
   }
 
   # Calculate z-values and p-values
-  mu_z_values <- ifelse(is.na(mu_se) | mu_se == 0, NA, mu_estimates / mu_se)
-  sigma_z_values <- ifelse(is.na(sigma_se) | sigma_se == 0, NA, sigma_estimates / sigma_se)
-  epsilon_z_values <- ifelse(is.na(epsilon_se) | epsilon_se == 0, NA, epsilon_estimates / epsilon_se)
+  mu_z_values <- ifelse(is.na(mu_se) |
+                          mu_se == 0, NA, mu_estimates / mu_se)
+  sigma_z_values <- ifelse(is.na(sigma_se) |
+                             sigma_se == 0, NA, sigma_estimates / sigma_se)
+  epsilon_z_values <- ifelse(is.na(epsilon_se) |
+                               epsilon_se == 0,
+                             NA,
+                             epsilon_estimates / epsilon_se)
 
   mu_p_values <- ifelse(is.na(mu_z_values), NA, 2 * (1 - pnorm(abs(mu_z_values))))
   sigma_p_values <- ifelse(is.na(sigma_z_values), NA, 2 * (1 - pnorm(abs(sigma_z_values))))
   epsilon_p_values <- ifelse(is.na(epsilon_z_values), NA, 2 * (1 - pnorm(abs(epsilon_z_values))))
 
   if (!is.null(delta_estimates)) {
-    delta_z_values <- ifelse(is.na(delta_se) | delta_se == 0, NA, delta_estimates / delta_se)
+    delta_z_values <- ifelse(is.na(delta_se) |
+                               delta_se == 0,
+                             NA,
+                             delta_estimates / delta_se)
     delta_p_values <- ifelse(is.na(delta_z_values), NA, 2 * (1 - pnorm(abs(delta_z_values))))
   } else {
     delta_z_values <- NULL
@@ -1220,15 +1545,17 @@ diagnostics.shash <- function(object, age = NULL, score = NULL, weights = NULL) 
   # Convergence information
   converged <- object$result$convergence == 0
   n_evaluations <- object$result$counts["function"]
-  message <- switch(as.character(object$result$convergence),
-                    "0" = "Successful convergence",
-                    "1" = "Maximum iterations reached",
-                    "10" = "Degeneracy in Nelder-Mead simplex",
-                    "51" = "Warning from L-BFGS-B",
-                    "52" = "Error from L-BFGS-B",
-                    paste("Convergence code:", object$result$convergence))
+  message <- switch(
+    as.character(object$result$convergence),
+    "0" = "Successful convergence",
+    "1" = "Maximum iterations reached",
+    "10" = "Degeneracy in Nelder-Mead simplex",
+    "51" = "Warning from L-BFGS-B",
+    "52" = "Error from L-BFGS-B",
+    paste("Convergence code:", object$result$convergence)
+  )
 
-  # Calculate max gradient if available
+  # Largest Hessian eigenvalue (curvature diagnostic), if available
   max_gradient <- NA
   if (!is.null(object$result$hessian)) {
     tryCatch({
@@ -1244,14 +1571,18 @@ diagnostics.shash <- function(object, age = NULL, score = NULL, weights = NULL) 
   rmse <- NA
   bias <- NA
   if (!is.null(age) && !is.null(score)) {
-    if (length(age) / length(unique(age)) > 50 && min(table(age)) > 30) {
+    if (length(age) / length(unique(age)) > 50 &&
+        min(table(age)) > 30) {
       data <- data.frame(group = age, raw = score)
       data <- rankByGroup(
         data = data,
         raw = "raw",
         group = "group",
         weights = weights,
-        scale = c(attr(object$result, "scaleMean"), attr(object$result, "scaleSD"))
+        scale = c(
+          attr(object$result, "scaleMean"),
+          attr(object$result, "scaleSD")
+        )
       )
       norm_scores <- predict(object, data$group, data$raw)
     } else{
@@ -1264,14 +1595,17 @@ diagnostics.shash <- function(object, age = NULL, score = NULL, weights = NULL) 
         raw = "raw",
         width = width,
         weights = weights,
-        scale = c(attr(object$result, "scaleMean"), attr(object$result, "scaleSD"))
+        scale = c(
+          attr(object$result, "scaleMean"),
+          attr(object$result, "scaleSD")
+        )
       )
       norm_scores <- predict(object, data$age, data$raw)
     }
 
     norm_manifest <- data$normValue
-    R2 <- cor(norm_scores, norm_manifest, use="pairwise.complete.obs") ^ 2
-    rmse <- sqrt(mean((norm_scores - norm_manifest) ^ 2))
+    R2 <- cor(norm_scores, norm_manifest, use = "pairwise.complete.obs")^2
+    rmse <- sqrt(mean((norm_scores - norm_manifest)^2))
     bias <- mean(norm_scores - norm_manifest)
   } else {
     message <- "No age and raw scores provided. Cannot calculate R2, RMSE, and bias."
@@ -1343,10 +1677,12 @@ diagnostics.shash <- function(object, age = NULL, score = NULL, weights = NULL) 
 #' @return A numeric vector of norm scores.
 #'
 #' @details
-#' The function predicts the SinH-ArcSinH (shash) distribution parameters (mu, sigma, epsilon, delta) for each age
-#' using the provided model. It then calculates the cumulative probability for each
+#' The function predicts the Sinh-Arcsinh (shash) distribution parameters (mu, sigma, epsilon, delta)
+#' for each age using the provided model. It then calculates the cumulative probability for each
 #' raw score given these parameters using the continuous shash distribution. Finally,
-#' it converts these probabilities to the norm scale specified in the model.
+#' it converts these probabilities to the norm scale specified in the model. Raw scores
+#' at the extreme floor or ceiling of the distribution are mapped to the boundary of the
+#' norm score range (mean +/- \code{range} standard deviations), not to the mean.
 #'
 #' @examples
 #' \dontrun{
@@ -1360,13 +1696,33 @@ diagnostics.shash <- function(object, age = NULL, score = NULL, weights = NULL) 
 #' @export
 #' @family predict
 predict.cnormShash <- function(object, ...) {
-
   model <- object
   args <- list(...)
 
-  if ("age" %in% names(args)) { age <- args$age } else {if(length(args)>0) age <- args[[1]] else age <- NULL}
-  if ("score" %in% names(args)) { score <- args$score } else {if(length(args)>1) score <- args[[2]] else score <- NULL}
-  if ("range" %in% names(args)) { range <- args$range } else { if(length(args)>2) range <- args[[3]] else range <- 3 }
+  if ("age" %in% names(args)) {
+    age <- args$age
+  } else {
+    if (length(args) > 0)
+      age <- args[[1]]
+    else
+      age <- NULL
+  }
+  if ("score" %in% names(args)) {
+    score <- args$score
+  } else {
+    if (length(args) > 1)
+      score <- args[[2]]
+    else
+      score <- NULL
+  }
+  if ("range" %in% names(args)) {
+    range <- args$range
+  } else {
+    if (length(args) > 2)
+      range <- args[[3]]
+    else
+      range <- 3
+  }
 
   if (!isSHASH(model)) {
     stop("Wrong object. Please provide object from class 'cnormShash'.")
@@ -1389,15 +1745,19 @@ predict.cnormShash <- function(object, ...) {
   delta <- predictions$delta
 
   # Calculate cumulative probabilities (percentiles) for each score
-  percentiles <- pshash(score, mu = mu, sigma = sigma, epsilon = epsilon, delta = delta)
+  percentiles <- pshash(
+    score,
+    mu = mu,
+    sigma = sigma,
+    epsilon = epsilon,
+    delta = delta
+  )
 
-  # Convert percentiles to z-scores
-  z_scores <- qnorm(percentiles)
+  percentiles_c <- pmin(pmax(percentiles, 1e-12), 1 - 1e-12)
+  z_scores <- qnorm(percentiles_c)
 
-  # Handle edge cases and apply range constraints
-  z_scores[!is.finite(z_scores)] <- 0
-  z_scores[z_scores < -range] <- -range
-  z_scores[z_scores > range] <- range
+  # Apply range constraints
+  z_scores <- pmin(pmax(z_scores, -range), range)
 
   # Get scale information
   mScale <- attr(model$result, "scaleMean")

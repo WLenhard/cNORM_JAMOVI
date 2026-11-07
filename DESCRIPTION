@@ -1,17 +1,18 @@
 Package: cNORMj
 Type: Package
-Title: Continuous Norming with cNORM for JAMOVI
-Version: 3.0.1
-Date: 2026-03-07
+Title: Continuous Norming with cNORM for jamovi
+Version: 3.7.0
+Date: 2026-11-07
 Author: Wolfgang Lenhard [aut, cre], Alexandra Lenhard [aut]
 Maintainer: Wolfgang Lenhard <wolfgang.lenhard@uni-wuerzburg.de>
 Description: Conventional and regression-based continuous norming methods for psychometric,
-    biometric and medical test construction. Percentiles and norm scores are either estimated
-    via inverse normal transformation and modeled via Taylor polynomials (distribution free) or by fitting a beta
-    binomial distribution over age. The continuous method reduces the necessary sample size, closes gaps between and
-    within the norm groups and decreases error variance in the norm data.
+    biometric and medical test construction. Percentiles and norm scores are estimated
+    either distribution-free via inverse normal transformation and Taylor polynomials, or
+    parametrically over age using Beta-Binomial, Sinh-Arcsinh (SHASH), or
+    Conway-Maxwell-Poisson (CMP) distributions. Continuous norming reduces the required
+    sample size, closes gaps between and within norm groups, and decreases error variance
+    in the norm data.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: jmvcore (>= 2.6.0), R6, leaps (>= 3.1), ggplot2 (>= 3.5.1)
-
+Imports: jmvcore (>= 2.6.0), R6, leaps (>= 3.1), ggplot2 (>= 3.5.1), stats, utils, grDevices

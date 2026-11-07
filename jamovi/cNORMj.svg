@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="74" height="44" viewBox="0 0 74 44">
+  <!-- Axes -->
+  <polyline points="12,6 12,37 64,37" fill="none" stroke="#666666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Empirical Dots -->
+    <circle cx="20" cy="31" r="1.6" fill="#888888"/>
+      <circle cx="32" cy="24" r="1.6" fill="#888888"/>
+        <circle cx="46" cy="18" r="1.6" fill="#888888"/>
+          <circle cx="58" cy="15" r="1.6" fill="#888888"/>
+            <circle cx="26" cy="19" r="1.6" fill="#888888"/>
+              <circle cx="40" cy="27" r="1.6" fill="#888888"/>
+                
+                <!-- Outer Percentile Curves (P90 and P10) -->
+                <path d="M 15,25 Q 32,10 61,8" fill="none" stroke="#3E6DA9" stroke-width="1.8" stroke-dasharray="3,2" stroke-linecap="round"/>
+                  <path d="M 15,34 Q 35,26 61,24" fill="none" stroke="#3E6DA9" stroke-width="1.8" stroke-dasharray="3,2" stroke-linecap="round"/>
+                    
+                    <!-- Median Percentile Curve (P50) -->
+                    <path d="M 15,30 Q 33,18 61,15" fill="none" stroke="#d95f02" stroke-width="2.5" stroke-linecap="round"/>
+                      </svg>

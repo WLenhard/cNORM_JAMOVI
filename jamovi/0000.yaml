@@ -1,54 +1,54 @@
 ---
 title: Continuous Norming
 name: cNORMj
-version: 3.0.1
+version: 3.7.0
 jms: '1.0'
 authors:
   - Wolfgang Lenhard
   - Alexandra Lenhard
 maintainer: Wolfgang Lenhard <wolfgang.lenhard@uni-wuerzburg.de>
-date: '2026-03-07'
+date: '2026-11-07'
 type: R
 description: >-
   Conventional and regression-based continuous norming methods for psychometric,
   biometric and medical test construction. Percentiles and norm scores are
-  estimated via inverse normal transformation and modeled via Taylor polynomials
-  (distribution free) or beta binomial distributions (parametric fitting).  The
+  estimated either distribution-free via inverse normal transformation and
+  Taylor polynomials, or parametrically over age using Beta-Binomial,
+  Sinh-Arcsinh (SHASH), or Conway-Maxwell-Poisson (CMP) distributions. The
   continuous method reduces the necessary sample size, closes gaps between and
   within the norm groups and decreases error variance in the norm data.
 analyses:
-  - title: Single Group
+  - title: Single Group Norming
     name: conventional
     ns: cNORMj
     menuGroup: cNORMj
-    menuTitle: Single Group
+    menuTitle: Single Group Norming
     category: analyses
-  - title: Continuous Norming (Distribution Free)
+  - title: Continuous Norming
     name: continuous
     ns: cNORMj
     menuGroup: cNORMj
-    menuTitle: Continuous Norming (Distribution Free)
-    category: analyses
-  - title: Continuous Norming (Beta Binomial)
-    name: betabinomial
-    ns: cNORMj
-    menuGroup: cNORMj
-    menuTitle: Continuous Norming (Beta Binomial)
+    menuTitle: Continuous Norming
     category: analyses
 datasets:
-  - name: Sentence comprehension
+  - name: Sentence comprehension (ELFE 1-6)
     path: elfe.csv
     description: >-
       Psychometric test (ELFE 1-6) on sentence comprehension per grade in
       elementary school, data file from package cNORM
-  - name: PPVT-IV
+  - name: Vocabulary development (PPVT-IV)
     path: ppvt.csv
-    description: '''Vocabulary development from 3 to 17, data file from package cNORM'''
-  - name: BMI
+    description: Vocabulary development from age 2.5 to 17.5, data file from package cNORM
+  - name: Growth data (CDC BMI)
     path: CDC.csv
     description: >-
       Body height, weight and BMI in childhood and adolescence from the US, data
       file from package cNORM
+  - name: Reading fluency (ELFE-II Speed)
+    path: speed.csv
+    description: >-
+      Word reading fluency speeded test from ELFE-II (ages 7 to 11, scores 0 to
+      75), data file from package cNORM
 usesNative: true
 minApp: 1.0.8
 

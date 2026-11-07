@@ -57,77 +57,105 @@ calcPolyInLBase2 <- function(raw, age, coeff, k) {
 }
 
 
-predictNormByRoots <- function(raw, age, model, minNorm, maxNorm, polynom = NULL, force = FALSE, covariate = NULL) {
+predictNormByRoots <- function(raw, age, model,
+                                minNorm, maxNorm,
+                                polynom = NULL,
+                                force = TRUE,
+                                covariate = NULL) {
 
-  if(!is.null(covariate)){
-    if(is.null(model$coefficients)){
+  if (!is.null(covariate)) {
+    if (is.null(model$coefficients)) {
       stop("Covariate specified, but model does not include covariate")
     }
-    #model$coefficients <- simplifyCoefficients(model$coefficients, covariate)
+    # model$coefficients <- simplifyCoefficients(model$coefficients, covariate)
   }
 
+  # Build the polynomial in L (norm) at the requested age.
   if (is.null(polynom)) {
     polynomForPrediction <- calcPolyInLBase2(
-      raw = raw,
-      age = age,
+      raw   = raw,
+      age   = age,
       coeff = model$coefficients,
-      k = model$k
+      k     = model$k
     )
   } else {
-    polynomForPrediction <- polynom
+    polynomForPrediction    <- polynom
     polynomForPrediction[1] <- polynomForPrediction[1] - raw
   }
 
-  roots <- polyroot(polynomForPrediction)
-  output <- Re(roots[abs(Im(roots)) < 10^(-7)])
+  # Guard against degenerate polynomials (e.g. intercept-only models).
+  if (length(polynomForPrediction) < 2L ||
+      all(polynomForPrediction[-1L] == 0)) {
+    return(NA_real_)
+  }
 
-  # only one real part as a solution within correct range
-  if (length(output) == 1 && output >= minNorm && output <= maxNorm) {
+  # Real roots only.
+  roots  <- polyroot(polynomForPrediction)
+  output <- Re(roots[abs(Im(roots)) < 1e-7])
+
+  # Single in-range real root: done.
+  if (length(output) == 1L && output >= minNorm && output <= maxNorm) {
     return(output)
   }
 
-  # not exactly one plausible solution, search for alternative on correct side of distribution
-    median <- predictRaw(model$scaleM, age, model$coefficients, minRaw = model$minRaw, maxRaw = model$maxRaw)
-    if (raw > median) {
-      output <- output[output > model$scaleM & output <= maxNorm]
-    } else if (raw < median) {
-      output <- output[output < model$scaleM & output >= minNorm]
-    } else {
-      return(model$scaleM)
-    }
+  # Direction of search: which side of the model's prediction at scaleM
+  # is `raw` on?  IMPORTANT: do NOT clip, otherwise the comparison flips
+  # near the clipping boundary.
+  raw_at_scaleM <- predictRaw(model$scaleM, age, model$coefficients)
 
-    if (length(output) == 1) {
-      return(output)
-    } else if (length(output) > 1) {
-      # fetch the solution closest to median
-      # warning(paste0("Multiple roots found for ", raw, " at age ", age, "; returning most plausible norm score."))
-      return(output[which.min((output - model$scaleM)^2)])
-    } else {
-      # nothing worked, apply numerical searching strategy
-      startNormScore <- minNorm
-      currentRawValue <- predictRaw(norm = minNorm, age = age, coefficients = model$coefficients)
+  if (raw > raw_at_scaleM) {
+    output <- output[output > model$scaleM & output <= maxNorm]
+  } else if (raw < raw_at_scaleM) {
+    output <- output[output < model$scaleM & output >= minNorm]
+  } else {
+    return(model$scaleM)
+  }
 
-      functionToMinimize <- function(norm) {
-        currentRawValue <- predictRaw(norm = norm, age = age, coefficients = model$coefficients)
-        functionValue <- (currentRawValue - raw)^2
-      }
+  if (length(output) == 1L) {
+    return(output)
+  } else if (length(output) > 1L) {
+    # Multiple plausible roots: take the one closest to scaleM.
+    return(output[which.min((output - model$scaleM)^2)])
+  }
 
-      optimum <- optimize(functionToMinimize, lower = minNorm, upper = maxNorm, tol = .Machine$double.eps)
+  # ------------------------------------------------------------------
+  # Fallback: numerical search.  optimize() always returns a value in
+  # [minNorm, maxNorm], so we must judge success by the *objective*,
+  # not by the position.
+  # ------------------------------------------------------------------
+  functionToMinimize <- function(norm) {
+    currentRawValue <- predictRaw(norm = norm, age = age,
+                                  coefficients = model$coefficients)
+    (currentRawValue - raw)^2
+  }
 
-      if(optimum$minimum >= minNorm && optimum$minimum <= maxNorm){
-        return(optimum$minimum)
-      }else if (!force&&(optimum$minimum < minNorm || optimum$minimum > maxNorm)) {
-        # everything failed, return NA
-        warning(paste0("No plausible norm score available for ", raw, " at age ", age, "; returning NA"))
+  optimum <- optimize(functionToMinimize,
+                      lower = minNorm, upper = maxNorm,
+                      tol   = .Machine$double.eps^0.5)
 
-        return(NA)
-      }else if(force && optimum$minimum < minNorm){
-        warning(paste0("No plausible norm score available for ", raw, " at age ", age, "; returning lower boundary of the norms."))
-        return(minNorm)
-      }else if(force && optimum$minimum > maxNorm){
-        warning(paste0("No plausible norm score available for ", raw, " at age ", age, "; returning upper boundary of the norms."))
-        return(maxNorm)
-      }
-    }
+  # Tolerance on the residual raw score.  Anything below ~1e-3 is a
+  # genuine root for any realistic raw-score scale.
+  raw_residual_tol <- 1e-3
+
+  if (sqrt(optimum$objective) <= raw_residual_tol) {
+    return(optimum$minimum)
+  }
+
+  # The raw score is not reachable on [minNorm, maxNorm] at this age.
+  msg <- paste0("No plausible norm score available for raw = ", raw,
+                " at age ", age, "; ")
+
+  if (!force) {
+    warning(msg, "returning NA.")
+    return(NA_real_)
+  }
+
+  # force = TRUE: clip to the bound on the side of the distribution
+  # that the raw score lies on.
+  if (raw > raw_at_scaleM) {
+    return(maxNorm)
+  } else {
+    return(minNorm)
+  }
 }
 

@@ -9,9 +9,11 @@
 #' @return A numeric vector of the same length as x, containing the standardized values.
 #'
 #' @examples
+#' \dontrun{
 #' data <- c(1, 2, 3, 4, 5)
 #' standardized_data <- standardize(data)
 #' print(standardized_data)
+#' }
 #'
 #' @export
 standardize <- function(x) {
@@ -22,38 +24,58 @@ standardize <- function(x) {
 #' Weighted rank estimation
 #'
 #' Conducts weighted ranking on the basis of sums of weights per unique raw score.
-#' Please provide a vector with raw values and an additional vector with the weight of each
-#' observation. In case the weight vector is NULL, a normal ranking is done. The vectors may not
-#' include NAs and the weights should be positive non-zero values.
+#' Please provide a vector with raw values and an additional vector with the weight
+#' of each observation. In case the weight vector is NULL, a normal ranking is done.
+#' The vectors may not include NAs and the weights should be positive non-zero
+#' values. With equal weights, the result reproduces the mid-ranks of base R's
+#' \code{rank()} (\code{ties.method = "average"}).
 #'
 #' @param x A numerical vector
 #' @param weights A numerical vector with weights; should have the same length as x
 #' @return the weighted absolute ranks
 #' @export
-weighted.rank <- function(x, weights=NULL){
-  if(is.null(weights)){
+weighted.rank <- function(x, weights = NULL) {
+  if (is.null(weights)) {
     return(rank(x))
-  }else{
-    # increase granularity for relative rank estimation
-    fact <- 1000000
-
-    # we use integers only and thus multiply to catch enough digits
-    w <- round((weights * fact), digits = 0)
-    average.rank <- rep(x = 1, times = length(x))
-
-    # for relative ranks, unique values are sufficient
-    u <- unique(x)
-
-    # compute rank sums for unique scores and assign to vector according to x
-    for(i in 1:length(u)){
-      average.rank[which(x == u[i])] <- (sum(w[x<u[i]]) + fact + sum(w[x<=u[i]]))/2
-    }
-
-    # return absolute weighted ranks
-    return(average.rank/sum(w)*length(x))
   }
-}
 
+  # Input validation
+  if (length(x) != length(weights)) {
+    stop("x and weights must have the same length.")
+  }
+  if (anyNA(x) || anyNA(weights)) {
+    stop("x and weights must not contain NAs.")
+  }
+  if (any(weights <= 0)) {
+    stop("weights must be positive non-zero values.")
+  }
+
+  # 1. Aggregate weights by unique x value.
+  #    factor() orders the levels numerically, so the cumulative ("strictly
+  #    less than") logic below is valid, and the final mapping is done through
+  #    the integer factor codes - this avoids the numeric -> character ->
+  #    numeric round-trip and the floating-point match() failures it can cause.
+  f          <- factor(x)
+  sum_weights <- tapply(weights, f, sum)
+  W_eq        <- as.numeric(sum_weights)
+
+  # 2. Cumulative weight strictly below each unique value
+  W_less <- cumsum(c(0, W_eq[-length(W_eq)]))
+
+  # 3. Empirical mid-rank probability for each unique value
+  S        <- sum(weights)
+  mid_prob <- (W_less + (W_eq / 2)) / S
+
+  # 4. Map the probability onto the continuous rank scale [1, N];
+  #    reproduces base R rank() (ties.method = "average") for equal weights.
+  N            <- length(x)
+  unique_ranks <- (mid_prob * N) + 0.5
+
+  # 5. Map the unique ranks back onto the original layout of x via factor codes
+  final_ranks <- unique_ranks[as.integer(f)]
+
+  return(final_ranks)
+}
 
 #' Weighted quantile estimator
 #'
@@ -84,14 +106,17 @@ weighted.rank <- function(x, weights=NULL){
 #' @seealso weighted.quantile.inflation, weighted.quantile.harrell.davis, weighted.quantile.type7
 #' @return the weighted quantiles
 #' @export
-weighted.quantile <- function(x, probs, weights = NULL, type="Harrell-Davis"){
-  if(is.null(weights)){
+weighted.quantile <- function(x,
+                              probs,
+                              weights = NULL,
+                              type = "Harrell-Davis") {
+  if (is.null(weights)) {
     return(quantile(x, probs))
-  }else if(type=="Harrell-Davis"){
+  } else if (type == "Harrell-Davis") {
     return(weighted.quantile.harrell.davis(x, probs, weights))
-  }else if(type=="inflation"){
+  } else if (type == "inflation") {
     return(weighted.quantile.inflation(x, probs, weights))
-  }else{
+  } else{
     return(weighted.quantile.type7(x, probs, weights))
   }
 }
@@ -111,8 +136,12 @@ weighted.quantile <- function(x, probs, weights = NULL, type="Harrell-Davis"){
 #' default = 1000000
 #' @return the quantiles
 #' @export
-weighted.quantile.inflation <- function(x, probs, weights = NULL, degree = 3, cutoff = 10000000) {
-  if(is.null(weights)){
+weighted.quantile.inflation <- function(x,
+                                        probs,
+                                        weights = NULL,
+                                        degree = 3,
+                                        cutoff = 10000000) {
+  if (is.null(weights)) {
     return(quantile(x, probs = probs))
   }
 
@@ -120,15 +149,15 @@ weighted.quantile.inflation <- function(x, probs, weights = NULL, degree = 3, cu
   w <- round(weights / min(weights) * (10^degree), digits = 0)
 
   # switch to Harrell Davis, if computations gets to resource intensive
-  if(sum(w) > cutoff){
+  if (sum(w) > cutoff) {
     print("Inflation too intense - switching to parametric Harrel-Davis estimator")
     return(weighted.quantile.harrell.davis(x, probs, weights))
-  }else{
-  # expand
-  for(i in 1:length(x)){
-    data <- c(data, rep(data[i], w[i]))
-  }
-  return(quantile(data, probs = probs))
+  } else{
+    # expand
+    for (i in 1:length(x)) {
+      data <- c(data, rep(data[i], w[i]))
+    }
+    return(quantile(data, probs = probs))
   }
 }
 
@@ -147,13 +176,14 @@ weighted.quantile.inflation <- function(x, probs, weights = NULL, degree = 3, cu
 #' @return the quantiles
 #' @export
 weighted.quantile.harrell.davis <- function(x, probs, weights = NULL) {
-  if(is.null(weights)){
+  if (is.null(weights)) {
     return(quantile(x, probs = probs))
   }
 
-  cdf.gen <- function(n, p) return(function(cdf.probs) {
-    pbeta(cdf.probs, (n + 1) * p, (n + 1) * (1 - p))
-  })
+  cdf.gen <- function(n, p)
+    return(function(cdf.probs) {
+      pbeta(cdf.probs, (n + 1) * p, (n + 1) * (1 - p))
+    })
   wquantile.generic(x, probs, cdf.gen, weights)
 }
 
@@ -171,15 +201,16 @@ weighted.quantile.harrell.davis <- function(x, probs, weights = NULL) {
 #' @return the quantiles
 #' @export
 weighted.quantile.type7 <- function(x, probs, weights = NULL) {
-  if(is.null(weights)){
+  if (is.null(weights)) {
     return(quantile(x, probs = probs))
   }
 
-  cdf.gen <- function(n, p) return(function(cdf.probs) {
-    h <- p * (n - 1) + 1
-    u <- pmax((h - 1) / n, pmin(h / n, cdf.probs))
-    u * n - h + 1
-  })
+  cdf.gen <- function(n, p)
+    return(function(cdf.probs) {
+      h <- p * (n - 1) + 1
+      u <- pmax((h - 1) / n, pmin(h / n, cdf.probs))
+      u * n - h + 1
+    })
   wquantile.generic(x, probs, cdf.gen, weights)
 }
 
@@ -188,7 +219,7 @@ weighted.quantile.type7 <- function(x, probs, weights = NULL) {
 # Code made available via the CC BY-NC-SA 4.0 license from code from
 # Andrey Akinshin (2023) "Weighted quantile estimators" arXiv:2304.07265 [stat.ME]
 wquantile.generic <- function(x, probs, cdf.gen, weights = NULL) {
-  if(is.null(weights)){
+  if (is.null(weights)) {
     return(quantile(x, probs = probs))
   }
 
@@ -216,42 +247,64 @@ wquantile.generic <- function(x, probs, cdf.gen, weights = NULL) {
 
 #' Determine groups and group means
 #'
-#' Helps to split the continuous explanatory variable into groups and assigns
-#' the group mean. The groups can be split either into groups of equal size (default)
-#' or equal number of observations.
+#' Splits a continuous variable into \code{n} groups (either equidistant or
+#' with equal number of observations) and returns the group mean for every
+#' observation.
 #'
-#' @param x The continuous variable to be split
-#' @param n The number of groups; if NULL then the function determines a number
-#' of groups with usually 100 cases or 3 <= n <= 20.
-#' @param equidistant If set to TRUE, builds equidistant interval, otherwise (default)
-#' with equal number of observations
+#' @param x Numeric vector to be split.
+#' @param n Desired number of groups. If \code{NULL}, the function chooses
+#'   roughly one group per 100 observations, constrained to 3 \eqn{\le} n \eqn{\le} 20.
+#' @param equidistant If \code{TRUE}, intervals have equal width; otherwise
+#'   (default) each interval contains roughly the same number of observations.
 #'
-#' @return vector with group means for each observation
+#' @return Numeric vector of the same length as \code{x} with the group mean
+#'   assigned to each observation.
 #' @export
 #'
 #' @examples
-#' x <- rnorm(1000, m = 50, sd = 10)
+#' \dontrun{
+#' x <- rnorm(1000, mean = 50, sd = 10)
 #' m <- getGroups(x, n = 10)
-#'
-getGroups <- function(x, n = NULL, equidistant = FALSE){
-  if(is.null(n)){
-    n <- length(x)/100
+#' }
+getGroups <- function(x, n = NULL, equidistant = FALSE) {
 
-    if(n < 3)
-      n <- 3
-    else if(n > 20)
-      n <- 20
+  if (!is.numeric(x))
+    stop("'x' must be a numeric vector.")
+
+  # Auto rule: ~one group per 100 obs, clamped to [3, 20]; ensure integer.
+  if (is.null(n)) {
+    n <- floor(length(x) / 100)
+    n <- max(3L, min(20L, n))
+  } else {
+    if (!is.numeric(n) || length(n) != 1L || n < 2)
+      stop("'n' must be a single integer >= 2.")
+    n <- as.integer(n)
   }
 
-  # define grouping variable
-  if(equidistant){
-    groups <- as.numeric(cut(x, n))
-  }else{
-    groups <- findInterval(x, quantile(x, probs = seq(from = 0, to = 1, length.out = n + 1)), all.inside = TRUE)
+  # Build group codes
+  if (equidistant) {
+    groups <- as.integer(cut(x, breaks = n, include.lowest = TRUE))
+  } else {
+    breaks <- stats::quantile(
+      x,
+      probs   = seq(0, 1, length.out = n + 1L),
+      na.rm   = TRUE,
+      names   = FALSE,
+      type    = 7
+    )
+    # Collapse duplicate breaks (heavy ties).  Warn if effective n < requested.
+    ubreaks <- unique(breaks)
+    if (length(ubreaks) < length(breaks)) {
+      warning(sprintf(
+        "Requested %d groups, but only %d distinct quantile breakpoints could be formed (ties in 'x'). Effective number of groups: %d.",
+        n, length(ubreaks), length(ubreaks) - 1L
+      ))
+    }
+    groups <- findInterval(x, ubreaks, all.inside = TRUE)
   }
 
-  # determine group means and assign to intervals
-  return(ave(x, groups, FUN = function(x) {mean(x, na.rm = TRUE)}))
+  # Group means, broadcast back to each observation.
+  ave(x, groups, FUN = function(z) mean(z, na.rm = TRUE))
 }
 
 
@@ -315,6 +368,7 @@ simSD <- function(age) {
 #' }
 #'
 #' @examples
+#' \dontrun{
 #' # simulate data for a rather easy test (m = -1.0)
 #' sim <- simulateRasch(n=150, minAge=1,
 #'                      maxAge=7, items.n = 30, items.m = -1.0,
@@ -333,7 +387,16 @@ simSD <- function(age) {
 #' model <- bestModel(data, k = 4)
 #' printSubset(model)
 #' plotSubset(model, type=0)
-simulateRasch <- function(data = NULL, n = 100, minAge = 1, maxAge = 7, items.n = 21, items.m = 0, items.sd = 1, Theta = "random", width = 1) {
+#' }
+simulateRasch <- function(data = NULL,
+                          n = 100,
+                          minAge = 1,
+                          maxAge = 7,
+                          items.n = 21,
+                          items.m = 0,
+                          items.sd = 1,
+                          Theta = "random",
+                          width = 1) {
   # draw sample
   if (is.null(data)) {
     groups <- seq.int(from = minAge, to = maxAge)
@@ -344,7 +407,11 @@ simulateRasch <- function(data = NULL, n = 100, minAge = 1, maxAge = 7, items.n 
 
     while (i <= length(groups)) {
       group <- c(group, rep(groups[i], times = n))
-      age <- c(age, runif(n, min = groups[i] - (width / 2), max = groups[i] + (width / 2)))
+      age <- c(age, runif(
+        n,
+        min = groups[i] - (width / 2),
+        max = groups[i] + (width / 2)
+      ))
 
       i <- i + 1
     }
@@ -365,7 +432,11 @@ simulateRasch <- function(data = NULL, n = 100, minAge = 1, maxAge = 7, items.n 
     if (Theta == "random") {
       theta <- rnorm(items.n, items.m, items.sd)
     } else if (Theta == "even") {
-      p <- seq(from = 0.5 / items.n, to = (items.n - 0.5) / items.n, length.out = items.n)
+      p <- seq(
+        from = 0.5 / items.n,
+        to = (items.n - 0.5) / items.n,
+        length.out = items.n
+      )
       theta <- qnorm(p, items.m, items.sd)
     }
   } else {
@@ -401,7 +472,11 @@ simulateRasch <- function(data = NULL, n = 100, minAge = 1, maxAge = 7, items.n 
   }
   sim <- transform(data, raw = rowSums(data[, (9 + items.n):ncol(data)]))
   dat <- sim[, c(1, 2, 5, ncol(sim))]
-  return(list(data = dat, sim = sim, theta = theta))
+  return(list(
+    data = dat,
+    sim = sim,
+    theta = theta
+  ))
 }
 
 #' Build cnorm object from data and bestModel model object
@@ -424,7 +499,7 @@ simulateRasch <- function(data = NULL, n = 100, minAge = 1, maxAge = 7, items.n 
 #' }
 #'
 #' @export
-buildCnormObject <- function(data, model){
+buildCnormObject <- function(data, model) {
   result <- list(data = data, model = model)
   class(result) <- "cnorm"
   return(result)
@@ -454,8 +529,8 @@ buildCnormObject <- function(data, model){
 #'
 #' @noRd
 prepare_matrix <- function(location, age, k = 5, t = 3) {
-
-  if (!is.numeric(location) || !is.numeric(age) || length(location) != length(age))
+  if (!is.numeric(location) ||
+      !is.numeric(age) || length(location) != length(age))
     stop("location and age must be numeric vectors of the same length")
 
   if (!is.numeric(k) || !is.numeric(t) || k < 0 || t < 0 ||
@@ -469,7 +544,7 @@ prepare_matrix <- function(location, age, k = 5, t = 3) {
 
   # Precompute all powers once — n × (k+1) and n × (t+1)
   loc_pow <- outer(location, 0:k, `^`)
-  age_pow <- outer(age,      0:t, `^`)
+  age_pow <- outer(age, 0:t, `^`)
 
   # All (i, j) pairs excluding (0, 0)
   idx <- expand.grid(i = 0:k, j = 0:t)
@@ -477,16 +552,13 @@ prepare_matrix <- function(location, age, k = 5, t = 3) {
 
   # FIX: wrap in matrix() — mapply simplifies to a vector when n = 1,
   # which has no colnames dimension
-  mat <- matrix(
-    mapply(function(i, j) loc_pow[, i + 1L] * age_pow[, j + 1L],
-           idx$i, idx$j),
-    nrow = n
-  )
+  mat <- matrix(mapply(function(i, j)
+    loc_pow[, i + 1L] * age_pow[, j + 1L], idx$i, idx$j), nrow = n)
 
   colnames(mat) <- ifelse(
-    idx$i > 0L & idx$j > 0L, paste0("L", idx$i, "A", idx$j),
-    ifelse(idx$i > 0L,        paste0("L", idx$i),
-           paste0("A", idx$j))
+    idx$i > 0L & idx$j > 0L,
+    paste0("L", idx$i, "A", idx$j),
+    ifelse(idx$i > 0L, paste0("L", idx$i), paste0("A", idx$j))
   )
 
   attr(mat, "k") <- k
@@ -498,25 +570,32 @@ prepare_matrix <- function(location, age, k = 5, t = 3) {
 # Check if object is of class cnorm
 #' @keywords internal
 isTaylor <- function(model) {
-  return(inherits(model, "cnorm")||inherits(model, "cnormTemp"))
+  return(inherits(model, "cnorm") || inherits(model, "cnormTemp"))
 }
 
 # Check if model is of class cnormBetaBinomial or cnormBetaBinomial2
 #' @keywords internal
 isBeta <- function(model) {
-  return(inherits(model, "cnormBetaBinomial2")||inherits(model, "cnormBetaBinomial"))
+  return(inherits(model, "cnormBetaBinomial2") ||
+           inherits(model, "cnormBetaBinomial"))
 }
 
 # Check if model is of class cnormShash
 #' @keywords internal
 isSHASH <- function(model) {
-  return(inherits(model, "cnormShash")||inherits(model, "cnormShaSh"))
+  return(inherits(model, "cnormShash") || inherits(model, "cnormShaSh"))
 }
 
-# Check if model is parametric (SHASH or BetaBinomial)
+# Check if model is of class cnormCMP
+#' @keywords internal
+isCMP <- function(model) {
+  return(inherits(model, "cnormCMP"))
+}
+
+# Check if model is parametric (SHASH, BetaBinomial, or CMP)
 #' @keywords internal
 isParametric <- function(model) {
-  return(isSHASH(model)||isBeta(model))
+  return(isSHASH(model) || isBeta(model) || isCMP(model))
 }
 
 # filter incomplete cases

@@ -1,3 +1,6 @@
+# Bundled from cNORM v3.7.0
+
+
 #' cNORM: Continuous Norming
 #'
 #' The package provides methods for generating regression based continuous standard
@@ -47,9 +50,12 @@
 #'
 #' @references
 #' \enumerate{
-#'   \item CDC (2012). National Health and Nutrition Examination Survey: Questionnaires, Datasets
-#'   and Related Documentation. available: https://wwwn.cdc.gov/nchs/nhanes/.
-#'   date of retrieval: 25/08/2018
+#'   \item Center for Disease Control and Prevention (2012).
+#'   National Health and Nutrition Examination Survey: Questionnaires,
+#'   datasets and related documentation. U.S. Department of Health and Human Services
+#'   (original source not available anymore).
+#'   \item Gary, S., Lenhard, W., Lenhard, A., & Herzberg, D. (2023). A tutorial on automatic post-stratification and weighting in conventional and regression-based norming of psychometric tests. Behavior Research Methods. https://doi.org/10.3758/s13428-023-02207-0
+#'   \item Gary, S., Lenhard, A., Lenhard, W., & Herzberg, D. S. (2023). Reducing the Bias of Norm Scores in Non-Representative Samples: Weighting as an Adjunct to Continuous Norming Methods. Assessment, 30(8), 2491–2509. https://doi.org/10.1177/10731911231153832
 #'   \item Lenhard, W., & Lenhard, A. (2021). Improvement of Norm Score Quality via Regression-Based
 #'   Continuous Norming. Educational and Psychological Measurement, 81(2), 229–261.
 #'   doi: 10.1177/0013164420928457
@@ -65,13 +71,13 @@
 #' }
 #' @author Wolfgang Lenhard, Alexandra Lenhard and Sebastian Gary
 #' @keywords Psychometrics Biometrics Test Development Regression Based Norming
-#' @docType _PACKAGE
+#' @docType PACKAGE
 #' @name cNORM
 #' @seealso cNORM.GUI
 #' @examples
 #' \dontrun{
 #' # Model internal 'elfe' dataset with the default k = 4 regression on T scores
-#' result <- cnorm(raw = elfe$raw, group = elfe$group)
+#' results <- cnorm(raw = elfe$raw, group = elfe$group)
 #'
 #' # Show model fit of models with progressing number of predictors
 #' print(results)
@@ -99,97 +105,11 @@
 NULL
 
 
-#' Launcher for the graphical user interface of cNORM for distribution free
-#' continuous norming
-#'
-#' @param launch.browser Default TRUE; automatically open browser for GUI
-#'
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' # Launch graphical user interface
-#' cNORM.GUI()
-#' }
-cNORM.GUI <- function(launch.browser = TRUE) {
-  packageList <- c("shiny", "shinycssloaders", "foreign", "readxl", "markdown", "rmarkdown")
-
-  # Check which packages are missing
-  missing <- packageList[!sapply(packageList, requireNamespace, quietly = TRUE)]
-
-  if (length(missing) > 0) {
-    cat("Additional packages are needed to start the user interface:\n")
-    cat(paste("-", missing, collapse = "\n"), "\n")
-    cat("\nWould you like to try to install them now?\n")
-    installChoice <- menu(c("yes", "no"))
-
-    if (installChoice == 1) {
-      utils::install.packages(missing)
-    } else {
-      stop("Required packages are missing. Unable to start the GUI")
-    }
-  }
-
-  appDir <- system.file("shiny", "app1", package = "cNORM")
-  shiny::runApp(appDir,
-                display.mode = "normal",
-                launch.browser = launch.browser)
-}
-
-#' Launch the cNORM Parametric Modeling Shiny Application
-#'
-#' @param launch.browser Logical, whether to launch browser automatically (default: TRUE)
-#' @export
-cNORM.GUI2 <- function(launch.browser = TRUE) {
-
-  # Required packages for the parametric modeling GUI
-  packageList <- c("shiny", "shinycssloaders", "DT", "ggplot2",
-                   "foreign", "readxl", "haven")
-
-  # Check which packages are missing
-  missing <- packageList[!sapply(packageList, requireNamespace, quietly = TRUE)]
-
-  if (length(missing) > 0) {
-    cat("Additional packages are needed to start the parametric modeling interface:\n")
-    cat(paste("-", missing, collapse = "\n"), "\n")
-    cat("\nWould you like to install them now?\n")
-    installChoice <- utils::menu(c("Yes", "No"))
-
-    if (installChoice == 1) {
-      cat("\nInstalling packages...\n")
-      utils::install.packages(missing)
-
-      # Verify installation succeeded
-      still_missing <- missing[!sapply(missing, requireNamespace, quietly = TRUE)]
-      if (length(still_missing) > 0) {
-        stop("Failed to install: ", paste(still_missing, collapse = ", "),
-             "\nPlease install manually and try again.")
-      }
-      cat("Installation complete!\n\n")
-    } else {
-      stop("Required packages are missing. Unable to start the GUI.")
-    }
-  }
-
-  # Locate the app directory
-  appDir <- system.file("shiny", "app2", package = "cNORM")
-
-  if (appDir == "") {
-    stop("Could not find app directory. Try re-installing `cNORM`.", call. = FALSE)
-  }
-
-  # Launch the app
-  message("Launching cNORM Parametric Modeling GUI...")
-  shiny::runApp(appDir,
-                display.mode = "normal",
-                launch.browser = launch.browser)
-}
-
 #' Continuous Norming
 #'
 #' Conducts continuous norming in one step and returns an object including ranked
 #' raw data and the continuous norming model. Please consult the function
-#' description ' of 'rankByGroup', 'rankBySlidingWindow' and 'bestModel' for specifics
+#' description of 'rankByGroup', 'rankBySlidingWindow' and 'bestModel' for specifics
 #' of the steps in the data preparation and modeling process. In addition to the
 #' raw scores, either provide
 #' \itemize{
@@ -204,93 +124,60 @@ cNORM.GUI2 <- function(launch.browser = TRUE) {
 #' are missing, cnorm uses k = 5 and t = 3 by default.
 #'
 #' @param raw Numeric vector of raw scores
-#' @param group Numeric vector of grouping variable, e. g. grade. If no group
-#' or age variable is provided, conventional norming is applied
-#' @param age Numeric vector with chronological age, please additionally specify
-#' width of window
-#' @param width Size of the sliding window in case an age vector is used
-#' @param scale type of norm scale, either T (default), IQ, z or percentile (= no
-#' transformation); a double vector with the mean and standard deviation can as
-#' well, be provided f. e. c(10, 3) for Wechsler scale index points
-#' @param method Ranking method in case of bindings, please provide an index,
-#' choosing from the following methods: 1 = Blom (1958), 2 = Tukey (1949),
-#' 3 = Van der Warden (1952), 4 = Rankit (default), 5 = Levenbach (1953),
-#' 6 = Filliben (1975), 7 = Yu & Huang (2001)
-#' @param descend ranking order (default descent = FALSE): inverses the
-#' ranking order with higher raw scores getting lower norm scores; relevant
-#' for example when norming error scores, where lower scores mean higher
-#' performance
-#' @param weights Vector or variable name in the dataset with weights for each
-#' individual case. It can be used to compensate for moderate imbalances due to
-#' insufficient norm data stratification. Weights should be numerical and positive.
-#' @param terms Selection criterion for model building. The best fitting model with
-#' this number of terms is used
-#' @param R2 Adjusted R square as a stopping criterion for the model building
-#' (default R2 = 0.99)
-#' @param k The power constant. Higher values result in more detailed approximations
-#' but have the danger of over-fit (max = 6). If not set, it uses t and if both
-#' parameters are NULL, k is set to 5.
-#' @param t The age power parameter (max = 6). If not set, it uses k and if both
-#' parameters are NULL, k is set to 3, since age trajectories are most often well
-#' captured by cubic polynomials.
-#' @param plot Default TRUE; plots the regression model and prints report
-#' @param extensive If TRUE, screen models for consistency and - if possible, exclude inconsistent ones
-#' @param subsampling If TRUE (default), model coefficients are calculated using 10-folds and averaged across the folds.
-#'                    This produces more robust estimates with a slight increase in bias.
-#'
-#' @return cnorm object including the ranked raw data and the regression model
+#' @param group Numeric vector of grouping variable, e.g. grade. If no group
+#'   or age variable is provided, conventional norming is applied.
+#' @param age Numeric vector with chronological age. If used without `group`,
+#'   please additionally specify `width`.
+#' @param width Size of the sliding window in case an age vector is used.
+#' @param scale Type of norm scale, either "T" (default), "IQ", "z" or
+#'   "percentile" (= no transformation); a numeric vector with mean and SD can
+#'   also be provided, e.g. `c(10, 3)` for Wechsler scale index points.
+#' @param method Ranking method in case of ties; an integer index from 1
+#'   (Blom 1958) through 7 (Yu & Huang 2001). Default is 4 (Rankit).
+#' @param descend If TRUE, inverts the ranking order so that higher raw scores
+#'   receive lower norm scores (e.g. for error scores).
+#' @param weights Optional numeric vector of case weights for post-stratification.
+#' @param terms If > 0, fix the model to this number of terms.
+#' @param R2 Stopping criterion (adjusted R-squared) for model selection.
+#' @param k Power degree for the location dimension (max 6).
+#' @param t Power degree for the age dimension (max 6).
+#' @param plot If TRUE (default), display percentile plot and report. Setting
+#'        it to FALSE as well deactivates potential user interactions.
+#' @param extensive If TRUE (default), screen models for monotonic consistency.
+#' @param averaging If TRUE (default FALSE), apply BIC-weighted model averaging
+#'   across the consistency-screened candidate models instead of selecting a
+#'   single model. Requires \code{extensive = TRUE} and age-based norming.
+#' @param minDip Tolerance for monotonicity check. Allow small violations
+#'   (default: .01 or 1% of the raw score range). Decrease e. g. to 1e-6
+#'   for strict checking.
+#' @return cnorm object including the ranked raw data and the regression model.
 #' @seealso rankByGroup, rankBySlidingWindow, computePowers, bestModel
 #' @examples
 #' \dontrun{
-#' # Using this function with the example dataset 'elfe'
+#' # Conventional norming
+#' cnorm(raw = elfe$raw)
 #'
-#' # Conventional norming (no modelling over age)
-#' cnorm(raw=elfe$raw)
+#' # Continuous norming via group
+#' m1 <- cnorm(raw = elfe$raw, group = elfe$group)
 #'
-#' # Continuous norming
-#' # You can use the 'getGroups()' function to set up grouping variable in case,
-#' # you have a continuous age variable.
-#' cnorm.elfe <- cnorm(raw = elfe$raw, group = elfe$group)
+#' # Continuous norming via continuous age + sliding window
+#' m2 <- cnorm(raw = ppvt$raw, age = ppvt$age, width = 1)
 #'
-#' # return norm tables including 90% confidence intervals for a
-#' # test with a reliability of r = .85; table are set to mean of quartal
-#' # in grade 3 (children completed 2 years of schooling)
-#' normTable(c(2.125, 2.375, 2.625), cnorm.elfe, CI = .90, reliability = .95)
-#'
-#' # ... or instead of raw scores for norm scores, the other way round
-#' rawTable(c(2.125, 2.375, 2.625), cnorm.elfe, CI = .90, reliability = .95)
-#'
-#'
-#' # Using a continuous age variable instead of distinct groups, using a sliding
-#' # window for percentile estimation. Please specify continuos variable for age
-#' # and the sliding window size.
-#' cnorm.ppvt.continuous <- cnorm(raw = ppvt$raw, age = ppvt$age, width=1)
-#'
-#'
-#' # In case of unbalanced datasets, deviating from the census, the norm data
-#' # can be weighted by the means of raking / post stratification. Please generate
-#' # the weights with the computeWeights() function and pass them as the weights
-#' # parameter. For computing the weights, please specify a data.frame with the
-#' # population margins (further information is available in the computeWeights
-#' # function). A demonstration based on sex and migration status in vocabulary
-#' # development (ppvt dataset):
-#' margins <- data.frame(variables = c("sex", "sex",
-#'                                     "migration", "migration"),
-#'                       levels = c(1, 2, 0, 1),
-#'                       share = c(.52, .48, .7, .3))
-#' weights <- computeWeights(ppvt, margins)
-#' model <- cnorm(raw = ppvt$raw, group=ppvt$group, weights = weights)
+#' # Norm tables with confidence intervals
+#' normTable(c(2.125, 2.375, 2.625), m1, CI = .9, reliability = .95)
+#' rawTable (c(2.125, 2.375, 2.625), m1, CI = .9, reliability = .95)
 #' }
 #' @export
 #' @references
 #' \enumerate{
 #'   \item Gary, S. & Lenhard, W. (2021). In norming we trust. Diagnostica.
 #'   \item Gary, S., Lenhard, W. & Lenhard, A. (2021). Modelling Norm Scores with the cNORM Package in R. Psych, 3(3), 501-521. https://doi.org/10.3390/psych3030033
+#'   \item Gary, S., Lenhard, W., Lenhard, A., & Herzberg, D. (2023). A tutorial on automatic post-stratification and weighting in conventional and regression-based norming of psychometric tests. Behavior Research Methods. https://doi.org/10.3758/s13428-023-02207-0
+#'   \item Gary, S., Lenhard, A., Lenhard, W., & Herzberg, D. S. (2023). Reducing the Bias of Norm Scores in Non-Representative Samples: Weighting as an Adjunct to Continuous Norming Methods. Assessment, 30(8), 2491–2509. https://doi.org/10.1177/10731911231153832
 #'   \item Lenhard, A., Lenhard, W., Suggate, S. & Segerer, R. (2016). A continuous solution to the norming problem. Assessment, Online first, 1-14. doi:10.1177/1073191116656437
 #'   \item Lenhard, A., Lenhard, W., Gary, S. (2018). Continuous Norming (cNORM). The Comprehensive R Network, Package cNORM, available: https://CRAN.R-project.org/package=cNORM
 #'   \item Lenhard, A., Lenhard, W., Gary, S. (2019). Continuous norming of psychometric tests: A simulation study of parametric and semi-parametric approaches. PLoS ONE, 14(9),  e0222279. doi:10.1371/journal.pone.0222279
 #'   \item Lenhard, W., & Lenhard, A. (2020). Improvement of Norm Score Quality via Regression-Based Continuous Norming. Educational and Psychological Measurement(Online First), 1-33. https://doi.org/10.1177/0013164420928457
-#'
 #' }
 cnorm <- function(raw = NULL,
                   group = NULL,
@@ -306,226 +193,171 @@ cnorm <- function(raw = NULL,
                   R2 = NULL,
                   plot = TRUE,
                   extensive = TRUE,
-                  subsampling = TRUE){
+                  averaging = FALSE,
+                  minDip = .01) {
 
-  if(!is.null(group)&&!is.null(age)){
-    warning("Specifying both 'group' as well as 'age' is discouraged.")
-  }
-
-  if(is.null(k)&&is.null(t)){
-    k <- 5
-    t <- 3
-  }else if(!is.null(k)&&is.null(t)){
-     t <- k
-  }else if(is.null(k)&&!is.null(t)){
-    k <- t
-  }
+  # ---- input validation -----------------------------------------------------
+  if (is.null(raw) || !is.numeric(raw))
+    stop("Please provide a numeric vector for the raw scores.")
+  if (!is.null(group) && !is.numeric(group))
+    stop("`group` must be a numeric vector.")
+  if (!is.null(age) && !is.numeric(age))
+    stop("`age` must be a numeric vector.")
+  if (!is.null(weights) && !is.numeric(weights))
+    stop("`weights` must be a numeric vector.")
+  if (!is.null(group) && length(group) != length(raw))
+    stop("`raw` and `group` must have the same length.")
+  if (!is.null(age) && length(age) != length(raw))
+    stop("`raw` and `age` must have the same length.")
+  if (!is.null(weights) && length(weights) != length(raw))
+    stop("`weights` must have the same length as `raw`.")
+  if (!is.null(weights) && any(weights <= 0, na.rm = TRUE))
+    stop("`weights` must be positive, non-zero values (see computeWeights).")
 
   silent <- !plot
 
-  if(is.numeric(raw)&&is.numeric(group)){
-    if(length(raw)!=length(group)){
-      stop("Please provide numeric vectors of equal length for raw score and group data.")
-    }
+  if (!is.null(group) && !is.null(age) && !silent) {
+    message("Both 'group' and 'age' supplied: ranking within 'group' and ",
+            "modelling on the continuous 'age' variable.")
+  }
 
-    if(is.numeric(age)&&!is.na(width)){
-      if(length(raw)!=length(age)){
-        stop("Please provide numeric vectors of equal length for raw score and group data.")
+  # ---- default smoothing parameters -----------------------------------------
+  t_user_provided <- !is.null(t)
+  if (is.null(k) && is.null(t)) {
+    k <- 5; t <- 3
+  } else if (is.null(t)) {
+    t <- k
+  } else if (is.null(k)) {
+    k <- 5
+  }
+
+  # ---- assemble & clean (single source of NA removal, weights kept aligned) --
+  df_in <- data.frame(raw = raw)
+  if (!is.null(group))   df_in$group   <- group
+  if (!is.null(age))     df_in$age     <- age
+  if (!is.null(weights)) df_in$weights <- weights
+  df_in <- df_in[stats::complete.cases(df_in), , drop = FALSE]
+  if (nrow(df_in) == 0L)
+    stop("After removing missing values no observations remain.")
+
+  weights_name <- if (!is.null(weights)) "weights" else NULL
+
+  conventional <- is.null(group) && is.null(age)
+  use_window   <- is.null(group) && !is.null(age) && !is.na(width)
+
+  # ---- plausibility on identifiable time variables ------------------------
+  time_var <- if (!is.null(group)) df_in$group else df_in$age
+
+  if (!is.null(time_var)) {
+    k.groups <- length(unique(time_var))
+    t.max <- k.groups - 1
+
+    if (k.groups <= 1) {
+      if (!silent) message("Only one distinct age/group present. Deactivating continuous norming over time.")
+      conventional <- TRUE
+
+    } else if (t > t.max) {
+
+      if (!t_user_provided) {
+        # Silent correction if user relied on package defaults
+        t <- t.max
+        if (!silent) {
+          message(sprintf("Default time power t exceeds max identifiable degree for %d groups. Automatically setting t = %d.",
+                          k.groups, t.max))
+        }
+      } else {
+        t <- t.max
+        msg <- sprintf(
+          "Requested age power (t) exceeds mathematical identifiability for %d distinct age groups. ",
+          k.groups
+        )
+        msg_risk <- sprintf(
+          "To prevent severe percentile breakdown, t has been automatically reduced to %d.",
+          t.max
+        )
+
+        warning(paste0(msg, msg_risk), call. = FALSE)
       }
-
-      if(is.null(weights))
-        data <- data.frame(raw = raw, age = age)
-      else
-        data <- data.frame(raw = raw, age = age, weights = weights)
-
-      # removing missing cases
-      data <- data[complete.cases(data), ]
-
-      if(plot)
-        message("Ranking data with sliding window ...")
-
-      data <- rankBySlidingWindow(raw=data$raw, age=data$age, scale=scale, weights=data$weights, descend = descend, width = width, method = method)
-
-      # again remove missing cases; might occur due to weighting
-      data <- data[complete.cases(data), ]
-    }else{
-
-      if(is.null(weights))
-        data <- data.frame(raw = raw, group = group)
-      else
-        data <- data.frame(raw = raw, group = group, weights = weights)
-
-      # removing missing cases
-      data <- data[complete.cases(data), ]
-
-      # model with rank by group
-      data <- rankByGroup(raw=data$raw, group=data$group, scale=scale, weights=data$weights, descend = descend, method = method)
-
-      # again remove missing cases; might occur due to weighting
-      data <- data[complete.cases(data), ]
-
-    }
-
-    if(is.numeric(age)){
-      if(length(raw)!=length(age)){
-        warning("Length of the age vector does not match the raw score vector, ignoring age information.")
-        data <- computePowers(data, k = k, t = t, silent = silent)
-      }else{
-        data$age <- age
-        data <- computePowers(data, k = k, t = t, age = age, silent = silent)
-      }
-    }else{
-      data <- computePowers(data, k = k, t = t, silent = silent)
     }
   }
 
-  # conventional norming
-  else if(is.numeric(raw)&&is.null(group)&&is.null(age)){
-    if(is.null(weights))
-      data <- data.frame(raw = raw)
-    else
-      data <- data.frame(raw = raw, weights = weights)
-
-    data <- rankByGroup(data, raw=data$raw, group=FALSE, scale=scale, weights=data$weights, descend = descend, method = method)
+  # ============================ CONVENTIONAL =================================
+  if (conventional) {
+    data <- rankByGroup(data = df_in, group = FALSE, raw = "raw",
+                        scale = scale, weights = weights_name,
+                        descend = descend, method = method, silent = silent)
     data <- computePowers(data, k = k, t = t, silent = silent)
-    model <- bestModel(data, k = k, t = t, terms = terms, R2 = R2, plot = plot, extensive = extensive, subsampling = subsampling)
 
-    result <- list(data = data, model = model)
-    class(result) <- "cnorm"
-    print(rawTable(0, result))
+    model <- bestModel(data, k = k, t = t, terms = terms, R2 = R2,
+                       weights = data$weights, plot = FALSE,
+                       extensive = extensive, averaging=averaging, minDip = minDip)
+
+    result <- structure(list(data = data, model = model), class = "cnorm")
+    if (plot) {
+      cat(model$report, sep = "\n")
+      print(rawTable(0, result))
+      plotPercentiles(result)
+    }
     return(result)
   }
 
-  # if no grouping variable is given
-  else if(is.numeric(raw)&&is.numeric(age)){
-    if(length(raw)!=length(age)){
-      stop("Please provide numeric vectors of equal length for raw score and group data.")
+  # ============================ SLIDING WINDOW ==============================
+  if (use_window) {
+    if (!silent) message("Ranking data with sliding window ...")
+
+    # Synthesise a grouping variable for display / manifest percentiles only;
+    # the model itself is fitted on the continuous age.
+    if (is.null(df_in$group)) df_in$group <- getGroups(df_in$age)
+
+    data <- rankBySlidingWindow(data = df_in, age = "age", raw = "raw",
+                                group = "group", width = width, scale = scale,
+                                weights = weights_name, descend = descend,
+                                method = method, silent = silent)
+    data <- data[!is.na(data$normValue), , drop = FALSE]
+    data <- computePowers(data, k = k, t = t, age = "age", silent = silent)
+
+    # ============================ BY GROUP ====================================
+  } else {
+    group_was_synthesised <- is.null(group)
+
+    if (group_was_synthesised) {
+      if (length(df_in$age) / length(unique(df_in$age)) > 50 &&
+          min(table(df_in$age)) > 30) {
+        if (!silent) message("Width missing. Using age directly as grouping variable.")
+        df_in$group <- df_in$age
+      } else {
+        if (!silent) message("Width missing. Discretising age via getGroups().")
+        df_in$group <- getGroups(df_in$age)
+      }
     }
 
-    if(is.na(width)){
-      if (length(age) / length(unique(age)) > 50 && min(table(data$age)) > 30) {
-        message("Width for the sliding window is missing. Using age as grouping variable and resorting to rankByGroups.")
-        if(is.null(weights))
-          data <- data.frame(raw = raw, group = age)
-        else
-          data <- data.frame(raw = raw, group = age, weights = weights)
+    data <- rankByGroup(data = df_in, group = "group", raw = "raw",
+                        scale = scale, weights = weights_name,
+                        descend = descend, method = method, silent = silent)
+    data <- data[!is.na(data$normValue), , drop = FALSE]
 
-        # removing missing cases
-        data <- data[complete.cases(data), ]
-        data <- rankByGroup(raw=data$raw, group=data$group, scale=scale, weights=data$weights, descend = descend, method = method)
-        data <- computePowers(data, k = k, t = t, silent = silent)
-
-      }else{
-        message("Width for the sliding window is missing. Building group variable and resorting to rankByGroups.")
-
-        if(is.null(weights))
-          data <- data.frame(raw = raw, group = getGroups(age))
-        else
-          data <- data.frame(raw = raw, group = getGroups(age), weights = weights)
-
-        # removing missing cases
-        data <- data[complete.cases(data), ]
-        data <- rankByGroup(raw=data$raw, group=data$group, scale=scale, weights=data$weights, descend = descend, method = method)
-        data <- computePowers(data, k = k, t = t, silent = silent)
-      }
-    }else{
-      message("Ranking data with sliding window ...")
-      if(is.null(weights))
-        data <- data.frame(raw = raw, age = age)
-      else
-        data <- data.frame(raw = raw, age = age, weights = weights)
-
-      # removing missing cases
-      data <- data[complete.cases(data), ]
-      data <- rankBySlidingWindow(raw=data$raw, age=data$age, scale=scale, weights=data$weights, descend = descend, width = width, method = method)
+    # Model on the continuous age only when the user supplied a *real* group
+    # together with a separate age vector; otherwise the group already IS the
+    # (discretised) age axis. 'age' rides along as a column of `data`, so it
+    # stays row-aligned even if cases were dropped during ranking.
+    model_on_age <- (!group_was_synthesised) && !is.null(df_in$age)
+    if (model_on_age) {
+      data <- computePowers(data, k = k, t = t, age = "age", silent = silent)
+    } else {
       data <- computePowers(data, k = k, t = t, silent = silent)
     }
-
-
-  }else{
-    stop("Please provide a numerical vector for the raw scores and either a vector for grouping and/or age of the same length. If you use an age vector only, please specify the width of the window.")
   }
 
-  model <- bestModel(data, R2=R2, terms=terms, weights = data$weights, plot = FALSE, extensive = extensive, subsampling = subsampling)
-  result <- list(data = data, model = model)
-  class(result) <- "cnorm"
+  # ---- model, assemble, report ----------------------------------------------
+  model <- bestModel(data, k = k, t = t, terms = terms, R2 = R2,
+                     weights = data$weights, plot = FALSE,
+                     extensive = extensive, averaging=averaging, minDip = minDip)
 
-  if(plot){
+  result <- structure(list(data = data, model = model), class = "cnorm")
+  if (plot) {
+    cat(model$report, sep = "\n")
     plotPercentiles(result)
   }
   return(result)
 }
 
-#' Swiftly compute Taylor regression models for distribution free continuous norming
-#'
-#' Conducts distribution free continuous norming and aims to find a fitting model. Raw data are modelled as a Taylor polynomial
-#' of powers of age and location and their interactions. In addition to the
-#' raw scores, either provide a numeric vector for the grouping information (group)
-#' for the ranking of the raw scores. You can adjust the grade of smoothing of the regression model by setting the k, t and terms
-#' parameter. In general, increasing k and t leads to a higher fit, while lower values lead to more smoothing. If both parameters
-#' are missing, taylorSwift uses k = 5 and t = 3 by default.
-#'
-#' @param raw Numeric vector of raw scores
-#' @param group Numeric vector of grouping variable, e. g. grade. If no group
-#' or age variable is provided, conventional norming is applied
-#' @param age Numeric vector with chronological age, please additionally specify
-#' width of window
-#' @param width Size of the sliding window in case an age vector is used
-#' @param scale type of norm scale, either T (default), IQ, z or percentile (= no
-#' transformation); a double vector with the mean and standard deviation can as
-#' well, be provided f. e. c(10, 3) for Wechsler scale index points
-#' @param method Ranking method in case of bindings, please provide an index,
-#' choosing from the following methods: 1 = Blom (1958), 2 = Tukey (1949),
-#' 3 = Van der Warden (1952), 4 = Rankit (default), 5 = Levenbach (1953),
-#' 6 = Filliben (1975), 7 = Yu & Huang (2001)
-#' @param descend ranking order (default descent = FALSE): inverses the
-#' ranking order with higher raw scores getting lower norm scores; relevant
-#' for example when norming error scores, where lower scores mean higher
-#' performance
-#' @param weights Vector or variable name in the dataset with weights for each
-#' individual case. It can be used to compensate for moderate imbalances due to
-#' insufficient norm data stratification. Weights should be numerical and positive.
-#' @param terms Selection criterion for model building. The best fitting model with
-#' this number of terms is used
-#' @param R2 Adjusted R square as a stopping criterion for the model building
-#' (default R2 = 0.99)
-#' @param k The power constant. Higher values result in more detailed approximations
-#' but have the danger of over-fit (max = 6). If not set, it uses t and if both
-#' parameters are NULL, k is set to 5.
-#' @param t The age power parameter (max = 6). If not set, it uses k and if both
-#' parameters are NULL, k is set to 3, since age trajectories are most often well
-#' captured by cubic polynomials.
-#' @param plot Default TRUE; plots the regression model and prints report
-#' @param extensive If TRUE, screen models for consistency and - if possible, exclude inconsistent ones
-#' @param subsampling If TRUE (default), model coefficients are calculated using 10-folds and averaged across the folds.
-#'                    This produces more robust estimates with a slight increase in bias.
-#'
-#' @return cnorm object including the ranked raw data and the regression model
-#' @seealso rankByGroup, rankBySlidingWindow, computePowers, bestModel
-#' @examples
-#' \dontrun{
-#' # Using this function with the example dataset 'ppvt'
-#' # You can use the 'getGroups()' function to set up grouping variable in case,
-#' # you have a continuous age variable.
-#' model <- taylorSwift(raw = ppvt$raw, group = ppvt$group)
-#'
-#' # return norm tables including 90% confidence intervals for a
-#' # test with a reliability of r = .85; table are set to mean of quartal
-#' # in grade 3 (children completed 2 years of schooling)
-#' normTable(c(5, 15), model, CI = .90, reliability = .95)
-#'
-#' # ... or instead of raw scores for norm scores, the other way round
-#' rawTable(c(8, 12), model, CI = .90, reliability = .95)
-#' }
-#' @export
-#' @references
-#' \enumerate{
-#'   \item Gary, S. & Lenhard, W. (2021). In norming we trust. Diagnostica.
-#'   \item Gary, S., Lenhard, W. & Lenhard, A. (2021). Modelling Norm Scores with the cNORM Package in R. Psych, 3(3), 501-521. https://doi.org/10.3390/psych3030033
-#'   \item Lenhard, A., Lenhard, W., Suggate, S. & Segerer, R. (2016). A continuous solution to the norming problem. Assessment, Online first, 1-14. doi:10.1177/1073191116656437
-#'   \item Lenhard, A., Lenhard, W., Gary, S. (2018). Continuous Norming (cNORM). The Comprehensive R Network, Package cNORM, available: https://CRAN.R-project.org/package=cNORM
-#'   \item Lenhard, A., Lenhard, W., Gary, S. (2019). Continuous norming of psychometric tests: A simulation study of parametric and semi-parametric approaches. PLoS ONE, 14(9),  e0222279. doi:10.1371/journal.pone.0222279
-#'   \item Lenhard, W., & Lenhard, A. (2020). Improvement of Norm Score Quality via Regression-Based Continuous Norming. Educational and Psychological Measurement(Online First), 1-33. https://doi.org/10.1177/0013164420928457
-#'
-#' }
-taylorSwift <- cnorm

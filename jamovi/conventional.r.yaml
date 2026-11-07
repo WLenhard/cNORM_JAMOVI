@@ -1,109 +1,206 @@
 ---
-name:  conventional
-title: Single Group
-jrs:   '1.1'
+name: conventional
+title: Single Group Norming
+jrs: '1.1'
 
 items:
     - name: instructions
       title: Instructions
-      refs: assessment
+      refs:
+        - cNORM
+        - assessment
       type: Html
-      visible: True
+      visible: true
 
     - name: plot
+      title: Norm Score Conversion
       refs: cNORM
       type: Image
-      width:  600
-      height: 400
-      visible: True
-      renderFun: .plot  
-      
-    - name:  norms
-      title: Norm score table
+      width: 600
+      height: 450
+      visible: true
+      renderFun: .plot
+      clearWith:
+        - raw
+        - weights
+        - scale
+        - descend
+        - k
+        - kPower
+        - selectionType
+        - terms
+        - plotting
+        - range
+        - minRaw
+        - maxRaw
+        - stepping
+        - includeCI
+        - ciLevel
+        - reliability
+
+    - name: modelFit
+      title: Model Fit
+      visible: (model && k)
+      type: Table
+      rows: 1
+      refs:
+        - plos
+        - epm
+      clearWith:
+        - raw
+        - weights
+        - scale
+        - descend
+        - k
+        - kPower
+        - selectionType
+        - terms
+      columns:
+        - name: nobs
+          title: N
+          type: integer
+        - name: terms
+          title: Terms
+          type: integer
+        - name: rmse
+          title: RMSE
+          type: number
+        - name: r2adj
+          title: Adj. R²
+          type: number
+        - name: bic
+          title: BIC
+          type: number
+
+    - name: modelCoef
+      title: Regression Coefficients
+      visible: (model && k)
+      type: Table
+      rows: 0
+      refs:
+        - plos
+        - epm
+      clearWith:
+        - raw
+        - weights
+        - scale
+        - descend
+        - k
+        - kPower
+        - selectionType
+        - terms
+      columns:
+        - name: term
+          title: Term
+          type: text
+        - name: estimate
+          title: Estimate
+          type: number
+
+    - name: norms
+      title: Norm Score Table
       refs: epm
       type: Table
-      visible: True
-      rows:  1
+      visible: true
+      rows: 0
+      clearWith:
+        - raw
+        - weights
+        - scale
+        - descend
+        - k
+        - kPower
+        - selectionType
+        - terms
+        - range
+        - minRaw
+        - maxRaw
+        - stepping
+        - includeCI
+        - ciLevel
+        - reliability
       columns:
         - name: Raw
+          title: Raw Score
           type: number
         - name: Norm
+          title: Norm Score
           type: number
         - name: Percentile
+          title: Percentile
           type: number
-          format: zto,pvalue
-
-    - name:  modelTab
-      title: Model Summary
-      visible: True
-      type: Table
-      rows:  1
-      refs: plos
-      columns:
-        - name: Variable
-          title: ''
-          type: text
-        - name: Weight
+        - name: lowerCI
+          title: Lower CI (Norm)
           type: number
-        - name: Terms
-          type: integer
-        - name: RMSE
+          visible: (includeCI)
+        - name: upperCI
+          title: Upper CI (Norm)
           type: number
-        - name: R2adj
+          visible: (includeCI)
+        - name: lowerCI_PR
+          title: Lower CI (PR)
           type: number
-        - name: BIC
-          type: number      
+          visible: (includeCI)
+        - name: upperCI_PR
+          title: Upper CI (PR)
+          type: number
+          visible: (includeCI)
 
     - name: saveManifest
       title: Manifest Norm Scores
       type: Output
       varTitle: ManifestNorm
-      varDescription: Manifest norm score
+      varDescription: Manifest norm score (Single Group)
       measureType: continuous
       clearWith:
         - raw
         - weights
         - scale
-        - descend        
+        - descend
 
     - name: saveManifestPerc
       title: Manifest Percentile Scores
       type: Output
       varTitle: ManifestPercentile
-      varDescription: Manifest percentile score
+      varDescription: Manifest percentile score (Single Group)
       measureType: continuous
       clearWith:
         - raw
         - weights
         - scale
         - descend
-        
+
     - name: savePredicted
       title: Fitted Norm Scores
       type: Output
       varTitle: FittedNorm
-      varDescription: Fitted norm score
+      varDescription: Fitted norm score (Single Group)
       measureType: continuous
       clearWith:
         - raw
         - weights
         - scale
-        - k
         - descend
+        - k
+        - kPower
+        - selectionType
         - terms
-        
+        - range
+
     - name: savePredictedPerc
       title: Fitted Percentile Scores
       type: Output
       varTitle: FittedPercentile
-      varDescription: Fitted percentile score
+      varDescription: Fitted percentile score (Single Group)
       measureType: continuous
       clearWith:
         - raw
         - weights
         - scale
-        - k
         - descend
-        - terms        
-        
-...   
+        - k
+        - kPower
+        - selectionType
+        - terms
+        - range
+...

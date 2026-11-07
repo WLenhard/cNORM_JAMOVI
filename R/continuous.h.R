@@ -9,18 +9,36 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             raw = NULL,
             group = NULL,
             weights = NULL,
+            method = "taylor",
             scale = "T",
+            descend = FALSE,
             k = "5",
             t = "3",
-            selectionType = NULL,
+            selectionType = "automaticSelection",
             terms = 4,
-            descend = FALSE,
+            alpha = "3",
+            beta = "3",
+            itemnumber = 0,
+            muDegree = "3",
+            sigmaDegree = "2",
+            epsilonDegree = "2",
+            deltaDegree = "1",
+            fixDelta = FALSE,
+            deltaValue = 1,
+            cmpMuDegree = "3",
+            cmpNuDegree = "2",
+            cmpFixNu = FALSE,
+            cmpNuValue = 1,
+            cmpMaxScore = 0,
             model = TRUE,
-            normAge = NULL,
+            normAge = "",
             range = 3,
             minRaw = 0,
             maxRaw = 0,
-            stepping = 1, ...) {
+            stepping = 1,
+            includeCI = FALSE,
+            ciLevel = 0.9,
+            reliability = 0.9, ...) {
 
             super$initialize(
                 package="cNORMj",
@@ -49,6 +67,15 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "continuous"),
                 permitted=list(
                     "numeric"))
+            private$..method <- jmvcore::OptionList$new(
+                "method",
+                method,
+                options=list(
+                    "taylor",
+                    "betabinomial",
+                    "shash",
+                    "cmp"),
+                default="taylor")
             private$..scale <- jmvcore::OptionList$new(
                 "scale",
                 scale,
@@ -59,6 +86,10 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "Wechsler",
                     "PISA"),
                 default="T")
+            private$..descend <- jmvcore::OptionBool$new(
+                "descend",
+                descend,
+                default=FALSE)
             private$..k <- jmvcore::OptionList$new(
                 "k",
                 k,
@@ -86,25 +117,144 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 selectionType,
                 options=list(
                     "automaticSelection",
-                    "manualSelection"))
-            private$..terms <- jmvcore::OptionNumber$new(
+                    "manualSelection"),
+                default="automaticSelection")
+            private$..terms <- jmvcore::OptionInteger$new(
                 "terms",
                 terms,
+                min=1,
+                max=48,
                 default=4)
-            private$..descend <- jmvcore::OptionBool$new(
-                "descend",
-                descend,
+            private$..alpha <- jmvcore::OptionList$new(
+                "alpha",
+                alpha,
+                options=list(
+                    "0",
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"),
+                default="3")
+            private$..beta <- jmvcore::OptionList$new(
+                "beta",
+                beta,
+                options=list(
+                    "0",
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"),
+                default="3")
+            private$..itemnumber <- jmvcore::OptionInteger$new(
+                "itemnumber",
+                itemnumber,
+                min=0,
+                default=0)
+            private$..muDegree <- jmvcore::OptionList$new(
+                "muDegree",
+                muDegree,
+                options=list(
+                    "0",
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"),
+                default="3")
+            private$..sigmaDegree <- jmvcore::OptionList$new(
+                "sigmaDegree",
+                sigmaDegree,
+                options=list(
+                    "0",
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"),
+                default="2")
+            private$..epsilonDegree <- jmvcore::OptionList$new(
+                "epsilonDegree",
+                epsilonDegree,
+                options=list(
+                    "0",
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"),
+                default="2")
+            private$..deltaDegree <- jmvcore::OptionList$new(
+                "deltaDegree",
+                deltaDegree,
+                options=list(
+                    "0",
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"),
+                default="1")
+            private$..fixDelta <- jmvcore::OptionBool$new(
+                "fixDelta",
+                fixDelta,
                 default=FALSE)
+            private$..deltaValue <- jmvcore::OptionNumber$new(
+                "deltaValue",
+                deltaValue,
+                min=0.1,
+                max=10,
+                default=1)
+            private$..cmpMuDegree <- jmvcore::OptionList$new(
+                "cmpMuDegree",
+                cmpMuDegree,
+                options=list(
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"),
+                default="3")
+            private$..cmpNuDegree <- jmvcore::OptionList$new(
+                "cmpNuDegree",
+                cmpNuDegree,
+                options=list(
+                    "0",
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"),
+                default="2")
+            private$..cmpFixNu <- jmvcore::OptionBool$new(
+                "cmpFixNu",
+                cmpFixNu,
+                default=FALSE)
+            private$..cmpNuValue <- jmvcore::OptionNumber$new(
+                "cmpNuValue",
+                cmpNuValue,
+                min=0.05,
+                max=20,
+                default=1)
+            private$..cmpMaxScore <- jmvcore::OptionInteger$new(
+                "cmpMaxScore",
+                cmpMaxScore,
+                min=0,
+                default=0)
             private$..model <- jmvcore::OptionBool$new(
                 "model",
                 model,
                 default=TRUE)
             private$..normAge <- jmvcore::OptionString$new(
                 "normAge",
-                normAge)
+                normAge,
+                default="")
             private$..range <- jmvcore::OptionNumber$new(
                 "range",
                 range,
+                min=0.5,
+                max=6,
                 default=3)
             private$..minRaw <- jmvcore::OptionNumber$new(
                 "minRaw",
@@ -117,7 +267,24 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             private$..stepping <- jmvcore::OptionNumber$new(
                 "stepping",
                 stepping,
+                min=0.01,
                 default=1)
+            private$..includeCI <- jmvcore::OptionBool$new(
+                "includeCI",
+                includeCI,
+                default=FALSE)
+            private$..ciLevel <- jmvcore::OptionNumber$new(
+                "ciLevel",
+                ciLevel,
+                min=0.5,
+                max=0.999,
+                default=0.9)
+            private$..reliability <- jmvcore::OptionNumber$new(
+                "reliability",
+                reliability,
+                min=0.01,
+                max=0.999,
+                default=0.9)
             private$..saveManifest <- jmvcore::OptionOutput$new(
                 "saveManifest")
             private$..saveManifestPerc <- jmvcore::OptionOutput$new(
@@ -130,18 +297,36 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..raw)
             self$.addOption(private$..group)
             self$.addOption(private$..weights)
+            self$.addOption(private$..method)
             self$.addOption(private$..scale)
+            self$.addOption(private$..descend)
             self$.addOption(private$..k)
             self$.addOption(private$..t)
             self$.addOption(private$..selectionType)
             self$.addOption(private$..terms)
-            self$.addOption(private$..descend)
+            self$.addOption(private$..alpha)
+            self$.addOption(private$..beta)
+            self$.addOption(private$..itemnumber)
+            self$.addOption(private$..muDegree)
+            self$.addOption(private$..sigmaDegree)
+            self$.addOption(private$..epsilonDegree)
+            self$.addOption(private$..deltaDegree)
+            self$.addOption(private$..fixDelta)
+            self$.addOption(private$..deltaValue)
+            self$.addOption(private$..cmpMuDegree)
+            self$.addOption(private$..cmpNuDegree)
+            self$.addOption(private$..cmpFixNu)
+            self$.addOption(private$..cmpNuValue)
+            self$.addOption(private$..cmpMaxScore)
             self$.addOption(private$..model)
             self$.addOption(private$..normAge)
             self$.addOption(private$..range)
             self$.addOption(private$..minRaw)
             self$.addOption(private$..maxRaw)
             self$.addOption(private$..stepping)
+            self$.addOption(private$..includeCI)
+            self$.addOption(private$..ciLevel)
+            self$.addOption(private$..reliability)
             self$.addOption(private$..saveManifest)
             self$.addOption(private$..saveManifestPerc)
             self$.addOption(private$..savePredicted)
@@ -151,18 +336,36 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         raw = function() private$..raw$value,
         group = function() private$..group$value,
         weights = function() private$..weights$value,
+        method = function() private$..method$value,
         scale = function() private$..scale$value,
+        descend = function() private$..descend$value,
         k = function() private$..k$value,
         t = function() private$..t$value,
         selectionType = function() private$..selectionType$value,
         terms = function() private$..terms$value,
-        descend = function() private$..descend$value,
+        alpha = function() private$..alpha$value,
+        beta = function() private$..beta$value,
+        itemnumber = function() private$..itemnumber$value,
+        muDegree = function() private$..muDegree$value,
+        sigmaDegree = function() private$..sigmaDegree$value,
+        epsilonDegree = function() private$..epsilonDegree$value,
+        deltaDegree = function() private$..deltaDegree$value,
+        fixDelta = function() private$..fixDelta$value,
+        deltaValue = function() private$..deltaValue$value,
+        cmpMuDegree = function() private$..cmpMuDegree$value,
+        cmpNuDegree = function() private$..cmpNuDegree$value,
+        cmpFixNu = function() private$..cmpFixNu$value,
+        cmpNuValue = function() private$..cmpNuValue$value,
+        cmpMaxScore = function() private$..cmpMaxScore$value,
         model = function() private$..model$value,
         normAge = function() private$..normAge$value,
         range = function() private$..range$value,
         minRaw = function() private$..minRaw$value,
         maxRaw = function() private$..maxRaw$value,
         stepping = function() private$..stepping$value,
+        includeCI = function() private$..includeCI$value,
+        ciLevel = function() private$..ciLevel$value,
+        reliability = function() private$..reliability$value,
         saveManifest = function() private$..saveManifest$value,
         saveManifestPerc = function() private$..saveManifestPerc$value,
         savePredicted = function() private$..savePredicted$value,
@@ -171,18 +374,36 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..raw = NA,
         ..group = NA,
         ..weights = NA,
+        ..method = NA,
         ..scale = NA,
+        ..descend = NA,
         ..k = NA,
         ..t = NA,
         ..selectionType = NA,
         ..terms = NA,
-        ..descend = NA,
+        ..alpha = NA,
+        ..beta = NA,
+        ..itemnumber = NA,
+        ..muDegree = NA,
+        ..sigmaDegree = NA,
+        ..epsilonDegree = NA,
+        ..deltaDegree = NA,
+        ..fixDelta = NA,
+        ..deltaValue = NA,
+        ..cmpMuDegree = NA,
+        ..cmpNuDegree = NA,
+        ..cmpFixNu = NA,
+        ..cmpNuValue = NA,
+        ..cmpMaxScore = NA,
         ..model = NA,
         ..normAge = NA,
         ..range = NA,
         ..minRaw = NA,
         ..maxRaw = NA,
         ..stepping = NA,
+        ..includeCI = NA,
+        ..ciLevel = NA,
+        ..reliability = NA,
         ..saveManifest = NA,
         ..saveManifestPerc = NA,
         ..savePredicted = NA,
@@ -195,8 +416,9 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
     active = list(
         instructions = function() private$.items[["instructions"]],
         plot = function() private$.items[["plot"]],
+        modelFit = function() private$.items[["modelFit"]],
+        modelCoef = function() private$.items[["modelCoef"]],
         norms = function() private$.items[["norms"]],
-        modelTab = function() private$.items[["modelTab"]],
         saveManifest = function() private$.items[["saveManifest"]],
         saveManifestPerc = function() private$.items[["saveManifestPerc"]],
         savePredicted = function() private$.items[["savePredicted"]],
@@ -207,66 +429,257 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 options=options,
                 name="",
-                title="Continuous Norming (Distribution Free)")
+                title="Continuous Norming")
             self$add(jmvcore::Html$new(
                 options=options,
                 name="instructions",
                 title="Instructions",
-                refs="assessment",
+                refs=list(
+                    "cNORM",
+                    "assessment"),
                 visible=TRUE))
             self$add(jmvcore::Image$new(
                 options=options,
                 name="plot",
+                title="Percentile Curves",
                 refs="cNORM",
-                width=600,
-                height=400,
+                width=650,
+                height=450,
                 visible=TRUE,
-                renderFun=".plot"))
+                renderFun=".plot",
+                clearWith=list(
+                    "raw",
+                    "group",
+                    "weights",
+                    "method",
+                    "scale",
+                    "descend",
+                    "k",
+                    "t",
+                    "selectionType",
+                    "terms",
+                    "alpha",
+                    "beta",
+                    "itemnumber",
+                    "muDegree",
+                    "sigmaDegree",
+                    "epsilonDegree",
+                    "deltaDegree",
+                    "fixDelta",
+                    "deltaValue",
+                    "cmpMuDegree",
+                    "cmpNuDegree",
+                    "cmpFixNu",
+                    "cmpNuValue",
+                    "cmpMaxScore")))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="modelFit",
+                title="Model Fit",
+                visible="(model)",
+                rows=1,
+                refs=list(
+                    "plos",
+                    "epm",
+                    "psych"),
+                clearWith=list(
+                    "raw",
+                    "group",
+                    "weights",
+                    "method",
+                    "scale",
+                    "descend",
+                    "k",
+                    "t",
+                    "selectionType",
+                    "terms",
+                    "alpha",
+                    "beta",
+                    "itemnumber",
+                    "muDegree",
+                    "sigmaDegree",
+                    "epsilonDegree",
+                    "deltaDegree",
+                    "fixDelta",
+                    "deltaValue",
+                    "cmpMuDegree",
+                    "cmpNuDegree",
+                    "cmpFixNu",
+                    "cmpNuValue",
+                    "cmpMaxScore"),
+                columns=list(
+                    list(
+                        `name`="methodName", 
+                        `title`="Method", 
+                        `type`="text"),
+                    list(
+                        `name`="nobs", 
+                        `title`="N", 
+                        `type`="integer"),
+                    list(
+                        `name`="npar", 
+                        `title`="Parameters / Terms", 
+                        `type`="integer"),
+                    list(
+                        `name`="logLik", 
+                        `title`="Log-likelihood", 
+                        `type`="number", 
+                        `visible`="(!method:taylor)"),
+                    list(
+                        `name`="aic", 
+                        `title`="AIC", 
+                        `type`="number", 
+                        `visible`="(!method:taylor)"),
+                    list(
+                        `name`="bic", 
+                        `title`="BIC", 
+                        `type`="number"),
+                    list(
+                        `name`="r2", 
+                        `title`="R\u00B2 / Adj. R\u00B2", 
+                        `type`="number"),
+                    list(
+                        `name`="rmse", 
+                        `title`="RMSE", 
+                        `type`="number"),
+                    list(
+                        `name`="bias", 
+                        `title`="Bias", 
+                        `type`="number", 
+                        `visible`="(!method:taylor)"))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="modelCoef",
+                title="Parameter Estimates",
+                visible="(model)",
+                rows=0,
+                refs=list(
+                    "plos",
+                    "epm",
+                    "psych"),
+                clearWith=list(
+                    "raw",
+                    "group",
+                    "weights",
+                    "method",
+                    "scale",
+                    "descend",
+                    "k",
+                    "t",
+                    "selectionType",
+                    "terms",
+                    "alpha",
+                    "beta",
+                    "itemnumber",
+                    "muDegree",
+                    "sigmaDegree",
+                    "epsilonDegree",
+                    "deltaDegree",
+                    "fixDelta",
+                    "deltaValue",
+                    "cmpMuDegree",
+                    "cmpNuDegree",
+                    "cmpFixNu",
+                    "cmpNuValue",
+                    "cmpMaxScore"),
+                columns=list(
+                    list(
+                        `name`="term", 
+                        `title`="Term", 
+                        `type`="text"),
+                    list(
+                        `name`="est", 
+                        `title`="Estimate", 
+                        `type`="number"),
+                    list(
+                        `name`="se", 
+                        `title`="SE", 
+                        `type`="number", 
+                        `visible`="(!method:taylor)"),
+                    list(
+                        `name`="z", 
+                        `title`="z", 
+                        `type`="number", 
+                        `visible`="(!method:taylor)"),
+                    list(
+                        `name`="p", 
+                        `title`="p", 
+                        `type`="number", 
+                        `format`="zto,pvalue", 
+                        `visible`="(!method:taylor)"))))
             self$add(jmvcore::Table$new(
                 options=options,
                 name="norms",
+                title="Norm Score Table",
                 refs="epm",
-                title="Norm score table",
-                rows=1,
+                rows=0,
                 visible=TRUE,
+                clearWith=list(
+                    "raw",
+                    "group",
+                    "weights",
+                    "method",
+                    "scale",
+                    "descend",
+                    "k",
+                    "t",
+                    "selectionType",
+                    "terms",
+                    "alpha",
+                    "beta",
+                    "itemnumber",
+                    "muDegree",
+                    "sigmaDegree",
+                    "epsilonDegree",
+                    "deltaDegree",
+                    "fixDelta",
+                    "deltaValue",
+                    "cmpMuDegree",
+                    "cmpNuDegree",
+                    "cmpFixNu",
+                    "cmpNuValue",
+                    "cmpMaxScore",
+                    "normAge",
+                    "range",
+                    "minRaw",
+                    "maxRaw",
+                    "stepping",
+                    "includeCI",
+                    "ciLevel",
+                    "reliability"),
                 columns=list(
                     list(
                         `name`="Raw", 
+                        `title`="Raw Score", 
                         `type`="number"),
                     list(
                         `name`="Norm", 
+                        `title`="Norm Score", 
                         `type`="number"),
                     list(
                         `name`="Percentile", 
+                        `title`="Percentile", 
+                        `type`="number"),
+                    list(
+                        `name`="lowerCI", 
+                        `title`="Lower CI (Norm)", 
                         `type`="number", 
-                        `format`="zto,pvalue"))))
-            self$add(jmvcore::Table$new(
-                options=options,
-                name="modelTab",
-                title="Model Summary",
-                visible=TRUE,
-                rows=1,
-                refs="plos",
-                columns=list(
+                        `visible`="(includeCI)"),
                     list(
-                        `name`="Variable", 
-                        `title`="", 
-                        `type`="text"),
+                        `name`="upperCI", 
+                        `title`="Upper CI (Norm)", 
+                        `type`="number", 
+                        `visible`="(includeCI)"),
                     list(
-                        `name`="Weight", 
-                        `type`="number"),
+                        `name`="lowerCI_PR", 
+                        `title`="Lower CI (PR)", 
+                        `type`="number", 
+                        `visible`="(includeCI)"),
                     list(
-                        `name`="Terms", 
-                        `type`="integer"),
-                    list(
-                        `name`="RMSE", 
-                        `type`="number"),
-                    list(
-                        `name`="R2adj", 
-                        `type`="number"),
-                    list(
-                        `name`="BIC", 
-                        `type`="number"))))
+                        `name`="upperCI_PR", 
+                        `title`="Upper CI (PR)", 
+                        `type`="number", 
+                        `visible`="(includeCI)"))))
             self$add(jmvcore::Output$new(
                 options=options,
                 name="saveManifest",
@@ -276,11 +689,11 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 measureType="continuous",
                 clearWith=list(
                     "raw",
-                    "weights",
-                    "scale",
-                    "descend",
                     "group",
-                    "t")))
+                    "weights",
+                    "method",
+                    "scale",
+                    "descend")))
             self$add(jmvcore::Output$new(
                 options=options,
                 name="saveManifestPerc",
@@ -290,43 +703,77 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 measureType="continuous",
                 clearWith=list(
                     "raw",
-                    "weights",
-                    "scale",
-                    "descend",
                     "group",
-                    "t")))
+                    "weights",
+                    "method",
+                    "scale",
+                    "descend")))
             self$add(jmvcore::Output$new(
                 options=options,
                 name="savePredicted",
                 title="Fitted Norm Scores",
                 varTitle="FittedNorm",
-                varDescription="Fitted norm score",
+                varDescription="Fitted continuous norm score",
                 measureType="continuous",
                 clearWith=list(
                     "raw",
-                    "weights",
-                    "scale",
-                    "k",
-                    "descend",
-                    "terms",
                     "group",
-                    "t")))
+                    "weights",
+                    "method",
+                    "scale",
+                    "descend",
+                    "k",
+                    "t",
+                    "selectionType",
+                    "terms",
+                    "alpha",
+                    "beta",
+                    "itemnumber",
+                    "muDegree",
+                    "sigmaDegree",
+                    "epsilonDegree",
+                    "deltaDegree",
+                    "fixDelta",
+                    "deltaValue",
+                    "cmpMuDegree",
+                    "cmpNuDegree",
+                    "cmpFixNu",
+                    "cmpNuValue",
+                    "cmpMaxScore",
+                    "range")))
             self$add(jmvcore::Output$new(
                 options=options,
                 name="savePredictedPerc",
                 title="Fitted Percentile Scores",
                 varTitle="FittedPercentile",
-                varDescription="Fitted percentile score",
+                varDescription="Fitted continuous percentile score",
                 measureType="continuous",
                 clearWith=list(
                     "raw",
-                    "weights",
-                    "scale",
-                    "k",
-                    "descend",
-                    "terms",
                     "group",
-                    "t")))}))
+                    "weights",
+                    "method",
+                    "scale",
+                    "descend",
+                    "k",
+                    "t",
+                    "selectionType",
+                    "terms",
+                    "alpha",
+                    "beta",
+                    "itemnumber",
+                    "muDegree",
+                    "sigmaDegree",
+                    "epsilonDegree",
+                    "deltaDegree",
+                    "fixDelta",
+                    "deltaValue",
+                    "cmpMuDegree",
+                    "cmpNuDegree",
+                    "cmpFixNu",
+                    "cmpNuValue",
+                    "cmpMaxScore",
+                    "range")))}))
 
 continuousBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
     "continuousBase",
@@ -336,7 +783,7 @@ continuousBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 package = "cNORMj",
                 name = "continuous",
-                version = c(3,0,0),
+                version = c(3,7,0),
                 options = options,
                 results = continuousResults$new(options=options),
                 data = data,
@@ -346,36 +793,55 @@ continuousBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 pause = NULL,
                 completeWhenFilled = FALSE,
                 requiresMissings = FALSE,
-                weightsSupport = 'none')
+                weightsSupport = 'full')
         }))
 
-#' Continuous Norming (Distribution Free)
+#' Continuous Norming
 #'
 #' 
 #' @param data the data as a data frame
 #' @param raw the raw score variable in the data
-#' @param group the explanatory variable in the data, e. g. age group
-#' @param weights on optional weighting variable, specifying the weights of
-#'   the single cases
-#' @param scale \code{'T'}, \code{'IQ'}, 'z', 'Wechsler subtest scale (m = 10,
-#'   sd = 3)', or 'PISA (m = 500, sd = 100)'`
+#' @param group the explanatory or age/grouping variable in the data
+#' @param weights an optional weighting variable specifying the weights of the
+#'   single cases
+#' @param method .
+#' @param scale \code{'T'}, \code{'IQ'}, \code{'z'}, \code{'Wechsler'} (m =
+#'   10, sd = 3), or \code{'PISA'} (m = 500, sd = 100)
+#' @param descend .
 #' @param k .
 #' @param t .
 #' @param selectionType .
-#' @param terms a number of terms in the regression function
-#' @param descend .
+#' @param terms .
+#' @param alpha .
+#' @param beta .
+#' @param itemnumber .
+#' @param muDegree .
+#' @param sigmaDegree .
+#' @param epsilonDegree .
+#' @param deltaDegree .
+#' @param fixDelta .
+#' @param deltaValue .
+#' @param cmpMuDegree .
+#' @param cmpNuDegree .
+#' @param cmpFixNu .
+#' @param cmpNuValue .
+#' @param cmpMaxScore .
 #' @param model .
-#' @param normAge a number specifying the age for the norm score table
+#' @param normAge .
 #' @param range .
 #' @param minRaw .
 #' @param maxRaw .
 #' @param stepping .
+#' @param includeCI .
+#' @param ciLevel .
+#' @param reliability .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$instructions} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$plot} \tab \tab \tab \tab \tab an image \cr
+#'   \code{results$modelFit} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$modelCoef} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$norms} \tab \tab \tab \tab \tab a table \cr
-#'   \code{results$modelTab} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$saveManifest} \tab \tab \tab \tab \tab an output \cr
 #'   \code{results$saveManifestPerc} \tab \tab \tab \tab \tab an output \cr
 #'   \code{results$savePredicted} \tab \tab \tab \tab \tab an output \cr
@@ -384,9 +850,9 @@ continuousBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'
 #' Tables can be converted to data frames with \code{asDF} or \code{\link{as.data.frame}}. For example:
 #'
-#' \code{results$norms$asDF}
+#' \code{results$modelFit$asDF}
 #'
-#' \code{as.data.frame(results$norms)}
+#' \code{as.data.frame(results$modelFit)}
 #'
 #' @export
 continuous <- function(
@@ -394,18 +860,36 @@ continuous <- function(
     raw,
     group,
     weights,
+    method = "taylor",
     scale = "T",
+    descend = FALSE,
     k = "5",
     t = "3",
-    selectionType,
+    selectionType = "automaticSelection",
     terms = 4,
-    descend = FALSE,
+    alpha = "3",
+    beta = "3",
+    itemnumber = 0,
+    muDegree = "3",
+    sigmaDegree = "2",
+    epsilonDegree = "2",
+    deltaDegree = "1",
+    fixDelta = FALSE,
+    deltaValue = 1,
+    cmpMuDegree = "3",
+    cmpNuDegree = "2",
+    cmpFixNu = FALSE,
+    cmpNuValue = 1,
+    cmpMaxScore = 0,
     model = TRUE,
-    normAge,
+    normAge = "",
     range = 3,
     minRaw = 0,
     maxRaw = 0,
-    stepping = 1) {
+    stepping = 1,
+    includeCI = FALSE,
+    ciLevel = 0.9,
+    reliability = 0.9) {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
         stop("continuous requires jmvcore to be installed (restart may be required)")
@@ -425,18 +909,36 @@ continuous <- function(
         raw = raw,
         group = group,
         weights = weights,
+        method = method,
         scale = scale,
+        descend = descend,
         k = k,
         t = t,
         selectionType = selectionType,
         terms = terms,
-        descend = descend,
+        alpha = alpha,
+        beta = beta,
+        itemnumber = itemnumber,
+        muDegree = muDegree,
+        sigmaDegree = sigmaDegree,
+        epsilonDegree = epsilonDegree,
+        deltaDegree = deltaDegree,
+        fixDelta = fixDelta,
+        deltaValue = deltaValue,
+        cmpMuDegree = cmpMuDegree,
+        cmpNuDegree = cmpNuDegree,
+        cmpFixNu = cmpFixNu,
+        cmpNuValue = cmpNuValue,
+        cmpMaxScore = cmpMaxScore,
         model = model,
         normAge = normAge,
         range = range,
         minRaw = minRaw,
         maxRaw = maxRaw,
-        stepping = stepping)
+        stepping = stepping,
+        includeCI = includeCI,
+        ciLevel = ciLevel,
+        reliability = reliability)
 
     analysis <- continuousClass$new(
         options = options,
