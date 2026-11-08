@@ -20,6 +20,11 @@ This approach:
 
 ## Modules
 
+### Prepare Data
+Helper functions
+- Splitting continuous explanatory variables into distinct groups and assign mean group values to each group
+- Calculation of weights for post-stratification of non-representative samples
+
 ### Single Group
 For norming within a single group (e.g., all participants of the same age/grade).
 
