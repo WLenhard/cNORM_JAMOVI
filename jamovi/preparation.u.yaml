@@ -1,0 +1,72 @@
+title: Data Preparation
+name: preparation
+jus: '3.0'
+stage: 0
+compilerMode: tame
+children:
+  - type: VariableSupplier
+    persistentItems: false
+    stretchFactor: 1
+    children:
+      - type: TargetLayoutBox
+        label: Explanatory Variable (e.g., Age)
+        children:
+          - type: VariablesListBox
+            name: age
+            maxItemCount: 1
+            isTarget: true
+      - type: TargetLayoutBox
+        label: Stratification Variables (Raking)
+        children:
+          - type: VariablesListBox
+            name: stratVars
+            isTarget: true
+  - type: CollapseBox
+    label: Norm Groups (getGroups)
+    margin: normal
+    collapsed: false
+    children:
+      - type: LayoutBox
+        margin: large
+        children:
+          - type: TextBox
+            name: nGroups
+            label: Number of groups (0 = auto)
+            format: number
+          - type: CheckBox
+            name: equidistant
+            label: Equidistant intervals
+  - type: CollapseBox
+    label: Raking Weights (computeWeights)
+    margin: normal
+    collapsed: false
+    children:
+      - type: LayoutBox
+        margin: large
+        stretchFactor: 1
+        children:
+          - type: Label
+            label: "Population proportions (e.g., sex: 1=0.52, 2=0.48)"
+            fitToGrid: true
+            children:
+              - type: TextBox
+                name: margins
+                label: ""
+                format: string
+                width: largest
+                stretchFactor: 1
+          - type: CheckBox
+            name: standardized
+            label: Standardize weights (min = 1)
+  - type: CollapseBox
+    label: Save
+    margin: normal
+    collapsed: true
+    children:
+      - type: LayoutBox
+        margin: large
+        children:
+          - type: Output
+            name: saveGroups
+          - type: Output
+            name: saveWeights

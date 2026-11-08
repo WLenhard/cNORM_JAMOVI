@@ -1,0 +1,142 @@
+---
+name: preparation
+title: Data Preparation (Age Groups & Raking)
+jrs: '1.1'
+
+items:
+    - name: instructions
+      title: Instructions
+      refs:
+        - cNORM
+        - assessment
+      type: Html
+      visible: true
+
+    - name: groupTab
+      title: Norm Group Summary
+      refs: cNORM
+      type: Table
+      rows: 0
+      visible: (age)
+      clearWith:
+        - age
+        - nGroups
+        - equidistant
+      columns:
+        - name: grpNo
+          title: Group
+          type: integer
+        - name: midpoint
+          title: Group Mean (Midpoint)
+          type: number
+        - name: minVal
+          title: Min
+          type: number
+        - name: maxVal
+          title: Max
+          type: number
+        - name: n
+          title: N
+          type: integer
+        - name: prop
+          title: '% of Sample'
+          type: number
+
+    - name: groupPlot
+      title: Norm Group Sample Sizes
+      refs: cNORM
+      type: Image
+      width: 550
+      height: 360
+      visible: (age)
+      renderFun: .plotGroups
+      clearWith:
+        - age
+        - nGroups
+        - equidistant
+
+    - name: marginsTab
+      title: Stratification Marginals & Raking Weights
+      refs: cNORM
+      type: Table
+      rows: 0
+      visible: (stratVars)
+      clearWith:
+        - stratVars
+        - margins
+        - standardized
+      columns:
+        - name: variable
+          title: Variable
+          type: text
+        - name: level
+          title: Level
+          type: text
+        - name: nObs
+          title: Sample N
+          type: integer
+        - name: sampleProp
+          title: Sample Proportion
+          type: number
+        - name: targetProp
+          title: Target Proportion
+          type: number
+        - name: cellWeight
+          title: Mean Raked Weight
+          type: number
+
+    - name: weightSummaryTab
+      title: Raking Weight Diagnostics
+      refs: cNORM
+      type: Table
+      rows: 1
+      visible: (stratVars)
+      clearWith:
+        - stratVars
+        - margins
+        - standardized
+      columns:
+        - name: nValid
+          title: Complete Cases (N)
+          type: integer
+        - name: nCells
+          title: Cross-Cells
+          type: integer
+        - name: minW
+          title: Min Weight
+          type: number
+        - name: maxW
+          title: Max Weight
+          type: number
+        - name: meanW
+          title: Mean Weight
+          type: number
+        - name: deff
+          title: Design Effect (Deff)
+          type: number
+        - name: nEff
+          title: Effective N
+          type: number
+
+    - name: saveGroups
+      title: Norm Group Midpoints
+      type: Output
+      varTitle: NormGroup
+      varDescription: Norm group mean (getGroups)
+      measureType: continuous
+      clearWith:
+        - age
+        - nGroups
+        - equidistant
+
+    - name: saveWeights
+      title: Raking Weights
+      type: Output
+      varTitle: RakingWeight
+      varDescription: Post-stratification raking weight (computeWeights)
+      measureType: continuous
+      clearWith:
+        - stratVars
+        - margins
+        - standardized
+...

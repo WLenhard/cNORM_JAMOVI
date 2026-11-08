@@ -1,0 +1,69 @@
+---
+name: preparation
+title: Data Preparation (Age Groups & Raking)
+menuGroup: cNORMj
+version: '3.7.0'
+jas: '1.2'
+
+options:
+    - name: data
+      type: Data
+      description:
+          R: the data as a data frame
+
+    - name: age
+      title: Continuous Explanatory Variable
+      type: Variable
+      suggested:
+        - continuous
+      permitted:
+        - numeric
+      default: null
+      description:
+          R: a continuous variable (such as age) to split into discrete norm groups
+
+    - name: nGroups
+      title: Number of norm groups (0 = auto, ~100 per group)
+      type: Integer
+      min: 0
+      max: 50
+      default: 0
+
+    - name: equidistant
+      title: Equidistant intervals (instead of equal group sizes)
+      type: Bool
+      default: false
+
+    - name: stratVars
+      title: Stratification Variables
+      type: Variables
+      suggested:
+        - nominal
+        - ordinal
+      permitted:
+        - factor
+        - numeric
+      default: null
+      description:
+          R: stratification variables for computing raking weights
+
+    - name: margins
+      title: Population proportions (e.g., sex:1=0.52, 2=0.48; migration:0=0.70, 1=0.30)
+      type: String
+      default: ''
+      description:
+          R: target population proportions per stratification variable and level
+
+    - name: standardized
+      title: Standardize raking weights (min weight = 1)
+      type: Bool
+      default: true
+
+    - name: saveGroups
+      title: Norm group midpoints
+      type: Output
+
+    - name: saveWeights
+      title: Raking weights
+      type: Output
+...

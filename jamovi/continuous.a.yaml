@@ -76,6 +76,18 @@ options:
       type: Bool
       default: false
 
+    - name: nGroups
+      title: Number of norm groups for continuous age (0 = auto)
+      type: Integer
+      min: 0
+      max: 50
+      default: 0
+
+    - name: equidistant
+      title: Equidistant group intervals (instead of equal sizes)
+      type: Bool
+      default: false
+
     - name: k
       title: Degree of location (k)
       type: List

@@ -27,6 +27,8 @@ items:
         - method
         - scale
         - descend
+        - nGroups
+        - equidistant
         - k
         - t
         - selectionType
@@ -62,6 +64,8 @@ items:
         - method
         - scale
         - descend
+        - nGroups
+        - equidistant
         - k
         - t
         - selectionType
@@ -128,6 +132,8 @@ items:
         - method
         - scale
         - descend
+        - nGroups
+        - equidistant
         - k
         - t
         - selectionType
@@ -180,6 +186,8 @@ items:
         - method
         - scale
         - descend
+        - nGroups
+        - equidistant
         - k
         - t
         - selectionType
@@ -246,6 +254,8 @@ items:
         - method
         - scale
         - descend
+        - nGroups
+        - equidistant
 
     - name: saveManifestPerc
       title: Manifest Percentile Scores
@@ -260,6 +270,8 @@ items:
         - method
         - scale
         - descend
+        - nGroups
+        - equidistant
 
     - name: savePredicted
       title: Fitted Norm Scores
@@ -274,6 +286,8 @@ items:
         - method
         - scale
         - descend
+        - nGroups
+        - equidistant
         - k
         - t
         - selectionType
@@ -307,6 +321,8 @@ items:
         - method
         - scale
         - descend
+        - nGroups
+        - equidistant
         - k
         - t
         - selectionType

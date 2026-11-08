@@ -18,6 +18,12 @@ description: >-
   continuous method reduces the necessary sample size, closes gaps between and
   within the norm groups and decreases error variance in the norm data.
 analyses:
+  - title: Data Preparation (Age Groups & Raking)
+    name: preparation
+    ns: cNORMj
+    menuGroup: cNORMj
+    menuTitle: Data Preparation (Age Groups & Raking)
+    category: analyses
   - title: Single Group Norming
     name: conventional
     ns: cNORMj
@@ -50,6 +56,6 @@ datasets:
       Word reading fluency speeded test from ELFE-II (ages 7 to 11, scores 0 to
       75), data file from package cNORM
 usesNative: true
-minApp: 1.0.8
+minApp: 1.2.0
 
 ...

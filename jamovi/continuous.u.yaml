@@ -52,6 +52,13 @@ children:
               - type: CheckBox
                 name: descend
                 enable: (method:taylor)
+              - type: TextBox
+                name: nGroups
+                format: number
+                enable: (method:taylor)
+              - type: CheckBox
+                name: equidistant
+                enable: (method:taylor)
               - type: ComboBox
                 name: k
                 enable: (method:taylor)

@@ -12,6 +12,8 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             method = "taylor",
             scale = "T",
             descend = FALSE,
+            nGroups = 0,
+            equidistant = FALSE,
             k = "5",
             t = "3",
             selectionType = "automaticSelection",
@@ -89,6 +91,16 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             private$..descend <- jmvcore::OptionBool$new(
                 "descend",
                 descend,
+                default=FALSE)
+            private$..nGroups <- jmvcore::OptionInteger$new(
+                "nGroups",
+                nGroups,
+                min=0,
+                max=50,
+                default=0)
+            private$..equidistant <- jmvcore::OptionBool$new(
+                "equidistant",
+                equidistant,
                 default=FALSE)
             private$..k <- jmvcore::OptionList$new(
                 "k",
@@ -300,6 +312,8 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..method)
             self$.addOption(private$..scale)
             self$.addOption(private$..descend)
+            self$.addOption(private$..nGroups)
+            self$.addOption(private$..equidistant)
             self$.addOption(private$..k)
             self$.addOption(private$..t)
             self$.addOption(private$..selectionType)
@@ -339,6 +353,8 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         method = function() private$..method$value,
         scale = function() private$..scale$value,
         descend = function() private$..descend$value,
+        nGroups = function() private$..nGroups$value,
+        equidistant = function() private$..equidistant$value,
         k = function() private$..k$value,
         t = function() private$..t$value,
         selectionType = function() private$..selectionType$value,
@@ -377,6 +393,8 @@ continuousOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..method = NA,
         ..scale = NA,
         ..descend = NA,
+        ..nGroups = NA,
+        ..equidistant = NA,
         ..k = NA,
         ..t = NA,
         ..selectionType = NA,
@@ -454,6 +472,8 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "method",
                     "scale",
                     "descend",
+                    "nGroups",
+                    "equidistant",
                     "k",
                     "t",
                     "selectionType",
@@ -489,6 +509,8 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "method",
                     "scale",
                     "descend",
+                    "nGroups",
+                    "equidistant",
                     "k",
                     "t",
                     "selectionType",
@@ -564,6 +586,8 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "method",
                     "scale",
                     "descend",
+                    "nGroups",
+                    "equidistant",
                     "k",
                     "t",
                     "selectionType",
@@ -621,6 +645,8 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "method",
                     "scale",
                     "descend",
+                    "nGroups",
+                    "equidistant",
                     "k",
                     "t",
                     "selectionType",
@@ -693,7 +719,9 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "weights",
                     "method",
                     "scale",
-                    "descend")))
+                    "descend",
+                    "nGroups",
+                    "equidistant")))
             self$add(jmvcore::Output$new(
                 options=options,
                 name="saveManifestPerc",
@@ -707,7 +735,9 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "weights",
                     "method",
                     "scale",
-                    "descend")))
+                    "descend",
+                    "nGroups",
+                    "equidistant")))
             self$add(jmvcore::Output$new(
                 options=options,
                 name="savePredicted",
@@ -722,6 +752,8 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "method",
                     "scale",
                     "descend",
+                    "nGroups",
+                    "equidistant",
                     "k",
                     "t",
                     "selectionType",
@@ -755,6 +787,8 @@ continuousResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "method",
                     "scale",
                     "descend",
+                    "nGroups",
+                    "equidistant",
                     "k",
                     "t",
                     "selectionType",
@@ -808,6 +842,8 @@ continuousBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @param scale \code{'T'}, \code{'IQ'}, \code{'z'}, \code{'Wechsler'} (m =
 #'   10, sd = 3), or \code{'PISA'} (m = 500, sd = 100)
 #' @param descend .
+#' @param nGroups .
+#' @param equidistant .
 #' @param k .
 #' @param t .
 #' @param selectionType .
@@ -863,6 +899,8 @@ continuous <- function(
     method = "taylor",
     scale = "T",
     descend = FALSE,
+    nGroups = 0,
+    equidistant = FALSE,
     k = "5",
     t = "3",
     selectionType = "automaticSelection",
@@ -912,6 +950,8 @@ continuous <- function(
         method = method,
         scale = scale,
         descend = descend,
+        nGroups = nGroups,
+        equidistant = equidistant,
         k = k,
         t = t,
         selectionType = selectionType,

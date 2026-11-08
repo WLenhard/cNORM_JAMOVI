@@ -1,17 +1,18 @@
 exportPattern("^[[:alpha:]]+")
 importFrom(leaps, regsubsets)
 importFrom(ggplot2, ggplot, aes, geom_point, geom_line, geom_step, geom_hline,
-           geom_vline, geom_density, geom_histogram, geom_text, geom_ribbon,
-           labs, theme, theme_minimal, theme_bw, theme_void, element_text,
-           element_line, element_blank, element_rect, margin,
+           geom_vline, geom_density, geom_histogram, geom_col, geom_text,
+           geom_ribbon, labs, theme, theme_minimal, theme_bw, theme_void,
+           element_text, element_line, element_blank, element_rect, margin,
            scale_color_manual, scale_fill_manual, scale_x_continuous,
            scale_y_continuous, guides, guide_legend, annotate, xlim, ylim,
            coord_cartesian, facet_wrap, .data)
-importFrom(stats, complete.cases, cor, dbeta, dbinom, dnorm, dpois, fitted,
-           glm.fit, lm, mad, median, model.matrix, na.omit, optim, pbeta,
-           pnorm, poisson, poly, predict, pt, qbeta, qnorm, qqnorm, quantile,
-           rbeta, rbinom, residuals, rnorm, runif, sd, setNames, smooth.spline,
-            terms, uniroot, update, var, weighted.mean)
+importFrom(stats, aggregate, ave, complete.cases, cor, dbeta, dbinom, dnorm,
+           dpois, fitted, formula, glm.fit, lm, mad, median, model.matrix,
+           na.omit, optim, pbeta, pnorm, poisson, poly, predict, pt, qbeta,
+           qnorm, qqnorm, quantile, rbeta, rbinom, residuals, rnorm, runif,
+           sd, setNames, smooth.spline, terms, uniroot, update, var,
+           weighted.mean, xtabs)
 importFrom(utils, capture.output, combn, flush.console, head, modifyList,
-            setTxtProgressBar, tail, txtProgressBar, write.csv)
+           setTxtProgressBar, tail, txtProgressBar, write.csv)
 importFrom(grDevices, adjustcolor, dev.cur, rainbow, rgb, terrain.colors)

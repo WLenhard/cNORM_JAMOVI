@@ -12,7 +12,7 @@ continuousClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             <div class='instructions'>
               <p>This analysis estimates continuous norm scores across age or grade groups using the <b>cNORM</b> package (v3.7.0). It supports four modeling approaches:</p>
               <ul>
-                <li><b>Distribution-Free (Taylor Polynomials)</b>: Models the raw score as a polynomial function of the location (norm score, degree <i>k</i>) and the explanatory variable (e.g., age group, degree <i>t</i>) without distributional assumptions.</li>
+                <li><b>Distribution-Free (Taylor Polynomials)</b>: Models the raw score as a polynomial function of the location (norm score, degree <i>k</i>) and the explanatory variable (e.g., age group, degree <i>t</i>) without distributional assumptions. If the explanatory variable is continuous (&gt; 20 distinct values), norm groups are formed automatically via <code>getGroups()</code>.</li>
                 <li><b>Beta-Binomial</b>: Parametric modeling for accuracy and power tests with a fixed number of items <i>n</i> (integer scores 0 to <i>n</i>; ideal for 1PL IRT / Rasch scales).</li>
                 <li><b>Sinh-Arcsinh (SHASH)</b>: Parametric modeling for continuous, unbounded scores (e.g., biometric data, response times) with flexible location (<i>&mu;</i>), scale (<i>&sigma;</i>), skewness (<i>&epsilon;</i>), and tail weight (<i>&delta;</i>).</li>
                 <li><b>Conway-Maxwell-Poisson (CMP)</b>: Parametric modeling for speeded tests and count data (non-negative integers) with location (<i>&mu;</i>), dispersion (<i>&nu;</i>), and optional ceiling truncation.</li>
@@ -159,12 +159,72 @@ continuousClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
       k <- as.integer(self$options$k)
       t <- as.integer(self$options$t)
       descend <- isTRUE(self$options$descend)
+      nGroupsOpt <- as.integer(self$options$nGroups)
+      equidistOpt <- isTRUE(self$options$equidistant)
       
       m1      <- scaleInfo$m1
       sd1     <- scaleInfo$sd1
       minNorm <- scaleInfo$minNorm
       maxNorm <- scaleInfo$maxNorm
       scale   <- scaleInfo$scaleParam
+      
+      # Preserve exact continuous age for prediction & background scatter points
+      dataComplete$origAge <- dataComplete$group
+      nObs <- nrow(dataComplete)
+      nUniqueAge <- length(unique(dataComplete$group))
+      
+      # Discretize into norm groups if requested (nGroups > 0) or if continuous (> 20 unique values)
+      if (!is.na(nGroupsOpt) && nGroupsOpt > 0L) {
+        if (nGroupsOpt < 2L) {
+          jmvcore::reject("The number of norm groups must be at least 2 (or 0 for automatic selection).")
+        }
+        dataComplete$group <- suppressWarnings(
+          getGroups(dataComplete$origAge, n = nGroupsOpt, equidistant = equidistOpt)
+        )
+        effGroups <- length(unique(dataComplete$group))
+        minGrpSize <- min(table(dataComplete$group))
+        if (minGrpSize < 50L) {
+          private$.addNotice(
+            name = "smallGroupNotice",
+            type = jmvcore::NoticeType$WARNING,
+            content = paste0(
+              "With ", effGroups, " norm groups, the smallest group contains only n = ", minGrpSize,
+              " cases (recommended: n >= 100, minimum n >= 50). Consider reducing the number of groups."
+            )
+          )
+        }
+      } else if (nUniqueAge > 20L) {
+        # Automatic group calculation: target n >= 100 per group, fallback to n >= 50, min 2 groups
+        targetN <- floor(nObs / 100)
+        if (targetN < 3L && nObs >= 150L) {
+          targetN <- floor(nObs / 50)
+        }
+        targetN <- max(2L, min(20L, targetN))
+        
+        dataComplete$group <- suppressWarnings(
+          getGroups(dataComplete$origAge, n = targetN, equidistant = equidistOpt)
+        )
+        effGroups <- length(unique(dataComplete$group))
+        minGrpSize <- min(table(dataComplete$group))
+        avgGrpSize <- round(nObs / effGroups)
+        
+        noticeType <- if (minGrpSize < 50L) jmvcore::NoticeType$WARNING else jmvcore::NoticeType$INFO
+        noticeMsg <- paste0(
+          "Continuous explanatory variable detected (", nUniqueAge, " unique values). ",
+          "Automatically formed ", effGroups, " norm groups (mean n = ", avgGrpSize,
+          ", min n = ", minGrpSize, ") via getGroups()."
+        )
+        if (minGrpSize < 50L) {
+          noticeMsg <- paste0(
+            noticeMsg, " Note: Some groups have fewer than 50 cases. Parametric continuous norming (SHASH, Beta-Binomial, or CMP) may be preferable for small samples."
+          )
+        }
+        private$.addNotice(
+          name = "autoGroupNotice",
+          type = noticeType,
+          content = noticeMsg
+        )
+      }
       
       dataRanked <- tryCatch({
         if (hasWeights) {
@@ -188,6 +248,12 @@ continuousClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
       }, error = function(e) {
         jmvcore::reject(paste0("Ranking by group failed: ", conditionMessage(e)))
       })
+      
+      # Auto-cap t if number of distinct groups <= t
+      nDistinctGroups <- length(unique(dataRanked$group))
+      if (t >= nDistinctGroups) {
+        t <- max(1L, nDistinctGroups - 1L)
+      }
       
       dataPrepared <- computePowers(dataRanked, k = k, t = t, norm = "normValue")
       attr(dataPrepared, "k") <- k
@@ -292,12 +358,13 @@ continuousClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
         )
       }
       
-      # Predictions & Spreadsheet Outputs
+      # Predictions & Spreadsheet Outputs (evaluated at exact continuous origAge)
+      predAgeVec <- if ("origAge" %in% names(dataPrepared)) dataPrepared$origAge else dataPrepared$group
       manifestNorms <- dataPrepared$normValue
       manifestPerc  <- dataPrepared$percentile * 100
       predictedNorms <- predictNorm(
         dataPrepared$raw,
-        dataPrepared$group,
+        predAgeVec,
         model,
         minNorm = minNorm,
         maxNorm = maxNorm
@@ -335,8 +402,8 @@ continuousClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
       obsDF <- do.call(rbind, obsList)
       obsDF <- obsDF[!is.na(obsDF$value), , drop = FALSE]
       
-      minAge <- min(dataPrepared$group, na.rm = TRUE)
-      maxAge <- max(dataPrepared$group, na.rm = TRUE)
+      minAge <- min(predAgeVec, na.rm = TRUE)
+      maxAge <- max(predAgeVec, na.rm = TRUE)
       AGEP_pred <- sort(unique(c(AGEP, seq(minAge, maxAge, length.out = 100))))
       rawMin <- min(dataPrepared$raw, na.rm = TRUE)
       rawMax <- max(dataPrepared$raw, na.rm = TRUE)
@@ -354,7 +421,7 @@ continuousClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
       
       self$results$plot$setState(list(
         method = "taylor",
-        points = data.frame(age = dataPrepared$group, raw = dataPrepared$raw),
+        points = data.frame(age = predAgeVec, raw = dataPrepared$raw),
         obs = obsDF,
         pred = predDF,
         levels = NAMES,
@@ -441,7 +508,6 @@ continuousClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
           )
         }
         
-        # Populate coefficients
         coefTable <- self$results$modelCoef
         for (i in seq_along(diag$param_estimates)) {
           coefTable$addRow(rowKey = i, values = list(
@@ -497,7 +563,6 @@ continuousClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
           )
         }
         
-        # Assemble parameter estimates table
         estVec <- c(diag$mu_estimates, diag$sigma_estimates, diag$epsilon_estimates, diag$delta_estimates)
         seVec  <- c(diag$mu_se, diag$sigma_se, diag$epsilon_se, diag$delta_se)
         zVec   <- c(diag$mu_z_values, diag$sigma_z_values, diag$epsilon_z_values, diag$delta_z_values)
@@ -599,7 +664,7 @@ continuousClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
         }
       }
       
-      # Populate Model Fit Table (shared structure across all 3 parametric models)
+      # Populate Model Fit Table
       self$results$modelFit$setRow(rowNo = 1, values = list(
         methodName = methodLabel,
         nobs       = as.integer(diag$n_obs),
@@ -716,14 +781,13 @@ continuousClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
         predictedPerc = predictedPerc
       )
       
-      # Build lightweight plot state in .run() (without serializing the full model object)
+      # Build lightweight plot state in .run()
       percentiles <- c(0.025, 0.1, 0.25, 0.5, 0.75, 0.9, 0.975)
       NAMES <- paste0("PR", percentiles * 100)
       n_points <- 100
       age_range <- range(age, na.rm = TRUE)
       pred_ages <- seq(age_range[1], age_range[2], length.out = n_points)
       
-      # Manifest percentiles per group
       if (length(age) / length(unique(age)) > 50 && min(table(age)) > 30) {
         grp <- age
       } else {
@@ -747,7 +811,6 @@ continuousClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
       obsDF <- do.call(rbind, obsList)
       obsDF <- obsDF[!is.na(obsDF$value), , drop = FALSE]
       
-      # Predicted percentile lines
       if (method == "betabinomial") {
         preds <- predictCoefficients2(model, pred_ages, nMax)
         pMat <- vapply(seq_along(pred_ages), function(j) {
